@@ -1,0 +1,98 @@
+function mrQ = mrQ_Set(mrQ,param,varargin,saveflag)
+% Setting data in the mrQ structure for the mrQ anlysis
+%
+% The mrQ structure stores all the MRQ computations.  mrQ_Set is the main
+% function to add values, images, computations etc. to this structure.  As
+% inputs mrQ_Set takes in an mrQ structure, a parameter defined as a
+% 'string' which is to be set, and a number of aditional arguments and
+% values that are specific to that parameter.  The arguments for each
+% parameter are described below.  mrQ_Set always returns the modified mrQ
+% structure and save it unless saveflag=0.  The structure is created with defult values with mrQ_Create
+% or in the first call.
+%See also:  mrQ_Create
+% Parameter list and associated arguments:
+% saveflag          - the defult is yes; for no save make it 0
+% param             - varargin the key parameters are
+%   rawdir            - directory of raw image   string 'path' this define in mrQ_Create
+%   seir              - list of SEIR scan number cell of string {'001' 002'}
+%   SPGR              - list of SPGR scan number  cell of string{'001' 002'}
+%   sub               - a name of subject string 'name'
+%   clobber           - true or faluse to redo the anlysis
+%   refim             - a path to an imge to use as arefernce string 'path'
+%   check            - if a interactive image is used to ditect movment number - 1
+%   proclus          -use the proclass number - 1
+%  'brakeaftervisualization' or 'viewbrake' - use that to start the data
+%  visual the images wirh the check flag and then stop the code from
+%  running
+% ...                  - cheack code for others
+%
+% example:
+% mrQ = mrQ_Set(mrQ,,'raw','/biac2/wandell2/data/WMDevo/ambliopia/sub7/QuantativeImaging/20121102_3488')
+% mrQ = mrQ_Set(mrQ,'sub','sub7');
+% mrQ = mrQ_Set(mrQ,'SPGR',{ '0009' '0010' '0011' '0012' });
+% mrQ = mrQ_Set(mrQ,'seir',{ '0004' '0005' '0006' '0007' });
+% mrQ = mrQ_Set(mrQ,'proclass',1);
+
+
+% remove spaces and upper case
+param = mrvParamFormat(param);
+
+switch(param)
+    
+    
+    case {'rawdir','raw'}
+        mrQ.RawDir=varargin;
+    case {'seir_seriesnumbers','seir'}
+        mrQ.SEIR_seriesNumbers=varargin;
+    case {'spge_seriesNumbers','spgr'}
+        mrQ.SPGR_seriesNumbers=varargin;
+    case {'sub','name'}
+        mrQ.sub=varargin;
+    case {'clobber'}
+        mrQ.clobber=varargin;
+    case {'arrangerawflag'}
+        mrQ.arrangeRawFlag=varargin;
+    case {'channels'}
+        mrQ.channels=varargin;
+    case {'complexflag','complex' }
+        mrQ.complexFlag=varargin;
+    case {'useabs', 'magnitude' 'abs'}
+        mrQ.useAbs=varargin;
+    case {'coilweights', 'coilweight'}
+        mrQ.coilWeights=varargin;
+    case {'alignflag','align'}
+        mrQ.alignFlag=varargin;
+    case {'interp'}
+        mrQ.interp=varargin;
+    case {'refim','ref'}
+        mrQ.refIm=varargin;
+    case {'mmpervox', 'pixdim'}
+        mrQ.mmPerVox=varargin;
+    case {'skip'}
+        mrQ.skip=varargin;
+    case {'cheack','check'}
+        mrQ.cheack=varargin;
+    case {'lsq', 'lsqfit'}
+        mrQ.lsq=varargin;
+    case {'runfreesurfer' }
+        mrQ.runfreesurfer=varargin;
+    case {'proclus' ,'proclass'}
+        mrQ.proclass=varargin;
+    case {'brakeaftervisualization' ,'viewbrake'}
+        mrQ.brakeAfterVisualization=varargin;
+        
+    otherwise
+        
+        error('Uknown mrQ parameter');
+end
+
+
+%save mrQ
+if notDefined('saveflag')
+    saveflag=1;
+end
+
+if saveflag==0
+else
+    save(mrQ.name,'mrQ');
+end

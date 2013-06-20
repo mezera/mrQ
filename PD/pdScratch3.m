@@ -9,8 +9,8 @@
 
 %T Set up parameters for three coils
 G1x = 2; G1xx = 0.5; G1y = 1; G1yy = 1.5; G1xy = 1.2;  K1 = 1;
-G2x = 3; G2xx = 0.7; G2y = 3; G2yy = 2.5; G2xy = 1.7;  K2 = 5;
-G3x = -5; G3xx = 0.2; G3y = 5; G3yy = 0.5; G3xy = 0;   K3 = 10;
+G2x = 3; G2xx = 0.7; G2y = 3; G2yy = 2.5; G2xy = 1.7;  K2 = 50;
+G3x = -5; G3xx = 0.2; G3y = 5; G3yy = 0.5; G3xy = 0;   K3 = 60;
 
 %% Initialize the matrices and responses
 nSamples = 30;
@@ -25,6 +25,7 @@ r3 = K3*O + pMatrix*[G3x,G3xx,G3y,G3yy,G3xy]';
 M1 = pMatrix;
 M2 = [O, pMatrix];
 M3 = M2;
+Z = zeros(size(M2));
 
 %% Solve for coils 1 and 2
 r = r1./r2;
@@ -55,10 +56,9 @@ r2Noise = r2 + randn(size(r2))*noiseLevel;
 20*log10(mean(r1)/noiseLevel)
 
 % New r, with noisy estimates
-r = r1Noise ./ r2Noise;
-rhs = [M1, diag(-r(:))*M2];
+rhs = [M1, diag(-r1Noise ./ r2Noise)*M2];
 
-est = rhs\lhs
+est = rhs\lhs;
 
 % Gain parameter estimates
 estMatrix = reshape([1;est],6,2)';
@@ -83,7 +83,6 @@ estMatrix
     G3x , G3xx , G3y , G3yy , G3xy , K3]
 
 %% Now, build up the more complex matrices.
-Z = zeros(size(M2));
 rhs = ...
     [M1, diag(-r1./r2)*M2, Z; ...
      M1, Z, diag(-r1./r3)*M3];
@@ -102,13 +101,15 @@ estMatrix
     G3x , G3xx , G3y , G3yy , G3xy , K3]
 
 %% So far, doesn't help.
+%
+% Notes - there is one really big value in the rhs that I don't understand.
+% Adding the M2, M3 condition isn't working.
 % Keep thinking.  Shouldn't adding more coils help?
 noiseLevel = 1e-2;
 r1Noise = r1 + randn(size(r1))*noiseLevel;
 r2Noise = r2 + randn(size(r2))*noiseLevel;
 r3Noise = r3 + randn(size(r3))*noiseLevel;
 
-Z = zeros(size(M2));
 rhs = ...
     [M1, diag(-r1Noise./r2Noise)*M2, Z; ...
      M1, Z, diag(-r1Noise./r3Noise)*M3];

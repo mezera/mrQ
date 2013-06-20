@@ -1,11 +1,20 @@
-function pMatrix = polyCreateMatrix(nSamples,order,dimension)
+function [pMatrix,O] = polyCreateMatrix(nSamples,order,dimension)
 % Build 2D polynomial matrix.  Will generalize to other cases later
 %
+%    [pMatrix,O] = polyCreateMatrix(nSamples,order,dimension)
+%
+% pMatrix:  Polynomial basis functions for nth order and some number of
+% dimensions.   This matrix does NOT include the constant
+% O      :  Column of ones for the constant, in case the user wants it.
 %
 % Example:
 %   nSamples = 20; order = 2; dimension = 2;
 %   pMatrix = polyCreateMatrix(20,2,2);
-%   imagesc(pMatrix)
+%   imagesc(pMatrix);
+%
+%  [M2, O] = polyCreateMatrix(20,2,2);
+%  M2 = [O,M2];
+%  imagesc(pMatrix);
 %
 % BW Copyright vistasoft 2013
 
@@ -33,6 +42,9 @@ switch order
         error('Order %d not built',order);
 end
 
-
+% Sometimes the user will want a column of ones of the proper size.
+if nargout > 1
+    O = ones(nSamples*nSamples,1);
+end
 
 return

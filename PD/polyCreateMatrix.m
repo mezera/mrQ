@@ -35,6 +35,21 @@ switch order
             XY = X(:).*Y(:);
             % X, X^2, Y, Y^2, XY
             pMatrix = [ones(size(X)), X, X2, Y, Y2, XY];
+            
+            
+         elseif dimension == 3
+            [X, Y Z] = meshgrid(s,s,s);
+            X = X(:);
+            Y = Y(:);
+            Z = Z(:);
+            X2 = X(:).^2;
+            Y2 = Y(:).^2;
+            Z2 = Z(:).^2;
+            XY = X(:).*Y(:);
+            XZ = X(:).*Z(:);
+            YZ = Y(:).*Z(:);
+            pMatrix = [ones(size(X)), X, X2, Y, Y2, XY  Z  Z2 XZ YZ]  ;   
+            
         else
             error('Not yet implemented')
         end

@@ -1,0 +1,167 @@
+%% Working out the multiple coil case.
+%
+% Adding some functions to create the polynomial matrices we need.
+% See the pdScratch2 for more detail.  This one is moving a bit beyond
+% that.
+%
+% TODO
+%   1.  Realistic gains if possible
+%   2.  Extend to 3D
+%   3.  Add a fourth coil or even make a function for N-coils
+%   4.  Summarize the error distribution maybe in PD space? Coil space?
+%   5.  Virtual coil analysis
+%   6.  What else?
+%   7.  Make the solution with eig and stuff a function
+%   8.  Make the printing out and comparison a simple function
+%
+%
+
+%% First example, 2nd order, 2d
+addpath('data')
+addpath('avivScrach/')
+
+%To Set up parameters for N realistic coils 
+Ncoils=6;
+     [params STR]=GetPantomPolyCoef(Ncoils,2)
+ %[params STR]=GetPantomPolyCoef(Ncoils,dim,sample,whichCoils)
+ 
+
+%% Initialize the matrices and responses
+nSamples = 20;
+[pMatrix, s] = polyCreateMatrix(nSamples,2,2);
+rSize = length(s);
+
+
+for i=1:Ncoils
+r (:,i)= pMatrix*params(:,i);
+end
+
+
+figure;
+for i=1:Ncoils
+subplot(Ncoils,1,i); imagesc(reshape(r(:,i),rSize,rSize)); axis image
+end
+%%
+
+% solve N coils ratio with no noise
+coilslist=[1:3];
+est=solveRatio(r(:,coilslist),pMatrix);
+% get the estimates
+ [CoilCoefErr PDerr]=PolyRatioErr(est,params(:,coilslist),pMatrix)
+
+%%  make a noise ratio 
+noiseLevel = 2;
+for i=1:length(coilslist)
+rNoise(:,i) = r(:,i) + randn(size(r,1),1)*noiseLevel;
+end
+
+SNR=20*log10(mean(mean(r(:,coilslist))) /noiseLevel)
+est=solveRatio(rNoise(:,coilslist),pMatrix);
+% get the estimates
+ [CoilCoefErr PDerr]=PolyRatioErr(est,params(:,coilslist),pMatrix)
+
+
+%%
+% or should we add the nosise the the poly The ratio is noised divided!!!
+% is the noise need to be scale to the signal?
+for i=1:length(coilslist)
+r1Noise (:,i)= pMatrix*params(:,coilslist(i)) + randn(size(r,1))*noiseLevel;
+end;
+
+
+%% Solve for coils 1 and 2
+
+% The big matrix has the polynomials from the two coils side by side.
+% The first coil is always just the polynomail matrix
+% The second coil is multiplied on every row by the ratio of the M0 values.
+% The gain solutions satisfy 0 = rhs g
+rhs = [pMatrix, diag(-r(:,1)./r(:,2))*pMatrix];
+% [U, S, V] = svd(tmp'*tmp);
+% est = U(:,end)/U(1,end);
+
+[U, d] = eig(rhs'*rhs);
+est = U(:,1)/U(1,1);
+sqrt(diag(d))
+
+% cond(rhs)
+% est = rhs\lhs
+
+% Gain parameter estimates
+estMatrix = reshape(est,6,2)'
+(params(:,1:2)./params(1,1))'
+    
+
+%% Add noise to the measurements (r1, r2, r3) and try again
+
+% Seems OK to 1e-3 for this case.  But at 1e-2, things go bad.  This is a
+% very high SNR level.  Uh oh.
+noiseLevel = 1e-0;
+r1Noise = r1 + randn(size(r1))*noiseLevel;
+r2Noise = r2 + randn(size(r2))*noiseLevel;
+20*log10(mean(r1)/noiseLevel)
+
+% New r, with noisy estimates
+rhs = [pMatrix, diag(-r1Noise ./ r2Noise)*pMatrix];
+% [U, S, V] = svd(tmp'*tmp);
+% est = U(:,end)/U(1,end);
+
+[U, d] = eig(rhs'*rhs);
+est = U(:,1)/U(1,1);
+% sqrt(diag(d))
+
+% Gain parameter estimates
+estMatrix = reshape(est,6,2)'
+[K1 , G1x , G1xx , G1y , G1yy , G1xy,  
+    K2 G2x , G2xx , G2y , G2yy , G2xy]
+
+%% Solve for coils 1 and 3
+rhs = [pMatrix, diag(-r1./r3)*pMatrix];
+[U, ~] = eig(rhs'*rhs);
+est = U(:,1)/U(1,1);
+% sqrt(diag(d))
+% Gain parameter estimates
+estMatrix = reshape(est,6,2)'
+[K1, G1x , G1xx , G1y , G1yy , G1xy;
+    K3, G3x , G3xx , G3y , G3yy , G3xy ]
+
+%% Now, build up the more complex matrices.
+rhs = ...
+    [pMatrix, diag(-r1./r2)*pMatrix, Z; ...
+     pMatrix, Z, diag(-r1./r3)*pMatrix; ...
+    Z, pMatrix, diag(-r2./r3)*pMatrix];
+[U, ~] = eig(rhs'*rhs);
+est = U(:,1)/U(1,1);
+
+% Gain parameter estimates
+estMatrix = reshape(est,6,3)'
+[K1, G1x , G1xx , G1y , G1yy , G1xy;
+    K2, G2x , G2xx , G2y , G2yy , G2xy;
+    K3, G3x , G3xx , G3y , G3yy , G3xy]
+
+%% Best so far.
+%
+% Notes - there is one really big value in the rhs that I don't understand.
+% Adding the M2, M3 condition isn't working.
+% Keep thinking.  Shouldn't adding more coils help?
+noiseLevel = 1e-0;
+r1Noise = r1 + randn(size(r1))*noiseLevel;
+r2Noise = r2 + randn(size(r2))*noiseLevel;
+r3Noise = r3 + randn(size(r3))*noiseLevel;
+%
+20*log10(mean(r1)/noiseLevel)
+
+rhs = ...
+    [pMatrix, diag(-r1Noise./r2Noise)*pMatrix, Z; ...
+     pMatrix, Z, diag(-r1Noise./r3Noise)*pMatrix; ...
+    Z, pMatrix, diag(-r2Noise./r3Noise)*pMatrix];
+[U, d] = eig(rhs'*rhs);
+est = U(:,1)/U(1,1);
+cond(rhs)
+
+% Gain parameter estimates
+estMatrix = reshape(est,6,3)'
+[K1, G1x , G1xx , G1y , G1yy , G1xy;
+     K2, G2x , G2xx , G2y , G2yy , G2xy ;
+    K3, G3x , G3xx , G3y , G3yy , G3xy]
+    
+%% End

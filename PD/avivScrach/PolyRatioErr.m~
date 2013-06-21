@@ -1,0 +1,23 @@
+function [CoilCoefErr PDerr  estMatrix  ParMatrix G M0 PD  PDspaceErr]=PolyRatioErr(est,params,pMatrix,dim)
+
+if notDefined
+% Gain parameter estimates
+estMatrix = reshape(est,size(params))';
+ParMatrix=(params./params(1,1))';
+
+CoilCoefErr=(ParMatrix-estMatrix)./ParMatrix;
+
+
+G=pMatrix*estMatrix';
+
+M0=pMatrix*ParMatrix';
+
+PDerr=std(mean(G./M0,2));
+
+if size(ParMatrix,2)==6
+    dim=sqrt(size(pMatrix,2)
+dims=sqrt(size(pMatrix,2))
+
+PD=reshape(mean(G./M0,2),[41 41]);
+ST=std(G./M0,[],2);
+PDspaceErr=reshape(ST,[41 41]);

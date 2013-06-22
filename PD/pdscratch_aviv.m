@@ -11,58 +11,79 @@
 %   7.  Make the solution with eig and stuff a function  X
 %   8.  Make the printing out and comparison a simple function  X
 %  9.  Realistic noise
-%  
+%
 
-%% First example, 2nd order, 2d
-addpath('data')
-addpath('avivScrach/')
 
-%To Set up parameters for N realistic coils 
-Ncoils=6;
-     [params STR]=polyGetPantomCoef(Ncoils,3)
- %[params STR]=polyGetPantomCoef(Ncoils,dim,sample,whichCoils)
- 
+%% Make sure mrQ is on your path
 
-%% Initialize the matrices and responses
+%To Set up parameters for N realistic coils
+nCoils = 6;
+nDims  = 3;
+[params, STR] = polyGetPhantomCoef(nCoils,nDims);
+
+%% Initialize the matrices and M0 simulation
 nSamples = 10;
-[pMatrix, s] = polyCreateMatrix(nSamples,2,3);
+pOrder = 2;
+[pMatrix, s] = polyCreateMatrix(nSamples,pOrder,nDims);
 rSize = length(s);
+nVoxels = rSize^nDims;
 
-clear r
-for i=1:Ncoils
-M0 (:,i)= pMatrix*params(:,i);
+% clear r
+% Build the simulated M0 data assuming the PD are all 1.  The parameters
+% are estimated from the phantom data.
+M0 = zeros(nVoxels,nCoils);
+for ii=1:nCoils
+    M0(:,ii)= pMatrix*params(:,ii);
 end
 
-%3D
+%% Visualize the coil gains
+
+% But I don't understand the 5 in case 3.  What is this?
 figure;
-for i=1:Ncoils
-    im=reshape(M0(:,i),rSize,rSize,rSize);
-subplot(Ncoils,1,i); imagesc(im(:,:,5)); axis image
+switch nDims
+    case 3
+        for ii=1:nCoils
+            im = reshape(M0(:,ii),rSize,rSize,rSize);
+            subplot(nCoils,1,ii); imagesc(im(:,:,5)); axis image
+        end
+    case 2
+        for ii=1:nCoils
+            subplot(nCoils,1,ii); imagesc(reshape(M0(:,ii),rSize,rSize)); axis image
+        end
+    otherwise
+        error('Bad number of dimensions')
 end
-%2D
-figure;
-for i=1:Ncoils
-subplot(Ncoils,1,i); imagesc(reshape(M0(:,i),rSize,rSize)); axis image
-end
-%%
-% solve N coils ratio with no noise
-coilslist=[1:3];
-est=polySolveRatio(M0(:,coilslist),pMatrix);
+
+%% Solve N coils ratio with no noise
+
+coilList = 1:3;
+est = polySolveRatio(M0(:,coilList),pMatrix);
+
 % get the estimates
- [CoilCoefErr PDerr]=polyRatioErr(est,params(:,coilslist),pMatrix)
+[CoilCoefErr, PDerr] = polyRatioErr(est,params(:,coilList),pMatrix);
+
+% Without noise, the error is all zero
+figure; hist(PDerr(:));
+
 % [CoilCoefErr PDerr  estMatrix  parMatrix G M0 PD  PDspaceErr]=PolyRatioErr(est,params,pMatrix)
-%%  make a noise ratio 
-noiseLevel = 2;
-for i=1:length(coilslist)
-M0Noise(:,i) = M0(:,i) + randn(size(M0,1),1)*noiseLevel;
+%%  make a noise ratio
+noiseLevel = .1;
+for i=1:length(coilList)
+    M0Noise(:,i) = M0(:,i) + randn(size(M0,1),1)*noiseLevel;
 end
 
-SNR=20*log10(mean(mean(M0(:,coilslist))) /noiseLevel)
-est=polySolveRatio(M0Noise(:,coilslist),pMatrix);
-% get the estimates
+% This is the signal to noise in decibels
+SNR = 20*log10(mean(mean(M0(:,coilList))) /noiseLevel)
 
- [CoilCoefErr PDerr]=polyRatioErr(est,params(:,coilslist),pMatrix)
-% [CoilCoefErr PDerr  estMatrix  ParMatrix G M0 PD  PDspaceErr]=PolyRatioErr(est,params,pMatrix)
+% get the gain estimates for the noisy data
+est = polySolveRatio(M0Noise(:,coilList),pMatrix);
 
+[CoilCoefErr PDerr] = polyRatioErr(est,params(:,coilList),pMatrix);
+figure; hist(PDerr(:))
+
+%
+% [CoilCoefErr PDerr  estMatrix  ParMatrix G M0 PD ...
+%    PDspaceErr]=PolyRatioErr(est,params,pMatrix)
+%
 %%
 

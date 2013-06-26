@@ -1,4 +1,4 @@
-function  [est, polyRatioMat] = polySolveRatio(r,pBasis)
+function  [est,  polyRatioMat,est1 ] = polySolveRatio(r,pBasis)
 % Solve for the gain parameters of the polynomial coefficient
 %
 %  est = polySolveRatio(r,pBasis)
@@ -54,5 +54,16 @@ end
 % the first entry (the constant) is 1.
 [U, ~] = eig(polyRatioMat'*polyRatioMat);
 est = U(:,1)/U(1,1);
+
+% R=r(:,ii)./r(:,jj); F=find(R<2);polyRatioMat1=polyRatioMat;
+% polyRatioMat1(F,:)=0;
+% [U, ~] = eig(polyRatioMat1'*polyRatioMat1);
+% est1 = U(:,1)/U(1,1);
+
+% %is a different way to solve the matrix make a different.?
+% lhs=-polyRatioMat(:,1);
+% rhs=polyRatioMat(:,2:end);
+% est1 = rhs\lhs;
+% no it's not up to a constant 
 
 return

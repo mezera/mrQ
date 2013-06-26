@@ -21,7 +21,7 @@ function [pMatrix,s] = polyCreateMatrix(nSamples,order,dimension)
 % BW Copyright vistasoft 2013
 
 s = -nSamples:nSamples;
-
+%s=1:2*nSamples+1;
 switch order
     case 2  % 2nd order polynomial
         if dimension == 1

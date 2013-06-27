@@ -20,8 +20,8 @@
 %To Set up parameters for N realistic coils
 nCoils = 32;
 nDims  = 3;
-pOrder = 2;
-nSamples=3;
+pOrder = 1;
+nSamples=1;
 %%
 %the real data
 % get M0 real sample 
@@ -57,68 +57,103 @@ M0S=reshape(M0S_v,SZ);
          plotRawandSimProfile(nCoils,M0,M0S,SZ(1:3),12)
 
 
-%%  make simuation with  noise and smoth in space
+%%  make simuation with  noise 
 
-%do it on biger size voulume and then crop (so the smooth will be homgenius in the relevant voulume)
+noiseLevel = 5;
+for i=1:nCoils
+    M0SN_v(:,i) = M0S_v(:,i) + randn(size(M0S_v,1),1)*noiseLevel;
+end
+M0SN=reshape(M0SN_v,SZ);
+% This is the signal to noise in decibels
+
+
+%%  smooth the noise in coils space
+% 
+% for i=1:nCoils
+%     A=smooth3(M0SN(:,:,:,i),'gaussian');
+%     M0SNs(:,:,:,i)=A;
+% end
+% M0SNs_v=reshape(M0SNs,[prod(SZ(1:3)) SZ(4)]);
+% % get the gain estimates for the noisy data
+% 
+
+%% lets add the noise ans smoth on a double size box and then crop 
+%(so the smooth will be homgenius in the ROI)
 noiseLevel=5;
 
- clear M0SNS M0SNS_v M0SN M0SN_v  st ed N rSizeDD nVoxelsDD pMatrixDD sDD
-[pMatrixDD,sDD] = polyCreateMatrix(nSamples*10,2,3);
+[pMatrixDD,sDD] = polyCreateMatrix(nSamples*4,pOrder,nDims);
 rSizeDD = length(sDD);
+
 nVoxelsDD = rSizeDD^nDims;
-M0SN_v = zeros(nVoxelsDD,nCoils);
+M0SNSd_v = zeros(nVoxelsDD,nCoils);
 for ii=1:nCoils
-    M0SN_v(:,ii)= pMatrixDD*params(:,ii) +randn(nVoxelsDD,1)*noiseLevel;
+    M0SNSd_v(:,ii)= pMatrixDD*params(:,ii) + randn(nVoxelsDD,1)*noiseLevel;
 end
-M0SN=reshape(M0SN_v,[rSizeDD rSizeDD rSizeDD  SZ(4)]);
+M0SNSd=reshape(M0SNSd_v,[rSizeDD  rSizeDD rSizeDD  SZ(4)]);
+
 for i=1:nCoils
-    A=smooth3(M0SN(:,:,:,i),'gaussian',[21 21 21]);
-     %   A=smooth3(M0SNSd(:,:,:,i));
-    M0SNS(:,:,:,i)=A;                 
+    A=smooth3(M0SNSd(:,:,:,i),'gaussian',[9 9 9]);
+       % A=smooth3(M0SNSd(:,:,:,i));
+
+    M0SNSd(:,:,:,i)=A;                 
 end
-N=(rSizeDD-rSize)/2;
-st=N+1;
-ed=rSizeDD-N;
+st=nSamples*4+1-nSamples;
+ed=nSamples*4+1+nSamples;
 
-M0SNS=M0SNS(st:ed,st:ed,st:ed,:);
-M0SN=M0SN(st:ed,st:ed,st:ed,:);
-showMontage(M0S-M0SNS);title('sim- noisey sim smooth')
-showMontage(-M0S-M0SN) ;title('sim- noisey sim')
+M0SNSd=M0SNSd(st:ed,st:ed,st:ed,:);
 
-M0SN_v=reshape(M0SN,prod(SZ(1:3)),SZ(4));
-M0SNS_v=reshape(M0SNS,prod(SZ(1:3)),SZ(4));
-clear st ed N rSizeDD nVoxelsDD pMatrixDD sDD
+M0SNSd_v=reshape(M0SNSd,[prod(SZ(1:3)) SZ(4)]);
+clear  st ed A pMatrixDD rSizeDD sDD nVoxelsDD
+%% smooth the data
+[M0dd SZdd meanValdd ]= phantomGetData(nSamples*4,3);
+% resahave to 2D
+M0dd_v=reshape(M0,prod(SZdd(1:3)),SZdd(4));
+
+for i=1:nCoils
+    A=smooth3(M0dd(:,:,:,i),'gaussian',[9 9 9]);
+       % A=smooth3(M0dd(:,:,:,i));
+    M0dd(:,:,:,i)=A;                 
+end
+
+st=nSamples*4+1-nSamples;
+ed=nSamples*4+1+nSamples;
+
+M0dd=M0dd(st:ed,st:ed,st:ed,:);
+
+M0dd_v=reshape(M0dd,[prod(SZ(1:3)) SZ(4)]);
+clear  st ed A  meanValdd SZdd 
+
+
+
 %% Fits and plots
-coilList = [5 6];
+coilList = [1 :10];
 
 
 %simultions
-[ Res_S ]   = fitRatioandPlotPD(coilList,M0S_v,M0S,pMatrix,params, 'Sim',0);
+[ Res_Sim ]   = fitRatioandPlotPD(coilList,M0S_v,M0S,pMatrix,params, 'Sim',0);
 
 %simulted noise
 SNR = 20*log10(mean(mean(M0S_v(:,coilList))) /noiseLevel)
-[ Res_SN]   = fitRatioandPlotPD(coilList,M0SN_v,M0SN,pMatrix,params, 'SimNoise',0);
+[ Res_SimNoise]   = fitRatioandPlotPD(coilList,M0SN_v,M0SN,pMatrix,params, 'SimNoise',0);
 % Smooth simulted noise
-[ Res_SNS]   = fitRatioandPlotPD(coilList,M0SNS_v,M0SNS,pMatrix,params, 'SimNoiseSmooth',1);
+[ Res_SimNoiseSH1]   = fitRatioandPlotPD(coilList,M0SNs_v,M0SNs,pMatrix,params, 'SimnoiseSH1',0);
+[ Res_SimNoiseSH2]   = fitRatioandPlotPD(coilList,M0SNSd_v,M0SNSd,pMatrix,params, 'SimnoiseSH2',0);
 
 
 % Data
 [ Res_data]   = fitRatioandPlotPD(coilList,M0_v,M0,pMatrix,params, 'data',0);
+% now lets smooth the data and see.
+[ Res_dataS]   = fitRatioandPlotPD(coilList,M0dd_v,M0dd,pMatrix,params, 'data',0);
 
 
 
 
 %%
 
- showMontage(100* ((Res_S.R- Res_SN.R)./ Res_S.R ) ,[],[],[],[],7 );colormap hot;title('100X(RS- RSN)/RS')
- showMontage( 100* ((Res_S.R- Res_SNS.R)./ Res_S.R   )  ,[],[],[],[],8 );colormap hot;title('100X(RS- RSNS)/RS')
- showMontage( 100* ((Res_S.R- Res_data.R)./ Res_S.R )  ,[],[],[],[],9 );colormap hot;title('RS- Rdata/RS')
-
-%%
-G1=reshape(Res_S.G,[SZ(1:3) 2]);
-G2=reshape(Res_SN.G,[SZ(1:3) 2]);
-
-         plotRawandSimProfile(2,G1,G2,[1 1 1],10,{'no noise' 'noise'})
+ showMontage(100* ((Res_Sim.R- Res_SimNoise.R)./ Res_Sim.R ) ,[],[],[],[],7 );colormap hot;title('Rsim- RsimNoise/Rsim')
+ showMontage( 100* ((Res_Sim.R- Res_SimNoiseSH1.R)./ Res_Sim.R  ) ,[],[],[],[],8  );colormap hot;title('Rsim- RsimNoiseSH1/Rsim')
+ showMontage( 100* ((Res_Sim.R- Res_SimNoiseSH2.R)./ Res_Sim.R   )  ,[],[],[],[],9 );colormap hot;title('Rsim- RsimNoiseSH2/Rsim')
+ showMontage( 100* ((Res_Sim.R- Res_data.R)./ Res_Sim.R )  ,[],[],[],[],10 );colormap hot;title('Rsim- Rdata/Rsim')
 
 
 %%

@@ -39,8 +39,9 @@ M0 = pBasis*ParMatrix';
 % Standard deviation of the PD errors, just a number?
 PDerr = std(mean(G./M0,2));
 
-if size(ParMatrix,2) == 6, nDimensions = 2;
-elseif size(ParMatrix,2) == 10, nDimensions = 3;
+if size(ParMatrix,2) == 6, nDimensions = 2; %2ed Order 2D
+elseif size(ParMatrix,2) == 10, nDimensions = 3; %3ed order 3D
+elseif size(ParMatrix,2) == 4, nDimensions = 3;   % 1st Order 3D
 end
 nVoxels = size(pBasis,1);
 

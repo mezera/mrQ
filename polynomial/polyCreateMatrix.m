@@ -1,5 +1,5 @@
 function [pMatrix,s] = polyCreateMatrix(nSamples,order,dimension)
-% Build 2D polynomial matrix 
+% Build 2D polynomial matrix
 %
 %    [pMatrix,s] = polyCreateMatrix(nSamples,order,dimension)
 %
@@ -23,9 +23,28 @@ function [pMatrix,s] = polyCreateMatrix(nSamples,order,dimension)
 s = -nSamples:nSamples;
 %s=1:2*nSamples+1;
 switch order
+    case 1  % 1st order polynomial
+        if dimension == 1
+            X = s(:);
+            pMatrix = [ones(size(X)), X];
+            
+        elseif dimension == 2
+            [X, Y] = meshgrid(s,s);
+            X = X(:);     Y = Y(:);
+            pMatrix = [ones(size(X)), X, Y, Y2];
+            
+        elseif dimension == 3
+            [X, Y, Z] = meshgrid(s,s,s);
+            X = X(:); Y = Y(:); Z = Z(:);
+            pMatrix = [ones(size(X)), X, Y  Z  ];
+            
+        else
+            error('Not yet implemented')
+        end
+        
     case 2  % 2nd order polynomial
         if dimension == 1
-            X = s(:); 
+            X = s(:);
             X2 = X(:).^2;
             pMatrix = [ones(size(X)), X, X2];
             
@@ -36,7 +55,7 @@ switch order
             XY = X(:).*Y(:);
             pMatrix = [ones(size(X)), X, X2, Y, Y2, XY];
             
-         elseif dimension == 3
+        elseif dimension == 3
             [X, Y, Z] = meshgrid(s,s,s);
             X = X(:); Y = Y(:); Z = Z(:);
             X2 = X(:).^2; Y2 = Y(:).^2; Z2 = Z(:).^2;

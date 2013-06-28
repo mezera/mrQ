@@ -13,7 +13,7 @@ function [OutPut]=pdPolyPhantomOrder(nSamples, nCoils,nDims,pOrder,noiseRange,sa
 %
 %       Output:
 % OutPut                    is a stracture that include this fielled 
-%                                M0,M0_v, params,M0S_v,VarEx,SZ, meanVal, pBasis, s,rSize,nVoxels,nVoxels
+%                                M0,M0_v, params,M0S_v,VarEx,SZ, meanVal, pMatrix, s,rSize,nVoxels,nVoxels
 
 %  We evaluate the percent error in the polynomial approximation for each
 %
@@ -86,16 +86,16 @@ end
 %% This is phantom data and we approximate them by polynomials
 
 % Create the basis functions for the polynomials
-[pBasis,s] = polyCreateMatrix(nSamples,pOrder,nDims);
+[pMatrix,s] = polyCreateMatrix(nSamples,pOrder,nDims);
 rSize       = length(s);
 nVoxels     = rSize^nDims;
-nPolyParams = size(pBasis,2);
+nPolyParams = size(pMatrix,2);
 
 % Get the phantom polynomial coefficients assuming the phantom PD equals
 % one.  data = pMatrix * params.  So, pMatrix \ data
 params = zeros(nPolyParams , SZ(4));
 for ii=1:nCoils
-    params(:,ii)= pBasis\M0_v(:,ii);
+    params(:,ii)= pMatrix\M0_v(:,ii);
 end
 
 %% We check whether the approximation is accurate for the box

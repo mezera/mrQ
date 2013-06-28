@@ -1,7 +1,7 @@
-function [M01 boxSize meanVal ]= phantomGetData(boxsize,loc)
+function [M01 boxSize meanVal ]= phantomGetData(boxsize,loc,smoothkernel)
 % Load sample data from the phantom
 %
-%   [M01 SZ meanVal ]= phantomGetData(boxsize,loc)
+%   [M01 boxSize meanVal ]= phantomGetData(boxsize,loc,smoothkernel)
 %
 %
 % Helper routine to get the data
@@ -9,6 +9,14 @@ function [M01 boxSize meanVal ]= phantomGetData(boxsize,loc)
 M0=readFileNifti(fullfile(mrqRootPath,'data','PD','AligncombineCoilsM0.nii.gz'));
 M0=M0.data;
 
+if ~notDefined('smoothkernel')
+    for ii=1:size(M0,4)
+        tmp=M0(:,:,:,ii);
+        M0(:,:,:,ii)=smooth3(tmp,'g',smoothkernel);
+    end
+end
+    
+    
 % Define the neighborhood for the box based on its size
 boxNeighbors = [-boxsize  -boxsize  -boxsize;  boxsize  boxsize    boxsize];
 

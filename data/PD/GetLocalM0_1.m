@@ -1,5 +1,10 @@
 function [M01 SZ meanVal XX YY ZZ]=GetLocalM01(M0,boxNeibhors,Cvoxel)
-clear M01 
+%
+%
+% Obsolete - delete me
+%
+%
+
 XX(1)=Cvoxel(1)+boxNeibhors(1,1);
 XX(2)=Cvoxel(1)+boxNeibhors(2,1);
 YY(1)=Cvoxel(2)+boxNeibhors(1,2);
@@ -13,3 +18,5 @@ SZ=size(M01);
 M01=M01(:,:,:,Incoil);
 
    [meanVal Incoil]=sort(squeeze(mean(mean(mean(M01)))),'descend');
+
+end

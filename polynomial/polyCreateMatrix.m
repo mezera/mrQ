@@ -31,12 +31,12 @@ switch order
         elseif dimension == 2
             [X, Y] = meshgrid(s,s);
             X = X(:);     Y = Y(:);
-            pMatrix = [ones(size(X)), X, Y, Y2];
+            pMatrix = [ones(size(X)), X, Y];
             
         elseif dimension == 3
             [X, Y, Z] = meshgrid(s,s,s);
             X = X(:); Y = Y(:); Z = Z(:);
-            pMatrix = [ones(size(X)), X, Y  Z  ];
+            pMatrix = [ones(size(X)), X, Y  Z ];
             
         else
             error('Not yet implemented')
@@ -53,6 +53,7 @@ switch order
             X = X(:);     Y = Y(:);
             X2 = X(:).^2; Y2 = Y(:).^2;
             XY = X(:).*Y(:);
+            % Six parameters
             pMatrix = [ones(size(X)), X, X2, Y, Y2, XY];
             
         elseif dimension == 3
@@ -60,12 +61,47 @@ switch order
             X = X(:); Y = Y(:); Z = Z(:);
             X2 = X(:).^2; Y2 = Y(:).^2; Z2 = Z(:).^2;
             XY = X(:).*Y(:); XZ = X(:).*Z(:);  YZ = Y(:).*Z(:);
+            % Ten parameters
             pMatrix = [ones(size(X)), X, X2, Y, Y2, XY  Z  Z2 XZ YZ];
             
         else
             error('Not yet implemented')
         end
         
+    case 3
+        
+        if dimension == 1
+            X = s(:);
+            X2 = X(:).^2;
+            X3 = X(:).^3;
+            pMatrix = [ones(size(X)), X, X2, X3];
+            
+        elseif dimension == 2
+            [X, Y] = meshgrid(s,s);
+            X = X(:);     Y = Y(:);
+            X2 = X(:).^2; Y2 = Y(:).^2; 
+            X3 = X(:).^3; Y3 = Y(:).^3; 
+            XY = X(:).*Y(:); 
+            X2Y = X2.*Y(:); XY2 = X(:).*Y2(:); 
+            
+            % 10 parameters
+            pMatrix = [ones(size(X)), X, X2, Y, Y2, XY, X3, Y3, X2Y, XY2];
+            
+        elseif dimension == 3
+            [X, Y, Z] = meshgrid(s,s,s);
+            X = X(:); Y = Y(:); Z = Z(:);
+            X2 = X(:).^2; Y2 = Y(:).^2; Z2 = Z(:).^2;
+            X3 = X(:).^3; Y3 = Y(:).^3; Z3 = Z(:).^3;
+
+            XY = X(:).*Y(:); XZ = X(:).*Z(:);  YZ = Y(:).*Z(:); 
+            XYZ = X(:).*Y(:).*Z(:);
+            X2Y = X2.*Y(:); X2Z = X2.*Z(:); 
+            XY2 = X(:).*Y2(:); XZ2 = X(:).*Z2(:); 
+            Y2Z = Y2(:).*Z(:); YZ2 = Y(:).*Z2(:);
+            
+            % Twenty parameters
+            pMatrix = [ones(size(X)), X, X2, Y, Y2, XY ,X3, Y3, X2Y, XY2, Z, Z2, Z3, XZ, YZ, XYZ, X2Z, Y2Z, XZ2, YZ2];
+        end  
     otherwise
         error('Order %d not built',order);
 end

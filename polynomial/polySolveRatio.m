@@ -1,15 +1,15 @@
-function  [est,  polyRatioMat,est1 ] = polySolveRatio(r,pBasis)
+function  [eGains,  polyRatioMat ] = polySolveRatio(M0,pBasis)
 % Solve for the gain parameters of the polynomial coefficient
 %
-%  est = polySolveRatio(r,pBasis)
+%  eGains = polySolveRatio(r,pBasis)
 %
-% r:  A matrix whose columns are the M0 data at the (x,y,z)
+% M0: A matrix whose columns are the M0 data at the (x,y,z)
 %     positions (or x,y, or x). The ratios of these values in these columns
 %     scale the pMatrix.  If there are P position and N coils this matrix
 %     is P x N.
-% pMatrix:  The matrix of polynomial basis functions over positions
+% pBasis:  The matrix of polynomial basis functions over positions
 %
-% est:           The estimated gains
+% eGains:        The estimated gains
 % polyRatioMat:  The large matrix such that 0 = polyRatioMat * gains
 %
 % BW, AM Copyright Vistasoft Team, 2013
@@ -18,8 +18,8 @@ function  [est,  polyRatioMat,est1 ] = polySolveRatio(r,pBasis)
 Npar    = size(pBasis,2);
 
 % The data are stored in the columns of the matrix, r.
-Ncoils  = size(r,2);
-Nvoxels = size(r,1);
+Ncoils  = size(M0,2);
+Nvoxels = size(M0,1);
 
 % The big matrix, M, has the polynomials from the coils in blocks.  These
 % are typically separated by blocks of zeros.
@@ -41,7 +41,7 @@ for ii=1:Ncoils-1  % For each coil up to one before the list
         edP = stP + Npar - 1;
         % Multiply the rows of pMatrix by the ratios of the M0 data from
         % the relevant coils
-        polyRatioMat(st_vox:ed_vox,stP:edP)= diag(-r(:,ii)./r(:,jj))*pBasis;
+        polyRatioMat(st_vox:ed_vox,stP:edP)= diag(-M0(:,ii)./M0(:,jj))*pBasis;
         
         % move to the next group of measurements
         st_vox = ed_vox + 1;
@@ -53,7 +53,7 @@ end
 % value and is thus the best estimate.  We scale the gain vector so that
 % the first entry (the constant) is 1.
 [U, ~] = eig(polyRatioMat'*polyRatioMat);
-est = U(:,1)/U(1,1);
+eGains = U(:,1)/U(1,1);
 
 % R=r(:,ii)./r(:,jj); F=find(R<2);polyRatioMat1=polyRatioMat;
 % polyRatioMat1(F,:)=0;

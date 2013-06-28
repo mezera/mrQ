@@ -21,11 +21,11 @@ Npar    = size(pBasis,2);
 Ncoils  = size(M0,2);
 Nvoxels = size(M0,1);
 
-% The big matrix, M, has the polynomials from the coils in blocks.  These
-% are typically separated by blocks of zeros.
-% The first coil is always just the polynomial matrix, without any scaling
-% The second coil is multiplied on every row by the ratio of the M0 values.
-% The gain solutions satisfy 0 = M g
+% The big matrix, polyRatioMat, has the polynomials from the coils in
+% blocks.  These are typically separated by blocks of zeros. The first coil
+% is always just the polynomial matrix, without any scaling The second coil
+% is multiplied on every row by the ratio of the M0 values. The gain
+% solutions satisfy 0 = M g
 st_vox = 1;
 ed_vox = Nvoxels;
 
@@ -49,9 +49,27 @@ for ii=1:Ncoils-1  % For each coil up to one before the list
     end
 end
 
-% Solve for the eigenvectors.  The first one has the smallest singular
-% value and is thus the best estimate.  We scale the gain vector so that
-% the first entry (the constant) is 1.
+%% The rows of polyRatioMat are ratios of M0 measurements
+%  These measurements are from two coils at a voxel.
+%  We could scale the row to reflect the SNR of that ratio.
+%  For example, if one of the M0 values is small, that would reduce our
+%  confidence in the ratio.
+%
+% Note, we have a lot of coil and voxels.  So we can get rid of quite a few
+% (even zeroing them out) and still solve this equation.
+
+%% I am concerned that the gain coefficients are so different in size
+%
+% The DC coefficient is 1000 times bigger than the other ones.  
+% In fact, they decline precipitously across order.  So, maybe we should be
+% doing something to balance these better.
+%% We could re-write the M0 matrix to represent virtual coils
+%
+%  Each column of M0 is a real coil.  If we analyze the 
+
+% Solve for the eigenvectors of polyRatioMat.  The first one has the
+% smallest singular value and is thus the best estimate.  We scale the gain
+% vector so that the first entry (the constant) is 1.
 [U, ~] = eig(polyRatioMat'*polyRatioMat);
 eGains = U(:,1)/U(1,1);
 

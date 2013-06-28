@@ -16,20 +16,22 @@
 %% If you are in the mrQ directory, run this to set the path
 addpath(genpath(fullfile(mrqRootPath)));
 
-
 %% Run the script for the pdPolyPhantomOrder
-nCoils   = 32;
-nDims    = 3;
-pOrder   = 2;
+nCoils   = 32;     % A whole bunch of coils
+nDims    = 3;      % XYZ
+pOrder   = 2;      % Second order is good for up to 5 samples
 nSamples = 5;      % The box is -nSamples:nSamples
-noiseRange = 500;  % This is the smallest level we consider
-sampleLocation=3;
+noiseFloor = 500;  % This is the smallest level we consider
+sampleLocation = 3;% Which box location
+
 % This produces the key variables for comparing data and polynomial
 % approximations. We will turn it into a function before long.
 % Variables include M0S_v, pBasis, params, SZ
-[M0,M0_v, params,M0S_v,VarEx,SZ, meanVal, pBasis, s,rSize,nVoxels,nPolyParams] ...
-    = pdPolyPhantomOrder(nSamples, nCoils,nDims,pOrder,noiseRange,sampleLocation);
-%
+[M0, M0_v, params,M0S_v, percentError, SZ, meanVal, pBasis, s,rSize,nVoxels,nPolyParams,pTerms] ...
+    = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseFloor, sampleLocation);
+
+percentError = 100*percentError;
+fprintf('Polynomial approximation to the data (percent error): %0.4f\n',percentError)
 
 %% To visualize the simulation versus the fits
 %M0S = reshape(M0S_v,SZ);
@@ -46,17 +48,37 @@ sampleLocation=3;
 coilList = [1,2,3];
 
 %% First, try a pure simulation
-%fiting the polynomyal of the ratio of the selected coils
-[Res.est, Res.polyRatioMat] = polySolveRatio(M0_v(:,coilList),pBasis);
+
+% Fit the relative polynomial gain functions for the selected coils
+% The 'est' parameter are the polynomial coefficients for each of the
+% coils.
+% This calculation uses the ratio of the coil data.
+% The returned coil gains are specified up to an unknown scalar (they are
+% relative).
+[estGainCoefficients, polyRatioMat] = polySolveRatio(M0S_v(:,coilList), pBasis);
+cond(polyRatioMat)
 
 % calculate PD fits error and param error in comper to the % the params derived from the phantom.
-[Res.CoilCoefErr, Res.PDerr,  Res.estMatrix,  Res.ParMatrix, ...
-    Res.G, Res.M00, Res.PD, Res.PDspaceErr]= ...
-    polyRatioErr(Res.est,params(:,coilList),pBasis);
-% the ratio
-%Res.R = M0(:,:,:,coilList(1))./M0(:,:,:,coilList(2));
-% A structure with lots of stuff is returned.
-Res_S=Res;
+Res = polyRatioErr(estGainCoefficients, params(:,coilList), pBasis);
+
+% Show how well it does for pure simulation
+estCoilGains  = pBasis*Res.estGainParams';
+trueCoilGains = pBasis*Res.trueGainParams';
+mrvNewGraphWin; plot(estCoilGains(:),trueCoilGains(:),'.')
+
+%%  With real data, the fits go badly. 
+% This is what we have to fix.
+[estGainCoefficients, polyRatioMat] = polySolveRatio(M0_v(:,coilList), pBasis);
+
+% calculate PD fits error and param error in comper to the % the params derived from the phantom.
+Res = polyRatioErr(estGainCoefficients,params(:,coilList),pBasis);
+
+% Show how well it does for pure simulation
+estCoilGains  = pBasis*Res.estGainParams';
+trueCoilGains = pBasis*Res.trueGainParams';
+mrvNewGraphWin; plot(estCoilGains(:),trueCoilGains(:),'.')
+
+
 %% the real Data; 
 
 % We also know that the data are similar to the simulations.  But, they are

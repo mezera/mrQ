@@ -26,12 +26,12 @@ noiseRange = 500;  % This is the smallest level we consider
 sampleLocation=3;
 % This produces the key variables for comparing data and polynomial
 % approximations. We will turn it into a function before long.
-% Variables include M0S_v, pBasis, params, SZ
+% Variables include M0S_v, pMatrix, params, SZ
 [M0,M0_v, params,M0S_v,VarEx,SZ, meanVal, pBasis, s,rSize,nVoxels,nPolyParams]=pdPolyPhantomOrder(nSamples, nCoils,nDims,pOrder,noiseRange,sampleLocation)
 %
 
 %% To visualize the simulation versus the fits
-%M0S = reshape(M0S_v,SZ);
+M0S = reshape(M0S_v,SZ);
 
 % We also use M0S for some calculations below
 
@@ -41,10 +41,12 @@ sampleLocation=3;
 % plotRawandSimProfile(nCoils,M0,M0S,SZ(1:3),12)
 
 
-%% Fit poly to Ratios
-coilList = [1,2,3];
-
 %% First, try a pure simulation
+coilList = [1,2,3];
+printImages = false;
+
+
+
 %fiting the polynomyal of the ratio of the selected coils
 [Res.est, Res.polyRatioMat] = polySolveRatio(M0_v(:,coilList),pBasis);
 
@@ -53,23 +55,14 @@ coilList = [1,2,3];
     Res.G, Res.M00, Res.PD, Res.PDspaceErr]= ...
     polyRatioErr(Res.est,params(:,coilList),pBasis);
 % the ratio
-%Res.R = M0(:,:,:,coilList(1))./M0(:,:,:,coilList(2));
-% A structure with lots of stuff is returned.
+Res.R = M0(:,:,:,coilList(1))./M0(:,:,:,coilList(2));
+
 Res_S=Res;
-%% the real Data; 
 
 % We also know that the data are similar to the simulations.  But, they are
 % not exact.  When we send in the data, which are fit by the simulations to
 % within about 1.2 percent, we don't get a good result.
-
-[Res.est, Res.polyRatioMat] = polySolveRatio(M0_v(:,coilList),pBasis);
-
-% calculate PD fits error and param error in comper to the % the params derived from the phantom.
-[Res.CoilCoefErr, Res.PDerr,  Res.estMatrix,  Res.ParMatrix, ...
-    Res.G, Res.M00, Res.PD, Res.PDspaceErr]= ...
-    polyRatioErr(Res.est,params(:,coilList),pBasis);
-
-Res=Res_D;
+Res_D = fitRatioandPlotPD(coilList, M0_v, M0, pMatrix, params, 'Sim', printImages);
 
 
 

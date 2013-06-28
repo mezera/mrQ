@@ -1,6 +1,18 @@
-%% Script analyzes the polynomial order needed for different size boxes
+function [M0,M0_v, params,M0S_v,VarEx,SZ, meanVal, pMatrix, s,rSize,nVoxels,nPolyParams]=pdPolyPhantomOrder(nSamples, nCoils,nDims,pOrder,noiseRange,sampleLocation,printImages)
+%
+% function analyzes the polynomial order needed for different size boxes
+%
+%   Inputs:
+%  nSamples                 nmber of voxel around the center voxal.
+% sampleLocation        location of central voxel. posibale location are peaked and number 1:5is used to chose betwwn them
+% nCoils                        the number of coils
+% nDims                        1, 2 or 3 for the dimention of the problem 
+% pOrder                       the polyoms order to fit to the problem 1 2 3 
+%noiseRange                 a value of the M0 under we thing the SNR is too low
+%plotImage                     make an image defult false
 %
 %  We evaluate the percent error in the polynomial approximation for each
+%
 %  combination of box size and polynomial order.
 %
 %  We will use this to justify our choice of polynomial order and box size.
@@ -16,23 +28,39 @@
 %
 % Copyright Vistasoft Team, 2013
 
-%% If you are in the mrQ directory, run this to set the path
-addpath(genpath(fullfile(mrqRootPath)));
 
 
 %% Set up parameters for N realistic coils
-% nCoils   = 32;
-% nDims    = 3;
-% pOrder   = 2;
-% nSamples = 5;      % The box is -nSamples:nSamples
-% noiseRange = 500;  % This is the smallest level we consider
+if notDefined('sampleLocation')
+sampleLocation = 3;   % This is
+end
+if notDefined('nSamples')
+nSamples = 1;   % This is
+end
+if notDefined('nCoils')
+nCoils = 1;   % This is
+end
+if notDefined('nDims')
+nDims = 3;   % This is
+end
+if notDefined('pOrder')
+pOrder =2;   % This is
+end
+if notDefined('noiseRange')
+noiseRange =5;   % This is
+end
+if notDefined('printImages')
+printImages = false;   % This is
+end
+
+
 
 %% Get M0 sample data from the coil
 
 %4D
 % M0 are the phantom data.  SZ is the size.  meanVal are the mean value
 % from each coil
-sampleLocation = 3;   % This is
+
 [M0, SZ, meanVal ]= phantomGetData(nSamples,sampleLocation);
 
 % Visualize the box.  The order is each panel is sorted by Z.
@@ -45,8 +73,9 @@ sampleLocation = 3;   % This is
 % We think it cycles as x, then, y, then z.  So, (1,1,1), (2,1,1), ... and
 % then (1, 2, 1), (2, 2, 1), ...
 M0_v = reshape(M0, prod(SZ(1:3)), SZ(4));
+if printImages==1
 mrvNewGraphWin; imagesc(M0_v)
-
+end
 %% This is phantom data and we approximate them by polynomials
 
 % Create the basis functions for the polynomials
@@ -72,9 +101,8 @@ end
 
 %  std(  M0S_v(:) - M0_v(:) )
 lst = M0_v > noiseRange;
-std( (M0S_v(lst) - M0_v(lst)) ./ M0_v(lst))
-
+VarEx=std( (M0S_v(lst) - M0_v(lst)) ./ M0_v(lst));
+if printImages==1
 mrvNewGraphWin; plot(M0S_v(:),M0_v(:),'.');
+end
 
-
-%% End

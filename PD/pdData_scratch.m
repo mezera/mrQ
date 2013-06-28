@@ -12,54 +12,55 @@
 %   8.  Make the printing out and comparison a simple function  X
 %  9.  Realistic noise
 %
- addpath(genpath('/home/avivm/mrQ'));
+
+%% If you are in the mrQ directory, run this to set the path
+addpath(genpath(fullfile(mrqRootPath)));
 
 
-%% Make sure mrQ is on your path
-%addpath(genpath('/home/avivm/mrQ/PD'));
-%To Set up parameters for N realistic coils
-nCoils = 32;
-nDims  = 3;
-pOrder = 2;
-nSamples=3;
-%%
-%the real data
-% get M0 real sample 
-%4D
-[M0 SZ meanVal ]= phantomGetData(nSamples,3);
-% resahave to 2D
-M0_v=reshape(M0,prod(SZ(1:3)),SZ(4));
+%% Run the script for the pdPolyPhantomOrder
+nCoils   = 32;
+nDims    = 3;
+pOrder   = 2;
+nSamples = 5;      % The box is -nSamples:nSamples
+noiseRange = 500;  % This is the smallest level we consider
 
-%% this is phantom data so we can simulte it by polyinomyals
-[pMatrix,s] = polyCreateMatrix(nSamples,pOrder,nDims);
-rSize = length(s);
-nVoxels = rSize^nDims;
-
-% let fit
-% fit the phantom poly coef assumint the phantoms PD eqal ones
-for i=1:SZ(4)
-params(:,i)= polyfitPhantomCoef(M0_v(:,i),pMatrix);
-end
+% This produces the key variables for comparing data and polynomial
+% approximations. We will turn it into a function before long.
+% Variables include M0S_v, pMatrix, params, SZ
+pdPolyPhantomOrder;
 
 
-M0S_v = zeros(nVoxels,nCoils);
-for ii=1:nCoils
-    M0S_v(:,ii)= pMatrix*params(:,ii);
-end
-% 
-%we can make the 4D simulation data
-M0S=reshape(M0S_v,SZ);
+%% To visualize the simulation versus the fits
+M0S = reshape(M0S_v,SZ);
 
-%% to visuralized the simulation versase the fits
+% We also use M0S for some calculations below
+
 % lets hold each time one dimation and look on the center  inplain
-         plotRawandSimProfile(nCoils,M0,M0S,[1 1 1],10)
-         plotRawandSimProfile(nCoils,M0,M0S,round(SZ(1:3)/2),11)
-         plotRawandSimProfile(nCoils,M0,M0S,SZ(1:3),12)
+% plotRawandSimProfile(nCoils,M0,M0S,[1 1 1],10)
+% plotRawandSimProfile(nCoils,M0,M0S,round(SZ(1:3)/2),11)
+% plotRawandSimProfile(nCoils,M0,M0S,SZ(1:3),12)
 
 
-%%  make simuation with  noise and smoth in space
+%% First, try a pure simulation
+coilList = [1,2,3];
+printImages = false;
 
-%do it on biger size voulume and then crop (so the smooth will be homgenius in the relevant voulume)
+% A structure with lots of stuff is returned.
+% The M0 data sent in here are the simulations based on the coil gains in
+% the params derived from the phantom.
+Res_S = fitRatioandPlotPD(coilList, M0S_v, M0S, pMatrix, params, 'Sim', printImages);
+
+% We also know that the data are similar to the simulations.  But, they are
+% not exact.  When we send in the data, which are fit by the simulations to
+% within about 1.2 percent, we don't get a good result.
+Res_D = fitRatioandPlotPD(coilList, M0_v, M0, pMatrix, params, 'Sim', printImages);
+
+
+
+
+%%  make simulation with  noise and smooth in space
+
+% do it on bigger size voulume and then crop (so the smooth will be homgenius in the relevant voulume)
 noiseLevel=5;
 
  clear M0SNS M0SNS_v M0SN M0SN_v  st ed N rSizeDD nVoxelsDD pMatrixDD sDD

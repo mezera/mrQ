@@ -27,7 +27,8 @@ sampleLocation=3;
 % This produces the key variables for comparing data and polynomial
 % approximations. We will turn it into a function before long.
 % Variables include M0S_v, pBasis, params, SZ
-[M0,M0_v, params,M0S_v,VarEx,SZ, meanVal, pBasis, s,rSize,nVoxels,nPolyParams]=pdPolyPhantomOrder(nSamples, nCoils,nDims,pOrder,noiseRange,sampleLocation)
+[M0,M0_v, params,M0S_v,VarEx,SZ, meanVal, pBasis, s,rSize,nVoxels,nPolyParams] ...
+    = pdPolyPhantomOrder(nSamples, nCoils,nDims,pOrder,noiseRange,sampleLocation);
 %
 
 %% To visualize the simulation versus the fits

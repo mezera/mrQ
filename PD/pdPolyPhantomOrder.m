@@ -125,6 +125,6 @@ OutPut.rSize=rSize;
 OutPut.nVoxels=nVoxels;
 OutPut.nVoxels=nVoxels;
 OutPut.pTerms=pTerms;
-
+OutPut.SZ=SZ;
 
 

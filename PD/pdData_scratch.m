@@ -19,8 +19,8 @@ addpath(genpath(fullfile(mrqRootPath)));
 %% Run the script for the pdPolyPhantomOrder
 nCoils   = 32;     % A whole bunch of coils
 nDims    = 3;      % XYZ
-pOrder   = 2;      % Second order is good for up to 5 samples
-nSamples = 5;      % The box is -nSamples:nSamples
+pOrder   = 3;      % Second order is good for up to 5 samples
+nSamples = 4;      % The box is -nSamples:nSamples
 noiseFloor = 500;  % This is the smallest level we consider
 sampleLocation = 3;% Which box location
 
@@ -34,6 +34,14 @@ smoothkernel=[];
 percentError = 100*OutPut.percentError;
 fprintf('Polynomial approximation to the data (percent error): %0.4f\n',percentError)
 
+
+%% let's visualized the fit in 3D space
+ M0s=reshape(OutPut.M0S_v,OutPut.SZ);
+ showMontage((M0s(:,:,:,1)-OutPut.M0(:,:,:,1))./OutPut.M0(:,:,:,1));colormap hot
+ showMontage((M0s(:,:,:,2)-OutPut.M0(:,:,:,2))./OutPut.M0(:,:,:,2));colormap hot
+ showMontage((M0s(:,:,:,3)-OutPut.M0(:,:,:,3))./OutPut.M0(:,:,:,3));colormap hot
+
+
 %% To visualize the simulation versus the fits
 %M0S = reshape(M0S_v,SZ);
 
@@ -46,7 +54,7 @@ fprintf('Polynomial approximation to the data (percent error): %0.4f\n',percentE
 
 
 %% Fit poly to Ratios
-coilList = [1,2,3];
+coilList = [2,3];
 
 %% First, try a pure simulation
 
@@ -82,6 +90,19 @@ estCoilGains  = OutPut.pBasis*Res.estGainParams';
 trueCoilGains = OutPut.pBasis*Res.trueGainParams';
 mrvNewGraphWin; plot(estCoilGains(:),trueCoilGains(:),'.')
 
+
+%%
+TG=reshape(trueCoilGains,[OutPut.SZ(1:3) 2]);
+TR=TG(:,:,:,1)./TG(:,:,:,2); % the true ratio as estimate with poly with no noise
+EG=reshape(estCoilGains,[OutPut.SZ(1:3) 2]);
+ER=EG(:,:,:,1)./EG(:,:,:,2);% the ratio as  been fitted by our solotion
+DR=(OutPut.M0(:,:,:,coilList(1))./OutPut.M0(:,:,:,coilList(2))); % the ratio of the raw data
+ showMontage(TR-DR);  title('no noise ratio- data ratio')
+ showMontage(TR-ER) ;  title('no noise ratio- estimated ratio')
+ showMontage(DR-ER);   title('data ratio - estimated ratio')
+ showMontage(TR-DR);  title('no noise ratio- data ratio')
+ showMontage(TR-ER) ;  title('no noise ratio- estimated ratio')
+showMontage(1-ER./TR);   title('1- (no noise ratio / estimated ratio)')
 
 %% The comparison in data land
 % showMontage(M0(:,:,:,1))

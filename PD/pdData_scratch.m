@@ -2,17 +2,15 @@
 %
 %
 % TODO
-%   1.  Realistic gains if possible -done X
-%   2.  Extend to 3D  X
-%   3.  Add a fourth coil or even make a function for N-coils  X
-%   4.  Summarize the error distribution maybe in PD space? Coil space?  X
-%   5.  Virtual coil analysis
-%   6.  What else?
-%   7.  Make the solution with eig and stuff a function  X
-%   8.  Make the printing out and comparison a simple function  X
-%  9.  Realistic noise
+%   1.  Change to the Fourier basis
+%   2.  Weight by signal to noise
+%   3.  Try the statistics toolbox Robustfit method
+%   4.  Check how Kendrick weights the polynomial basis and read on the web
+%   about this
+%   5.  Keep worrying about the polynomial order
+%   6.  Check the Legendre polynomials, which are orthogonal, and see if
+%   they help reduce the problem with the noise
 %
-
 %% If you are in the mrQ directory, run this to set the path
 addpath(genpath(fullfile(mrqRootPath)));
 
@@ -34,27 +32,14 @@ smoothkernel=[];
 percentError = 100*OutPut.percentError;
 fprintf('Polynomial approximation to the data (percent error): %0.4f\n',percentError)
 
-
-%% let's visualized the fit in 3D space
- M0s=reshape(OutPut.M0S_v,OutPut.SZ);
- showMontage((M0s(:,:,:,1)-OutPut.M0(:,:,:,1))./OutPut.M0(:,:,:,1));colormap hot
- showMontage((M0s(:,:,:,2)-OutPut.M0(:,:,:,2))./OutPut.M0(:,:,:,2));colormap hot
- showMontage((M0s(:,:,:,3)-OutPut.M0(:,:,:,3))./OutPut.M0(:,:,:,3));colormap hot
-
-
-%% To visualize the simulation versus the fits
-%M0S = reshape(M0S_v,SZ);
-
-% We also use M0S for some calculations below
-
-% lets hold each time one dimation and look on the center  inplain
-% plotRawandSimProfile(nCoils,M0,M0S,[1 1 1],10)
-% plotRawandSimProfile(nCoils,M0,M0S,round(SZ(1:3)/2),11)
-% plotRawandSimProfile(nCoils,M0,M0S,SZ(1:3),12)
-
-
 %% Fit poly to Ratios
-coilList = [2,3];
+coilList = [1,2];
+% coilList = [1,2,3,4,5,6,7];
+% coilList = [7:-1:1];
+% 
+% coilList = 1:32;
+% coilList = 1:2:32;
+% coilList = 1:4:32;
 
 %% First, try a pure simulation
 
@@ -64,32 +49,50 @@ coilList = [2,3];
 % This calculation uses the ratio of the coil data.
 % The returned coil gains are specified up to an unknown scalar (they are
 % relative).
-[estGainCoefficients, polyRatioMat] = polySolveRatio(OutPut.M0S_v(:,coilList), OutPut.pBasis);
-cond(polyRatioMat)
+
+% [U, S, V] = svd(OutPut.pBasis);
+% pBasis = U(:,1:20);
+% pBasis'*pBasis
+% [polyRatio,~] = polyCreateRatio(OutPut.M0S_v(:,coilList), pBasis);
+
+[polyRatio,~] = polyCreateRatio(OutPut.M0S_v(:,coilList), OutPut.pBasis);
+estGainCoefficients = polySolveRatio(polyRatio);
 
 % calculate PD fits error and param error in comper to the % the params derived from the phantom.
-Res = polyRatioErr(estGainCoefficients, OutPut.params(:,coilList),OutPut. pBasis);
+Res = polyRatioErr(estGainCoefficients, OutPut.params(:,coilList), OutPut.SZ(1:3), OutPut. pBasis);
 
 % Show how well it does for pure simulation
 estCoilGains  = OutPut.pBasis*Res.estGainParams';
 trueCoilGains = OutPut.pBasis*Res.trueGainParams';
-mrvNewGraphWin; plot(estCoilGains(:),trueCoilGains(:),'.')
+mrvNewGraphWin; plot(trueCoilGains(:),estCoilGains(:),'.')
+identityLine(gca);
+xlabel('Estimated gains'); ylabel('True gains');
 
 %%  With real data, the fits go badly. 
 % This is what we have to fix.
-[estGainCoefficients, polyRatioMat] = polySolveRatio(OutPut.M0_v(:,coilList), OutPut.pBasis);
+[polyRatio, M0pairs] = polyCreateRatio(OutPut.M0_v(:,coilList), OutPut.pBasis);
+[estGainCoefficients, e2, e3] = polySolveRatio(polyRatio);
 % s = svd(polyRatioMat);
 % mrvNewGraphWin; plot(s)
 % grid on
 
 % calculate PD fits error and param error in comper to the % the params derived from the phantom.
-Res = polyRatioErr(estGainCoefficients,OutPut.params(:,coilList),OutPut.pBasis);
+Res = polyRatioErr(e3,OutPut.params(:,coilList), OutPut.SZ(1:3), OutPut.pBasis);
 
 % Show how well it does for pure simulation
 estCoilGains  = OutPut.pBasis*Res.estGainParams';
 trueCoilGains = OutPut.pBasis*Res.trueGainParams';
-mrvNewGraphWin; plot(estCoilGains(:),trueCoilGains(:),'.')
+mrvNewGraphWin; plot(trueCoilGains(:),estCoilGains(:),'.')
+identityLine(gca);
+xlabel('Estimated gains'); ylabel('True gains');
 
+%%
+showMontage(Res.PD)
+%%
+mrvNewGraphWin;
+plot(M0pairs(:,1) ./ M0pairs(:,2), trueCoilGains - estCoilGains, '.')
+xlabel('M0 ratios')
+ylabel('Gain error');
 
 %%
 TG=reshape(trueCoilGains,[OutPut.SZ(1:3) 2]);
@@ -97,11 +100,11 @@ TR=TG(:,:,:,1)./TG(:,:,:,2); % the true ratio as estimate with poly with no nois
 EG=reshape(estCoilGains,[OutPut.SZ(1:3) 2]);
 ER=EG(:,:,:,1)./EG(:,:,:,2);% the ratio as  been fitted by our solotion
 DR=(OutPut.M0(:,:,:,coilList(1))./OutPut.M0(:,:,:,coilList(2))); % the ratio of the raw data
- showMontage(TR-DR);  title('no noise ratio- data ratio')
- showMontage(TR-ER) ;  title('no noise ratio- estimated ratio')
- showMontage(DR-ER);   title('data ratio - estimated ratio')
- showMontage(TR-DR);  title('no noise ratio- data ratio')
- showMontage(TR-ER) ;  title('no noise ratio- estimated ratio')
+showMontage(TR-DR);  title('no noise ratio- data ratio')
+showMontage(TR-ER) ;  title('no noise ratio- estimated ratio')
+showMontage(DR-ER);   title('data ratio - estimated ratio')
+showMontage(TR-DR);  title('no noise ratio- data ratio')
+showMontage(TR-ER) ;  title('no noise ratio- estimated ratio')
 showMontage(1-ER./TR);   title('1- (no noise ratio / estimated ratio)')
 
 %% The comparison in data land
@@ -113,7 +116,24 @@ showMontage(1-ER./TR);   title('1- (no noise ratio / estimated ratio)')
 
 
 
+%% let's visualized the fit in 3D space
+ M0s=reshape(OutPut.M0S_v,OutPut.SZ);
+ showMontage((M0s(:,:,:,1)-OutPut.M0(:,:,:,1))./OutPut.M0(:,:,:,1));colormap hot
+ showMontage((M0s(:,:,:,2)-OutPut.M0(:,:,:,2))./OutPut.M0(:,:,:,2));colormap hot
+ showMontage((M0s(:,:,:,3)-OutPut.M0(:,:,:,3))./OutPut.M0(:,:,:,3));colormap hot
 
+
+
+
+%% To visualize the simulation versus the fits
+%M0S = reshape(M0S_v,SZ);
+
+% We also use M0S for some calculations below
+
+% lets hold each time one dimation and look on the center  inplain
+% plotRawandSimProfile(nCoils,M0,M0S,[1 1 1],10)
+% plotRawandSimProfile(nCoils,M0,M0S,round(SZ(1:3)/2),11)
+% plotRawandSimProfile(nCoils,M0,M0S,SZ(1:3),12)
 
 
 

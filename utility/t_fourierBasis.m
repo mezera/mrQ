@@ -17,8 +17,8 @@ nSamples = 16;
 % Here are example Fourier coefficients.
 % Give them each a try.  One at a time.
 
-% u = 2; v = 2; w = 1;
-% u = 1; v = 3; w = 1;
+u = 2; v = 2; w = 1;
+u = 1; v = 3; w = 1;
 % u = 1; v = 1; w = 3;
 
 X = zeros(nSamples,nSamples,nSamples);
@@ -40,7 +40,7 @@ N = numel(X);
 % Loop over (u,v,w) values you want in the basis set
 %
 nFreq = 3;
-[U V W] = meshgrid(1:nFreq,1:nFreq,1:nFreq);
+[U, V, W] = meshgrid(1:nFreq,1:nFreq,1:nFreq);
 nCoef = length(U(:));
 bSet = zeros(N,nCoef);
 for ii = 1:nCoef

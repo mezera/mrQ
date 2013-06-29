@@ -1,55 +1,21 @@
-function  [eGains,  polyRatioMat ] = polySolveRatio(M0,pBasis)
+function eGains = polySolveRatio(polyRatioMat,M0pairs)
 % Solve for the gain parameters of the polynomial coefficient
 %
-%  eGains = polySolveRatio(r,pBasis)
+%  eGains = polySolveRatio(polyRatioMat,M0pairss)
 %
-% M0: A matrix whose columns are the M0 data at the (x,y,z)
-%     positions (or x,y, or x). The ratios of these values in these columns
-%     scale the pMatrix.  If there are P position and N coils this matrix
-%     is P x N.
-% pBasis:  The matrix of polynomial basis functions over positions
+% Inputs:
+%  polyRatioMat:  The large matrix such that 0 = polyRatioMat * gains
+%                 See polyCreateRatio
+%  M0pair:        The pair of measurements corresponding to each row
 %
-% eGains:        The estimated gains
-% polyRatioMat:  The large matrix such that 0 = polyRatioMat * gains
+% Returns
+%  eGains:  Estimated coil gain coefficients
 %
 % BW, AM Copyright Vistasoft Team, 2013
 
-% Number of gain parameters
-Npar    = size(pBasis,2);
-
-% The data are stored in the columns of the matrix, r.
-Ncoils  = size(M0,2);
-Nvoxels = size(M0,1);
-
-% The big matrix, polyRatioMat, has the polynomials from the coils in
-% blocks.  These are typically separated by blocks of zeros. The first coil
-% is always just the polynomial matrix, without any scaling The second coil
-% is multiplied on every row by the ratio of the M0 values. The gain
-% solutions satisfy 0 = M g
-st_vox = 1;
-ed_vox = Nvoxels;
-
-for ii=1:Ncoils-1  % For each coil up to one before the list
-    for jj=(ii+1):Ncoils  % Compare it to the next coil
-        % the ith coil start and end positions
-        stP = 1 + (ii-1)*Npar;
-        edP = stP + Npar - 1;
-        polyRatioMat(st_vox:ed_vox,stP:edP)= pBasis;
-        
-        %The new start and end positions
-        stP = 1 + (jj-1)*Npar;
-        edP = stP + Npar - 1;
-        % Multiply the rows of pMatrix by the ratios of the M0 data from
-        % the relevant coils
-        polyRatioMat(st_vox:ed_vox,stP:edP)= diag(-M0(:,ii)./M0(:,jj))*pBasis;
-        
-        % move to the next group of measurements
-        st_vox = ed_vox + 1;
-        ed_vox = ed_vox + Nvoxels;
-    end
-end
 
 %% The rows of polyRatioMat are ratios of M0 measurements
+%
 %  These measurements are from two coils at a voxel.
 %  We could scale the row to reflect the SNR of that ratio.
 %  For example, if one of the M0 values is small, that would reduce our
@@ -57,6 +23,11 @@ end
 %
 % Note, we have a lot of coil and voxels.  So we can get rid of quite a few
 % (even zeroing them out) and still solve this equation.
+
+% if exist('M0pairs','var')
+%     wgts = pairs2weights(M0pairs);
+%     polyRatioMat = diag(wgts)*polyRatioMat;
+% end
 
 %% I am concerned that the gain coefficients are so different in size
 %
@@ -73,9 +44,77 @@ end
 %
 %  
 [U, ~] = eig(polyRatioMat'*polyRatioMat);
-
-% We scale the gain vector so that the first entry of the first coil
-% estimate (the constant) is 1.
+ 
+% % We scale the gain vector so that the first entry of the first coil
+% % estimate (the constant) is 1.
 eGains = U(:,1)/U(1,1);
 
-return
+
+end
+
+%%  Comments and notes - one way to do it
+%
+% This is an equivalent way to calculate this
+% col = polyRatioMat(:,1);
+% col = -1*col; 
+% 
+% reducedMat = polyRatioMat(:,2:end);
+% nCols = size(reducedMat,2);
+% 
+% % One possible solution
+% %  col = reducedMat*g;
+% g = reducedMat\col;
+% %  reducedMat*g - Should equal
+% eGains2 = [1 ; g];
+% % polyRatioMat*eGains2 should be 0
+% % polyRatioMat*eGains2;
+% 
+% % mrvNewGraphWin; plot(eGains(:),eGains2(:),'.')
+
+%% More comments
+% % This is trying to control the singular values
+% %
+% %
+% %
+% 
+% [U, S, V] = svd(reducedMat);
+% s = diag(S);
+% s = 1 ./ s;
+% zeroSingularValues = 26;
+% s(zeroSingularValues:end) = 0;
+% Sr = diag(s);
+% U = U'; U = U(1:nCols,:);
+% p = V * Sr * U;  % This is the pseudo inverse
+% 
+% % Now solve
+% eGains3 = [1; p*col];
+% % mrvNewGraphWin; plot(eGains(:),eGains3(:),'.')
+%
+%
+%%
+
+
+function wgts = pairs2weights(M0pairs)
+
+%% Default and does nothing
+wgts = ones(size(M0pairs,1),1);
+
+%% An experiment
+% min(M0pairs,[],2);
+% wgts = min(M0pairs,[],2);
+% wgts = wgts.^2;
+
+%% ANother experiment
+% top1 = prctile(M0pairs(:,1),50);
+% top2 = prctile(M0pairs(:,2),50);
+% lst1 = (M0pairs(:,1) > top1);
+% lst2 = (M0pairs(:,2) > top2);
+% lst = lst1 .* lst2;
+% wgts = zeros(size(M0pairs,1),1);
+% wgts(logical(lst)) = 1;
+% 
+% sum(wgts(:))
+
+end
+
+

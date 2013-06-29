@@ -1,66 +1,38 @@
-function [OutPut]=pdPolyPhantomOrder(nSamples, nCoils,nDims,pOrder,noiseRange,sampleLocation,printImages,smoothkernel)
-
+function OutPut = pdPolyPhantomOrder(nSamples, nCoils,nDims,pOrder,noiseRange,sampleLocation,printImages,smoothkernel)
+% Creates a structure with various parameters needed for estimating gain
 %
-% function analyzes the polynomial order needed for different size boxes
+%  OutPut = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseRange,
+%                sampleLocation, printImages,smoothkernel)
 %
 %Inputs:
-% nSamples                 nmber of voxel around the center voxal.
-% sampleLocation        location of central voxel. posibale location are peaked and number 1:5is used to chose betwwn them
-% nCoils                        the number of coils
-% nDims                        1, 2 or 3 for the dimention of the problem
-% pOrder                       the polyoms order to fit to the problem 1 2 3
-% noiseRange                 a value of the M0 under we thing the SNR is too low
-% plotImage                     make an image defult false
+%  nSamples              number of voxel around the center voxal.
+%  sampleLocation        location of central voxel. posibale location are peaked and number 1:5is used to chose betwwn them
+%  nCoils                the number of coils
+%  nDims                 1, 2 or 3 for the dimention of the problem
+%  pOrder                the polyoms order to fit to the problem 1 2 3
+%  noiseRange            a value of the M0 under we thing the SNR is too low
+%  plotImage             make an image defult false
 %
-%       Output:
-% OutPut                    is a stracture that include this fielled 
-%                                M0,M0_v, params,M0S_v,VarEx,SZ, meanVal, pBasis, s,rSize,nVoxels,nVoxels
-
-%  We evaluate the percent error in the polynomial approximation for each
-%
-%  combination of box size and polynomial order.
-%
-%  We will use this to justify our choice of polynomial order and box size.
-%
-%  It appears that nSamples =5 and pOrder = 2 is a good choice that
-%  provides a polynomial accuracy to about 1.2 percent precision.
-%  We only improve to 0.76 percent when we go to pOrder = 3, which adds 10
-%  more parameters.
-%
-%  N.B.  We only evaluate the error when the M0 is at least 500.  We know
-%  that the data are very noisy at levels below this (M0 ranges up to
-%  3000). So, this number is good for the coil intensities within
+%Output:
+%  OutPut    a structure that include this field
+%            M0,M0_v, params,M0S_v,VarEx,SZ, meanVal, pBasis,
+%            s, rSize, nVoxels, nVoxels
 %
 % Copyright Vistasoft Team, 2013
 
-
-
 %% Set up parameters for N realistic coils
-if notDefined('sampleLocation')
-    sampleLocation = 3;   % This is
-end
-if notDefined('nSamples')
-    nSamples = 1;   % This is
-end
-if notDefined('nCoils')
-    nCoils = 1;   % This is
-end
-if notDefined('nDims')
-    nDims = 3;   % This is
-end
-if notDefined('pOrder')
-    pOrder =2;   % This is
-end
-if notDefined('noiseRange')
-    noiseRange =5;   % This is
-end
-if notDefined('printImages')
-    printImages = false;   % This is
-end
-if notDefined('smoothkernel')
-smoothkernel = [];   % This is
-else
-    OutPut.smoothkernel=smoothkernel;
+
+% Which phantom location
+if notDefined('sampleLocation'), sampleLocation = 3;  end
+% positions are -nSamples:nSamples
+if notDefined('nSamples'), nSamples = 1; end
+if notDefined('nCoils'), nCoils = 1; end
+if notDefined('nDims'),  nDims = 3;   end  % Spatial dimensions
+if notDefined('pOrder'),     pOrder =2;  end
+if notDefined('noiseRange'), noiseRange =5; end
+if notDefined('printImages'), printImages = false;  end
+if notDefined('smoothkernel'), smoothkernel = [];
+else  OutPut.smoothkernel=smoothkernel;
 end
 
 %% Get M0 sample data from the coil
@@ -87,7 +59,7 @@ end
 %% This is phantom data and we approximate them by polynomials
 
 % Create the basis functions for the polynomials
-[pBasis,s, pTerms]  = polyCreateMatrix(nSamples,pOrder,nDims);
+[pBasis, s, pTerms]  = polyCreateMatrix(nSamples,pOrder,nDims);
 rSize       = length(s);
 nVoxels     = rSize^nDims;
 nPolyParams = size(pBasis,2);
@@ -127,4 +99,5 @@ OutPut.nVoxels=nVoxels;
 OutPut.pTerms=pTerms;
 OutPut.SZ=SZ;
 
+end
 

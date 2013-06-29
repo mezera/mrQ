@@ -23,12 +23,13 @@ pOrder   = 2;      % Second order is good for up to 5 samples
 nSamples = 5;      % The box is -nSamples:nSamples
 noiseFloor = 500;  % This is the smallest level we consider
 sampleLocation = 3;% Which box location
- printImages = false;
- smoothkernel=[];
+
+printImages = false;
+smoothkernel=[];
 % This produces the key variables for comparing data and polynomial
 % approximations. We will turn it into a function before long.
 % Variables include M0S_v, pBasis, params, SZ
-[OutPut]     = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseFloor, sampleLocation,printImages,smoothkernel);
+[OutPut] = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseFloor, sampleLocation,printImages,smoothkernel);
 
 percentError = 100*OutPut.percentError;
 fprintf('Polynomial approximation to the data (percent error): %0.4f\n',percentError)
@@ -69,7 +70,9 @@ mrvNewGraphWin; plot(estCoilGains(:),trueCoilGains(:),'.')
 %%  With real data, the fits go badly. 
 % This is what we have to fix.
 [estGainCoefficients, polyRatioMat] = polySolveRatio(OutPut.M0_v(:,coilList), OutPut.pBasis);
-cond(polyRatioMat)
+% s = svd(polyRatioMat);
+% mrvNewGraphWin; plot(s)
+% grid on
 
 % calculate PD fits error and param error in comper to the % the params derived from the phantom.
 Res = polyRatioErr(estGainCoefficients,OutPut.params(:,coilList),OutPut.pBasis);
@@ -80,10 +83,12 @@ trueCoilGains = OutPut.pBasis*Res.trueGainParams';
 mrvNewGraphWin; plot(estCoilGains(:),trueCoilGains(:),'.')
 
 
-
-
-
-
+%% The comparison in data land
+% showMontage(M0(:,:,:,1))
+% bar = reshape(trueCoilGains,11,11,11,3);
+% showMontage(bar(:,:,:,1)); title('Correct')
+% tmp = reshape(estCoilGains,11,11,11,3);
+% showMontage(tmp(:,:,:,1)); title('Estimated')
 
 
 

@@ -68,20 +68,14 @@ end
 %  Each column of M0 is a real coil.  If we analyze the 
 
 % Solve for the eigenvectors of polyRatioMat.  The first one has the
-% smallest singular value and is thus the best estimate.  We scale the gain
-% vector so that the first entry (the constant) is 1.
+% smallest singular value and is thus the best estimate of the solution to
+% the equation 0 = polyRatioMat * g
+%
+%  
 [U, ~] = eig(polyRatioMat'*polyRatioMat);
+
+% We scale the gain vector so that the first entry of the first coil
+% estimate (the constant) is 1.
 eGains = U(:,1)/U(1,1);
-
-% R=r(:,ii)./r(:,jj); F=find(R<2);polyRatioMat1=polyRatioMat;
-% polyRatioMat1(F,:)=0;
-% [U, ~] = eig(polyRatioMat1'*polyRatioMat1);
-% est1 = U(:,1)/U(1,1);
-
-% %is a different way to solve the matrix make a different.?
-% lhs=-polyRatioMat(:,1);
-% rhs=polyRatioMat(:,2:end);
-% est1 = rhs\lhs;
-% no it's not up to a constant 
 
 return

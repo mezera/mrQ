@@ -1,4 +1,4 @@
-function OutPut = pdPolyPhantomOrder(nSamples, nCoils,nDims,pOrder,noiseRange,sampleLocation,printImages,smoothkernel)
+function OutPut = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseRange,sampleLocation,printImages,smoothkernel, oFlag)
 % Creates a structure with various parameters needed for estimating gain
 %
 %  OutPut = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseRange,
@@ -12,6 +12,7 @@ function OutPut = pdPolyPhantomOrder(nSamples, nCoils,nDims,pOrder,noiseRange,sa
 %  pOrder                the polyoms order to fit to the problem 1 2 3
 %  noiseRange            a value of the M0 under we thing the SNR is too low
 %  plotImage             make an image defult false
+%  oFlag             Force orthonormal pBasis
 %
 %Output:
 %  OutPut    a structure that include this field
@@ -34,6 +35,7 @@ if notDefined('printImages'), printImages = false;  end
 if notDefined('smoothkernel'), smoothkernel = [];
 else  OutPut.smoothkernel=smoothkernel;
 end
+if notDefined('oFlag'), oFlag = false; end
 
 %% Get M0 sample data from the coil
 
@@ -58,8 +60,8 @@ if printImages==1
 end
 %% This is phantom data and we approximate them by polynomials
 
-% Create the basis functions for the polynomials
-[pBasis, s, pTerms]  = polyCreateMatrix(nSamples,pOrder,nDims);
+% Create the basis functions for the polynomials.  Orthogoanlized.
+[pBasis, s, pTerms]  = polyCreateMatrix(nSamples,pOrder,nDims,oFlag);
 rSize       = length(s);
 nVoxels     = rSize^nDims;
 nPolyParams = size(pBasis,2);

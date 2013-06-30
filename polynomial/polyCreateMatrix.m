@@ -1,15 +1,18 @@
-function [pBasis, spatialSamples, pTerms] = polyCreateMatrix(nSamples,order,dimension)
+function [pBasis, spatialSamples, pTerms] = ...
+    polyCreateMatrix(nSamples,pOrder,sDim,oFlag)
 % Build 2D polynomial matrix
 %
-%    [pBasis, s, pTerms] = polyCreateMatrix(nSamples,order,dimension)
+%    [pBasis, spatialSamples, pTerms] = ...
+%          polyCreateMatrix(nSamples,pOrder,sDim,oFlag)
 %
 % nSamples: Runs from -nSamples to +nSamples
-% order   : polynomial order (linear, quadratic, cubic)
-% dimension: 1, 2, or 3
+% pOrder  : polynomial order (linear, quadratic, cubic)
+% sDim:      1, 2, or 3
+% oFlag:   Orthogonalize pBasis if true
 %
 % pBasis: Polynomial basis functions for nth order and some number of
 %          dimensions.   This matrix does NOT include the constant
-% s:       Spatial samples
+% spatialSamples:       Spatial samples
 % pTerms:  String defining the polynomial terms
 %
 % Currently implemented for 2nd order, 1D, 2D and 3D
@@ -21,21 +24,28 @@ function [pBasis, spatialSamples, pTerms] = polyCreateMatrix(nSamples,order,dime
 %
 % BW Copyright vistasoft 2013
 
+%%
+if notDefined('nSamples'), nSamples = 3; end
+if notDefined('pOrder'), pOrder = 2; end
+if notDefined('sDim'), sDim = 3; end
+if notDefined('oFlag'), oFlag = false; end
+
 spatialSamples = -nSamples:nSamples;
 
-switch order
+%%
+switch pOrder
     case 1  % 1st order polynomial
-        if dimension == 1
+        if sDim == 1
             X = spatialSamples(:);
             pBasis = [ones(size(X)), X];
             pTerms = '[1, X]';
-        elseif dimension == 2
+        elseif sDim == 2
             [X, Y] = meshgrid(spatialSamples,spatialSamples);
             X = X(:);     Y = Y(:);
             pBasis = [ones(size(X)), X, Y];
             pTerms = '[1, X, Y]';
             
-        elseif dimension == 3
+        elseif sDim == 3
             [X, Y, Z] = meshgrid(spatialSamples,spatialSamples,spatialSamples);
             X = X(:); Y = Y(:); Z = Z(:);
             pBasis = [ones(size(X)), X, Y  Z ];
@@ -45,13 +55,13 @@ switch order
         end
         
     case 2  % 2nd order polynomial
-        if dimension == 1
+        if sDim == 1
             X = spatialSamples(:);
             X2 = X(:).^2;
             pBasis = [ones(size(X)), X, X2];
             pTerms  = '[1, X, X2]';
             
-        elseif dimension == 2
+        elseif sDim == 2
             [X, Y] = meshgrid(spatialSamples,spatialSamples);
             X = X(:);     Y = Y(:);
             X2 = X(:).^2; Y2 = Y(:).^2;
@@ -60,7 +70,7 @@ switch order
             pBasis = [ones(size(X)), X, X2, Y, Y2, XY];
             pTerms  = '[1, X, X2, Y, Y2, XY]';
             
-        elseif dimension == 3
+        elseif sDim == 3
             [X, Y, Z] = meshgrid(spatialSamples,spatialSamples,spatialSamples);
             X = X(:); Y = Y(:); Z = Z(:);
             X2 = X(:).^2; Y2 = Y(:).^2; Z2 = Z(:).^2;
@@ -75,14 +85,14 @@ switch order
         
     case 3
         
-        if dimension == 1
+        if sDim == 1
             X = spatialSamples(:);
             X2 = X(:).^2;
             X3 = X(:).^3;
             pBasis = [ones(size(X)), X, X2, X3];
             pTerms  = '[1, X, X2, X3]';
             
-        elseif dimension == 2
+        elseif sDim == 2
             [X, Y] = meshgrid(spatialSamples,spatialSamples);
             X = X(:);     Y = Y(:);
             X2 = X(:).^2; Y2 = Y(:).^2; 
@@ -94,7 +104,7 @@ switch order
             pBasis = [ones(size(X)), X, X2, Y, Y2, XY, X3, Y3, X2Y, XY2];
             pTerms  = '[1, X, X2, Y, Y2, XY, X3, Y3, X2Y, XY2]';
 
-        elseif dimension == 3
+        elseif sDim == 3
             [X, Y, Z] = meshgrid(spatialSamples,spatialSamples,spatialSamples);
             X = X(:); Y = Y(:); Z = Z(:);
             X2 = X(:).^2; Y2 = Y(:).^2; Z2 = Z(:).^2;
@@ -112,11 +122,20 @@ switch order
         end
         
     otherwise
-        error('Order %d not built',order);
+        error('Order %d not built',pOrder);
 end
 
-% Adjust the basis vectors to have unit length.
-sFactor = sqrt(diag(pBasis'*pBasis));
-pBasis = pBasis * diag(1./sFactor);
+
+if oFlag
+    % Orthogonalize the pBasis
+    nCols = size(pBasis,2);
+    [U, ~, ~] = svd(pBasis);
+    pBasis = U(:,1:nCols);
+else
+    % Adjust the length of basis vectors, but don't orthogonalize.
+    sFactor = sqrt(diag(pBasis'*pBasis));
+    pBasis = pBasis * diag(1./sFactor);
+end
+
 
 return

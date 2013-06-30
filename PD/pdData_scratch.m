@@ -1,6 +1,5 @@
 %% Working out the multiple coil case.
 %
-%
 % TODO
 %   1.  Change to the Fourier basis
 %   2.  Weight by signal to noise
@@ -20,20 +19,25 @@ nDims    = 3;      % XYZ
 pOrder   = 3;      % Second order is good for up to 5 samples
 nSamples = 4;      % The box is -nSamples:nSamples
 noiseFloor = 500;  % This is the smallest level we consider
-sampleLocation = 3;% Which box location
+sampleLocation = 2;% Which box location
+oFlag = true;
 
 printImages = false;
 smoothkernel=[];
 % This produces the key variables for comparing data and polynomial
 % approximations. We will turn it into a function before long.
 % Variables include M0S_v, pBasis, params, SZ
-[OutPut] = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseFloor, sampleLocation,printImages,smoothkernel);
+[OutPut] = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, ...
+    noiseFloor, sampleLocation, printImages, smoothkernel, oFlag);
+% mrvNewGraphWin; imagesc(OutPut.pBasis);
+% tmp = reshape(OutPut.pBasis,9,9,9,20);
+% showMontage(tmp(:,:,:,1))
 
 percentError = 100*OutPut.percentError;
 fprintf('Polynomial approximation to the data (percent error): %0.4f\n',percentError)
 
 %% Fit poly to Ratios
-coilList = [1,2];
+coilList = [1,2,3,4];
 % coilList = [1,2,3,4,5,6,7];
 % coilList = [7:-1:1];
 % 
@@ -50,16 +54,12 @@ coilList = [1,2];
 % The returned coil gains are specified up to an unknown scalar (they are
 % relative).
 
-% [U, S, V] = svd(OutPut.pBasis);
-% pBasis = U(:,1:20);
-% pBasis'*pBasis
-% [polyRatio,~] = polyCreateRatio(OutPut.M0S_v(:,coilList), pBasis);
-
-[polyRatio,~] = polyCreateRatio(OutPut.M0S_v(:,coilList), OutPut.pBasis);
-estGainCoefficients = polySolveRatio(polyRatio);
+M0pairs = [];
+[polyRatio,M0pairs] = polyCreateRatio(OutPut.M0S_v(:,coilList), OutPut.pBasis);
+estGainCoefficients = polySolveRatio(polyRatio,M0pairs);
 
 % calculate PD fits error and param error in comper to the % the params derived from the phantom.
-Res = polyRatioErr(estGainCoefficients, OutPut.params(:,coilList), OutPut.SZ(1:3), OutPut. pBasis);
+Res = polyRatioErr(estGainCoefficients, OutPut.params(:,coilList), OutPut.SZ(1:3), OutPut.pBasis);
 
 % Show how well it does for pure simulation
 estCoilGains  = OutPut.pBasis*Res.estGainParams';
@@ -70,14 +70,15 @@ xlabel('Estimated gains'); ylabel('True gains');
 
 %%  With real data, the fits go badly. 
 % This is what we have to fix.
+M0pairs = [];
 [polyRatio, M0pairs] = polyCreateRatio(OutPut.M0_v(:,coilList), OutPut.pBasis);
-[estGainCoefficients, e2, e3] = polySolveRatio(polyRatio);
+estGainCoefficients  = polySolveRatio(polyRatio,M0pairs);
 % s = svd(polyRatioMat);
 % mrvNewGraphWin; plot(s)
 % grid on
 
 % calculate PD fits error and param error in comper to the % the params derived from the phantom.
-Res = polyRatioErr(e3,OutPut.params(:,coilList), OutPut.SZ(1:3), OutPut.pBasis);
+Res = polyRatioErr(estGainCoefficients,OutPut.params(:,coilList), OutPut.SZ(1:3), OutPut.pBasis);
 
 % Show how well it does for pure simulation
 estCoilGains  = OutPut.pBasis*Res.estGainParams';

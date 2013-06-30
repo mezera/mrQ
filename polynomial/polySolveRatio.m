@@ -24,10 +24,10 @@ function eGains = polySolveRatio(polyRatioMat,M0pairs)
 % Note, we have a lot of coil and voxels.  So we can get rid of quite a few
 % (even zeroing them out) and still solve this equation.
 
-% if exist('M0pairs','var')
-%     wgts = pairs2weights(M0pairs);
-%     polyRatioMat = diag(wgts)*polyRatioMat;
-% end
+if exist('M0pairs','var') && ~isempty(M0pairs)
+    wgts = pairs2weights(M0pairs);
+    polyRatioMat = diag(wgts)*polyRatioMat;
+end
 
 %% I am concerned that the gain coefficients are so different in size
 %
@@ -95,16 +95,16 @@ end
 
 
 function wgts = pairs2weights(M0pairs)
-
-%% Default and does nothing
-wgts = ones(size(M0pairs,1),1);
+%
+% Build the weights for each row.
+%
 
 %% An experiment
-% min(M0pairs,[],2);
-% wgts = min(M0pairs,[],2);
+M0pairs = M0pairs/max(M0pairs(:));
+wgts = min(M0pairs,[],2);
 % wgts = wgts.^2;
 
-%% ANother experiment
+%% Another experiment
 % top1 = prctile(M0pairs(:,1),50);
 % top2 = prctile(M0pairs(:,2),50);
 % lst1 = (M0pairs(:,1) > top1);

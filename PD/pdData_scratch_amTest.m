@@ -1,5 +1,6 @@
 %% Working out the multiple coil case.
 %
+%
 % TODO
 %   1.  Change to the Fourier basis
 %   2.  Weight by signal to noise
@@ -16,29 +17,24 @@ addpath(genpath(fullfile(mrqRootPath)));
 %% Run the script for the pdPolyPhantomOrder
 nCoils   = 32;     % A whole bunch of coils
 nDims    = 3;      % XYZ
-pOrder   = 3;      % Second order is good for up to 5 samples
-nSamples = 4;      % The box is -nSamples:nSamples
+pOrder   = 1;      % Second order is good for up to 5 samples
+nSamples = 1;      % The box is -nSamples:nSamples
 noiseFloor = 500;  % This is the smallest level we consider
-sampleLocation = 2;% Which box location
-oFlag = true;
+sampleLocation = 3;% Which box location
 
 printImages = false;
 smoothkernel=[];
 % This produces the key variables for comparing data and polynomial
 % approximations. We will turn it into a function before long.
 % Variables include M0S_v, pBasis, params, SZ
-[OutPut] = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, ...
-    noiseFloor, sampleLocation, printImages, smoothkernel, oFlag);
-% mrvNewGraphWin; imagesc(OutPut.pBasis);
-% tmp = reshape(OutPut.pBasis,9,9,9,20);
-% showMontage(tmp(:,:,:,1))
+[OutPut] = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseFloor, sampleLocation,printImages,smoothkernel);
 
 percentError = 100*OutPut.percentError;
 fprintf('Polynomial approximation to the data (percent error): %0.4f\n',percentError)
 
 %% Fit poly to Ratios
-coilList = [1,2,3,4];
- coilList = [1,2,3,4,5,6,7];
+coilList = [1,2];
+coilList = [3,4,5,6,7,8,9,10,11,12,13];
 % coilList = [7:-1:1];
 % 
 % coilList = 1:32;
@@ -54,14 +50,16 @@ coilList = [1,2,3,4];
 % The returned coil gains are specified up to an unknown scalar (they are
 % relative).
 
-M0pairs = [];
-[polyRatio] = polyCreateRatioPD(OutPut.M0S_v(:,coilList), OutPut.pBasis);
+% [U, S, V] = svd(OutPut.pBasis);
+% pBasis = U(:,1:20);
+% pBasis'*pBasis
+% [polyRatio,~] = polyCreateRatio(OutPut.M0S_v(:,coilList), pBasis);
 
-%[polyRatio,M0pairs] = polyCreateRatio(OutPut.M0S_v(:,coilList), OutPut.pBasis);
-estGainCoefficients = polySolveRatio(polyRatio,M0pairs);
+[polyRatio,~] = polyCreateRatio(OutPut.M0S_v(:,coilList), OutPut.pBasis);
+estGainCoefficients = polySolveRatio(polyRatio);
 
 % calculate PD fits error and param error in comper to the % the params derived from the phantom.
-Res = polyRatioErr(estGainCoefficients, OutPut.params(:,coilList), OutPut.SZ(1:3), OutPut.pBasis);
+Res = polyRatioErr(estGainCoefficients, OutPut.params(:,coilList), OutPut.SZ(1:3), OutPut. pBasis);
 
 % Show how well it does for pure simulation
 estCoilGains  = OutPut.pBasis*Res.estGainParams';
@@ -72,11 +70,16 @@ xlabel('Estimated gains'); ylabel('True gains');
 
 %%  With real data, the fits go badly. 
 % This is what we have to fix.
-M0pairs = [];
-[polyRatio] = polyCreateRatioPD(OutPut.M0_v(:,coilList), OutPut.pBasis);
 
+% smooth no good?
+% wighting shoud try?
+% 2 order - should try? adding  just secound order ?andding  just interaction?
+% ratio bias should try?
+
+
+coilList = [3:13];
 [polyRatio, M0pairs] = polyCreateRatio(OutPut.M0_v(:,coilList), OutPut.pBasis);
-estGainCoefficients  = polySolveRatio(polyRatio,M0pairs);
+[estGainCoefficients ] = polySolveRatio(polyRatio);
 % s = svd(polyRatioMat);
 % mrvNewGraphWin; plot(s)
 % grid on
@@ -90,94 +93,15 @@ trueCoilGains = OutPut.pBasis*Res.trueGainParams';
 mrvNewGraphWin; plot(trueCoilGains(:),estCoilGains(:),'.')
 identityLine(gca);
 xlabel('Estimated gains'); ylabel('True gains');
+showMontage(Res.PD);colormap hot;caxis([0.95 1.05])
+showMontage(Res.PDspaceErr);
 
-%% intiate params for the ridgs regretion
-% 
-k=0;% number of iteration
-tryagain=1; % go for the while loop
-
-coilList = [1:8]; %  the coil we use. i try different combintion and less combination it is almost as good
-% the original parametes
-        Par=OutPut.params(:,coilList); Par=Par./Par(1);
-        
-        % the lamda.
-Lamda=1;
-% i cheack uder lamda's any thing between 1- 0.1 was
-        % good. smaller lamda convarge slower
-        % higer lamda also convarge but tolarant some bias. in particular
-        % when less coils are used.
-        
-
-%% let's intiate the PD by the sum of sqrs (this is the PD if we won't have multi coil information
-%sum of sqr of M0 as a starting point 
-PD=   sqrt(sum(OutPut.M0_v(:,coilList).^2,2)  )   ;
-PD=PD./mean(PD);
-
-%given the intial PD this is the coils intiate coefficents 
- clear g0
- for ii=1:length(coilList)
-     G=OutPut.M0_v(:,coilList(i))./PD;
-g0(:,ii)= OutPut.pBasis \ G;
- end
-
-% let plot our starting point 
-mrvNewGraphWin(num2str(k)); subplot(1,2,1);(plot(g0(:),Par(:),'.'))
-        identityLine(gca);
-        xlabel('Estimated gains'); ylabel('True gains');
-        subplot(1,2,2);plot(PD,'.')
-        
-% loop and solve by ridge regration
-while tryagain==1
-    k=k+1; % caunt   ridgs regretion interval
-    
-    % fit linear eqation coefisents with  ridgs regretion
-    g=RidgeRegressCoilfit(PD,Lamda,OutPut.M0_v(:,coilList),OutPut.pBasis);
-    
-    % calculate the coil gain of each coil
-    G=OutPut.pBasis *g;
-
-    %    calculate PD for each coils
-    PDn=OutPut.M0_v(:,coilList) .\G;
- 
-    % avrage the PD of each coil   
-    PDn=mean(PDn,2);
-  
-    % normalized to have mean of 1  
-    PDn=PDn./mean(PDn(:));
-    
-    % cheack if the new estimation is differnt from the one before or it's
-    % convarged
-    if std(PD-PDn)<0.01
-        %if the two sulotion are the same --> stop
-        tryagain=0;
-    else
-      % if the new is different
-                
-% update the new PD
-        PD=PDn;
-
-% plot the new estimations for coil gain and PD
-        mrvNewGraphWin(num2str(k)); subplot(1,2,1);(plot(g(:),Par(:),'.'))
-        identityLine(gca);
-        xlabel('Estimated gains'); ylabel('True gains');
-        subplot(1,2,2);plot(PDn,'.')
-        
-    end
-    % we have to stop some time if it's not convarging
-    if k==100
-        tryagain=0;
-    end
-end
-
-% let avarage the last two estimations (that look almost the same)
-PDFinal=(PD+PDn)/2;
-%reshape PD 3D voulume
-PDFinal=reshape(PDFinal,OutPut.SZ(1:3));
-% plot PD voulume
-showMontage(PDFinal)
-
-
-
+R_V=OutPut.M0_v(:,coilList(1))./OutPut.M0_v(:,coilList(2));
+mrvNewGraphWin; plot(R_V,trueCoilGains-estCoilGains,'.')
+title(num2str(mean(R(:))));
+good=mean(R(:));
+PP=Res.PD(:);
+wh=(find(R_V<(good*1.05) & R_V>(good*.95) ))
 
 
 %%

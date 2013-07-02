@@ -1,10 +1,17 @@
-function g=RidgeRegressCoilfit(PD,Lamda,M0,pBasis)
-%            g=RidgeRegressCoilfit(PD,Lamda,M0,Pbasis)
+function g = RidgeRegressCoilfit(PD, Lambda, M0, pBasis)
+% Solve for gain parameters using ridge regression
+% 
+%  g = RidgeRegressCoilfit(PD,Lamda,M0,Pbasis)
 %
+% PD:      Vector of estimated proton densities at nPositions
+% Lambda:  Weight for the ridge
+% M0:      The coil data, nPositions x nCoils
+% pBasis:  Polynomial basis
 %
-%
-Ph=diag(PD)*pBasis;
+% AM/BW VISTASOFT 2013
 
-g=(Ph'*Ph+Lamda*eye(size(Ph,2)))^-1 * Ph'*M0;
+Phat = diag(PD)*pBasis;
 
-g=g./g(1);
+g = (Phat'*Phat + Lambda*eye(size(Phat,2)))^-1 * Phat'*M0;
+
+end

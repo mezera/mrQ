@@ -96,48 +96,63 @@ xlabel('Estimated gains'); ylabel('True gains');
 k=0;% number of iteration
 tryagain=1; % go for the while loop
 
-coilList = [1:8]; %  the coil we use. i try different combintion and less combination it is almost as good
+coilList = [1:4]; %  the coil we use. i try different combintion and less combination it is almost as good
 % the original parametes
         Par=OutPut.params(:,coilList); Par=Par./Par(1);
         
         % the lamda.
-Lamda=1;
+Lamda=0.05;
 % i cheack uder lamda's any thing between 1- 0.1 was
         % good. smaller lamda convarge slower
         % higer lamda also convarge but tolarant some bias. in particular
         % when less coils are used.
         
+   % the M0 values
+  M0_v=OutPut.M0_v(:,coilList);
+  %% PD differnt then the Pahntom
+%%%%
+% simlatedPD=OutPut.M0S_v(:,4);
+% simlatedPD=simlatedPD./mean(simlatedPD);
+% for ii=1:length(coilList)
+%     M0_v(:,ii)=M0_v(:,ii).*simlatedPD;  % M0=Gain.*PD;
+% end
+% PDtrue=reshape(simlatedPD,OutPut.SZ(1:3));
+% showMontage(PDtrue);
 
 %% let's intiate the PD by the sum of sqrs (this is the PD if we won't have multi coil information
 %sum of sqr of M0 as a starting point 
-PD=   sqrt(sum(OutPut.M0_v(:,coilList).^2,2)  )   ;
+PD=   sqrt(sum(M0_v.^2,2)  )   ;
 PD=PD./mean(PD);
 
 %given the intial PD this is the coils intiate coefficents 
- clear g0
- for ii=1:length(coilList)
-     G=OutPut.M0_v(:,coilList(i))./PD;
-g0(:,ii)= OutPut.pBasis \ G;
- end
+ clear g0 G
+for ii=1:length(coilList)
+    G(:,ii)=M0_v(:,ii)./PD;
+    g0(:,ii)= OutPut.pBasis \ G(:,ii);
+end
 
 % let plot our starting point 
-mrvNewGraphWin(num2str(k)); subplot(1,2,1);(plot(g0(:),Par(:),'.'))
-        identityLine(gca);
-        xlabel('Estimated gains'); ylabel('True gains');
-        subplot(1,2,2);plot(PD,'.')
-        
+mrvNewGraphWin(num2str(k));
+subplot(1,2,1);plot(g0(:),Par(:),'.')
+identityLine(gca);
+xlabel('Estimated gains'); ylabel('True gains');
+subplot(1,2,2);plot(PD,'.')
+ylabel('Estimated PD');xlabel('voxel');
+
+k=0;% number of iteration
+tryagain=1; % go for the while loop   
 % loop and solve by ridge regration
 while tryagain==1
     k=k+1; % caunt   ridgs regretion interval
     
     % fit linear eqation coefisents with  ridgs regretion
-    g=RidgeRegressCoilfit(PD,Lamda,OutPut.M0_v(:,coilList),OutPut.pBasis);
+    g=RidgeRegressCoilfit(PD,Lamda,M0_v,OutPut.pBasis);
     
     % calculate the coil gain of each coil
-    G=OutPut.pBasis *g;
+    Gn=OutPut.pBasis *g;
 
     %    calculate PD for each coils
-    PDn=OutPut.M0_v(:,coilList) .\G;
+    PDn=M0_v.\Gn;
  
     % avrage the PD of each coil   
     PDn=mean(PDn,2);
@@ -148,19 +163,24 @@ while tryagain==1
     % cheack if the new estimation is differnt from the one before or it's
     % convarged
     if std(PD-PDn)<0.01
+      %  if std(G-Gn)<0.01
+
         %if the two sulotion are the same --> stop
         tryagain=0;
     else
       % if the new is different
                 
-% update the new PD
+% update the new PD and and Gain
         PD=PDn;
-
+        G=Gn;
 % plot the new estimations for coil gain and PD
-        mrvNewGraphWin(num2str(k)); subplot(1,2,1);(plot(g(:),Par(:),'.'))
+mrvNewGraphWin(num2str(k));
+      subplot(1,2,1);plot(g(:),Par(:),'.')
         identityLine(gca);
         xlabel('Estimated gains'); ylabel('True gains');
         subplot(1,2,2);plot(PDn,'.')
+        ylabel('Estimated PD');xlabel('voxel');
+        
         
     end
     % we have to stop some time if it's not convarging

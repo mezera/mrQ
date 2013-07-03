@@ -1,5 +1,5 @@
-function OutPut=pdBiLinearFit(M0_v,pBasis,Lambda,maxLoops,sCriterion,PD,plotResults,TruePar)
-%            OutPut=pdBiLinearFit(M0_v,pBasis,Lambda,maxLoops,sCriterion,PD,plotResults,TruePar)
+function OutPut = pdBiLinearFit(M0_v,pBasis,Lambda,maxLoops,sCriterion,PD,plotFlag,TruePar)
+% OutPut = pdBiLinearFit(M0_v,pBasis,Lambda,maxLoops,sCriterion,PD,plotFlag,TruePar)
 %
 % This fancrtion running a while loop solving the M0=GPD bi-linear problem.
 % using ridge regression with regularisation coeffisent Lamdea for the gain
@@ -7,32 +7,31 @@ function OutPut=pdBiLinearFit(M0_v,pBasis,Lambda,maxLoops,sCriterion,PD,plotResu
 % a PD values. then the PD is evaluated again given the coil gain sulotion.
 % the loop stop when the solotion convarge up to the stopping criterion or
 % when it reach the maxsimal iteration
+%
 % Input
 %  M0_v:         Columns containing the 3D M0 values in a vector (nVoxels x nCoils)
-%  pBasis:         Polynomial basis (nPositions x nCoef)
-%  Lambda       A ridge regration regularization term
-%  maxLoops   maxsimal iteration of the while loop
+%  pBasis:       Polynomial basis (nPositions x nCoef)
+%  Lambda        A ridge regration regularization term
+%  maxLoops      maxsimal iteration of the while loop
 %  sCriterion    Stopping criterion to stop the while loop (this  define what when the problem converge)
-%  PD               initial PD sulotion
-%  plotResults   when true (1) output a set of images showing the progess of the fit
-% TruePar               the true coil gain coepicent parameters if they are
-% known. like in the casses of   simulation or phantoms.
-%OutPuts:
+%  PD            initial PD sulotion
+%  plotFlag   when true (1) output a set of images showing the progess of the fit
+%  TruePar       the true coil gain coepicent parameters if they are
+%                known. like in the casses of   simulation or phantoms.
+%
 % OutPut is a stracture with a list of outputs:
-%OutPut.PD             -  the final PD values
-%OutPut.Gn             -  the final coils gain values
-%OutPut.g                -  the final coils gain coeficents  (G = pBasis*g)
-%OutPut.PDchange -  a vector of the PD change in each step
-%OutPut.NumOfIter - number of iteration
-%OutPut.convarge    - 1 if convarge 0 if not
+%  OutPut.PD             -  the final PD values
+%  OutPut.Gn             -  the final coils gain values
+%  OutPut.g                -  the final coils gain coeficents  (G = pBasis*g)
+%  OutPut.PDchange -  a vector of the PD change in each step
+%  OutPut.NumOfIter - number of iteration
+%  OutPut.convarge    - 1 if convarge 0 if not
 %
 %   AM/BW Copyright VISTASOFT Team 2013
 
 %% intiate parameters
 
-if notDefined('maxLoops')
-    maxLoops = 100;
-end
+if notDefined('maxLoops'), maxLoops = 100; end
 if notDefined('sCriterion')
     sCriterion = 1e-4;  % Stopping criterion
 end
@@ -40,12 +39,10 @@ if notDefined('PDi')
     % This is the PD that will be returned if we won't have multi coil
     % information
     PD = sqrt(sum(M0_v.^2,2));
-    PD = PD./ mean(PD);   % THere are options - e.g., we could set PD(1) to 1
+    PD = PD./ mean(PD);   % There are options - e.g., we could set PD(1) to 1
 end
 
-if notDefined('plotResults')
-    plotResults = 0;
-end
+if notDefined('plotFlag'), plotFlag = 0; end
 
 nCoils    = size(M0_v,2);
 nPolyCoef = size(pBasis,2);
@@ -55,10 +52,11 @@ k = 0;                % number of iteration
 tryagain = 1;         % go for the while loop
 PDchange = zeros(1,maxLoops);
 
-%% the inital sulotion
+%% Initalize solution
+
 % When PD is given and M0 is given, we can form an estimate of the coil
 % gains.  But note that this estimate is not immediately inside of the
-% polynomial space.  So,
+% polynomial space.  So, we initialize.
 G = zeros(size(M0_v));
 g0 = zeros(nPolyCoef,nCoils);
 for ii=1:nCoils
@@ -67,9 +65,10 @@ for ii=1:nCoils
 end
 
 
-if plotResults==1
-    
-    if    notDefined('TruePar')
+%% This plots the initial condition
+if plotFlag==1   
+    figH = mrvNewGraphWin;
+    if notDefined('TruePar')
         Par=g0;
         GetPar=1;
         str='last interval coefisents';
@@ -78,8 +77,10 @@ if plotResults==1
         str='True gains';
         GetPar=0;
     end
+    
     % Plot the starting point
-    mrvNewGraphWin(num2str(k));
+    figure(figH);
+    set(figH,'Name', sprintf('Loop %d', num2str(k)));
     subplot(1,2,1); plot(g0(:),Par(:),'.')
     identityLine(gca);
     xlabel('Estimated gains'); ylabel(str);
@@ -88,7 +89,8 @@ if plotResults==1
     ylabel('Estimated PD');xlabel('voxel');
     
 end
-%%  loop to try to solve the bilinear problem
+
+%% This is the bilinear alternating solution 
 while tryagain == 1
     k = k+1; % count Ridge regression steps
     
@@ -119,11 +121,13 @@ while tryagain == 1
         % Keep going.
         % Update the new PD and and Gain
         PD = PDn;
-        G  = Gn;
-        if plotResults==1
+        % G  = Gn;
+
+        if plotFlag==1
             
             % plot the new estimations for coil gain and PD
-            mrvNewGraphWin(num2str(k));
+            figure(figH);
+            set(figH,'Name',sprintf('Loop %d',num2str(k)));
             subplot(1,2,1);plot(g(:)/g(1),Par(:),'.')
             identityLine(gca);
             xlabel('Estimated gains'); ylabel(str);
@@ -133,35 +137,39 @@ while tryagain == 1
             ylabel('Estimated PD');xlabel('voxel');
             
             if  GetPar==1
-                PAr=g;
+                Par = g;
             end
         end
     end
-    % we have to stop some time if it's not convarging
+    
+    % We have to stop some time if it's not convarging
     if k == maxLoops
         tryagain=0;
-        if plotResults==1
+        if plotFlag==1
             fprintf(' rich  % 0.f  iterations. Stop before convarge \n :',maxLoops);
         end
     end
 end
 
-
-if plotResults==1
-    mrvNewGraphWin; semilogy(1:k,PDchange(1:k),'o');
+if plotFlag==1
+    mrvNewGraphWin; 
+    semilogy(1:k,PDchange(1:k),'o');
     xlabel('steps'); ylabel('Change in PD')
 end
+
 %% Outputs
-%make a list of outputs:
-OutPut.PD=PDn; % the final PD values
-OutPut.Gn=Gn; % the final coils gain values
-OutPut.g=g; % the final coils gain coeficents  (G = pBasis*g)
-OutPut.PDchange=PDchange;  % a vector of the PD change in each step
-OutPut.NumOfIter=k;  % number of iteration
+
+% Make a list of outputs:
+OutPut.PD = PDn; % the final PD values
+OutPut.Gn = Gn; % the final coils gain values
+OutPut.g  = g; % the final coils gain coeficents  (G = pBasis*g)
+OutPut.PDchange = PDchange;  % a vector of the PD change in each step
+OutPut.NumOfIter = k;  % number of iteration
 if k == maxLoops
     OutPut.convarge=0;  % the problem while loop got to it's last interval with out convarges
 else
     OutPut.convarge=1;  % the problem lo convarges
 end
 
+end
 

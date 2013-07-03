@@ -10,15 +10,22 @@ function [PD, G] = pdEstimate(M0_v, pBasis, g)
 % AM/BW Copyright VISTASOFT Team 2013
 
 
-% This is the coil gains (columns) across positions (rows)
+% This is the coil gains (positions by coils)
 G = pBasis*g;
 
-% This is the giant matrix of diagonals.  We should turn this into a
-% function  G = polyGains2Diag(Gn)
-
 %% Divide the M0_v by the Gains to estimate the PDs
+% This is OK, but not perfectly justified because taking the mean is a hack.
 % PD = M0_v ./ G;
 % PD = mean(PD,2);
+
+%% This is an alternative
+% M0_v' = Gn' * diag(PD)
+% So, we could solve for PD as a series of linear equations with the first
+% column of MO_v'(:,ii) = Gn'(:,ii)*PD(ii)
+% So, we loop on ii (locations) 
+%   PD(ii) = Gn'(:,ii)\M0_v'(:,ii)
+% This could also be a ridge regression, not a pseudoinverse.
+
 
 %% This is a big matrix approach
 
@@ -33,12 +40,10 @@ for ii=1:nCoils
 end
 % mrvNewGraphWin; imagesc(Gdiag); colormap(gray)
 
-% M0_v(:) = Gdiag * PD
-% So, PD
-% PD = pinv(Gdiag)*M0_v(:);
-% 
+% This could be a ridge regression also, not a pseudoinverse
+%
 PD = Gdiag \  M0_v(:);
-% plot(PD)
+
 
 end
 

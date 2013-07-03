@@ -35,51 +35,70 @@ tryagain = 1; % go for the while loop
 
 %  the coil we use. i try different combintion and less combination it is
 %  almost as good
-coilList = 1:2; 
+coilList = 1:2;
+
 % the original estimated parameters from the noisy phantom data
 Par = OutPut.params(:,coilList);  % Each coil 
 Par = Par./Par(1);
-   % The M0 values from the phantom
+
+% The M0 values from the phantom
 maxLoops = 100;
 sCriterion = 1e-4;  % Stopping criterion    
-% Set lambda.
-Lambda = 0.1;
+Lambda = 0.05;
 
-                            % I check lambda's any thing between 1- 0.1 was
-                            % good. smaller lamda convarge slower
-                            % higer lamda also convarge but tolarant some bias. in particular
-                            % when less coils are used.
-plotResults=1;
-%%
+% Useful parameters for later coding
+nCoils = length(coilList);
+nVoxels = prod(OutPut.SZ(1:3));
 
-BL=pdBiLinearFit( OutPut.M0_v(:,coilList),OutPut.pBasis,Lambda,maxLoops,sCriterion,[],plotResults,Par);
-%            OutPut=pdBiLinearFit(M0_v,                               pBasis,             Lambda,maxLoops,sCriterion,PD,plotResults,TruePar)
+% I check lambda's any thing between 1- 0.1 was
+% good. smaller lamda convarge slower
+% higer lamda also convarge but tolarant some bias. in particular
+% when less coils are used.
+plotFlag = 1;
+
+%% Run the bilinear fit
+
+BL = pdBiLinearFit( OutPut.M0_v(:,coilList),OutPut.pBasis,Lambda,maxLoops,sCriterion,[],plotFlag,Par);
+
+% These are the parameters
+% OutPut = pdBiLinearFit(M0_v, pBasis,Lambda,maxLoops, ...
+%    sCriterion,PD,plotFlag,TruePar)
 
 PDFinal = reshape(BL.PD,OutPut.SZ(1:3));
-showMontage(PDFinal)
+
+% showMontage(PDFinal)
 
 
-%% now lets simulate noise 
-noiseLevel=5;
-PDtype=[];
-PD=[];
-[M0SN, M0S,SNR, PDsim]=simM0(OutPut.M0S_v(:,coilList),PD,noiseLevel,PDtype,plotResults);
-PDsim=reshape(PDsim,OutPut.SZ(1:3));
+%% Now let;s simulate different shapes of PD with some noise
 
-BLSim=pdBiLinearFit( M0SN,OutPut.pBasis,Lambda,maxLoops,sCriterion,[],plotResults,Par);
+% Simulated phantom with all 1's.
+% PD = ones(nVoxels,1);
+% PD = 'single point';
+% PD = 'small region';
+PD = 'linear slope';
+noiseLevel = 0;
+[M0SN, M0S, SNR, PDsim]= simM0(OutPut.M0S_v(:,coilList),PD,noiseLevel,true);
+
+PDsim = reshape(PDsim,OutPut.SZ(1:3));
+showMontage(PDsim);
+
+BLSim = pdBiLinearFit(M0SN, OutPut.pBasis,...
+    Lambda, maxLoops, sCriterion, [], plotFlag, Par);
+showMontage(reshape(BLSim.PD,OutPut.SZ(1:3)));
+
+%%
 PDFinal = reshape(BLSim.PD,OutPut.SZ(1:3));
 showMontage(PDFinal-PDsim)
 
 
 %% now lets simulate noise and PD
 noiseLevel=5;
-PDtype='1';
 PD=[];
 
-[M0SN, M0S,SNR, PDsim]=simM0(OutPut.M0S_v(:,coilList),PD,noiseLevel,PDtype,plotResults);
+[M0SN, M0S,SNR, PDsim]=simM0(OutPut.M0S_v(:,coilList),PD,noiseLevel,PDtype,plotFlag);
 PDsim=reshape(PDsim,OutPut.SZ(1:3));
 
-BLSim=pdBiLinearFit( M0SN,OutPut.pBasis,Lambda,maxLoops,sCriterion,[],plotResults,Par);
+BLSim=pdBiLinearFit( M0SN,OutPut.pBasis,Lambda,maxLoops,sCriterion,[],plotFlag,Par);
 PDFinal = reshape(BLSim.PD,OutPut.SZ(1:3));
 PDsim=reshape(PDsim,OutPut.SZ(1:3));
 showMontage(PDFinal-PDsim)

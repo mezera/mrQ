@@ -77,15 +77,16 @@ if plotFlag==1
         str='True gains';
         GetPar=0;
     end
-    
+    CoefNorm=Par(1)./g0(1);
+
     % Plot the starting point
     figure(figH);
-    set(figH,'Name', sprintf('Loop %d', num2str(k)));
-    subplot(1,2,1); plot(g0(:),Par(:),'.')
+    set(figH,'Name', ['Loop ' num2str(k)]);
+    subplot(1,2,1); plot(g0(:).*CoefNorm,Par(:),'.')
     identityLine(gca);
     xlabel('Estimated gains'); ylabel(str);
     
-    subplot(1,2,2); plot(PD,'.'); set(gca,'ylim',[.5 1.5]);
+    subplot(1,2,2); plot(PD,'.');set(gca,'ylim',[min(PD(:))*0.9 max(PD(:))*1.1]);
     ylabel('Estimated PD');xlabel('voxel');
     
 end
@@ -103,9 +104,11 @@ while tryagain == 1
     
     % normalized to have mean of 1.  Should we also multiply the gains, to
     % keep them consistent?
-    PDn = PDn ./ mean(PDn(:));
-    Gn  = Gn  .* mean(PDn(:));
-    
+%     PDn = PDn ./ mean(PDn(:));
+%     Gn  = Gn  .* mean(PDn(:));
+     PDn = PDn ./ PDn(1);
+     Gn  = Gn  .* PDn(1);
+%     
     % Check if the new estimate differs from the one before or it's
     % converged
     PDchange(k) = std(PD - PDn);
@@ -124,18 +127,18 @@ while tryagain == 1
         % G  = Gn;
 
         if plotFlag==1
-            
+             %           keyboard
+CoefNorm=Par(1)./g(1);
             % plot the new estimations for coil gain and PD
             figure(figH);
-            set(figH,'Name',sprintf('Loop %d',num2str(k)));
-            subplot(1,2,1);plot(g(:)/g(1),Par(:),'.')
+            set(figH,'Name',[ 'Loop ' num2str(k) ] );
+            subplot(1,2,1);plot(g(:).*CoefNorm,Par(:),'.')
             identityLine(gca);
             xlabel('Estimated gains'); ylabel(str);
             
             subplot(1,2,2);
-            plot(PDn,'.'); set(gca,'ylim',[.5 1.5]);
+            plot(PDn,'.'); set(gca,'ylim',[min(PDn(:))*0.9 max(PDn(:))*1.1]);
             ylabel('Estimated PD');xlabel('voxel');
-            
             if  GetPar==1
                 Par = g;
             end

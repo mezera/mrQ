@@ -10,6 +10,8 @@ function g = RidgeRegressCoilfit(PD, Lambda, M0, pBasis)
 %
 % AM/BW VISTASOFT 2013
 
+
+% please let's verify that this is right
 Phat = diag(PD)*pBasis;
 
 g = (Phat'*Phat + Lambda*eye(size(Phat,2)))^-1 * Phat'*M0;

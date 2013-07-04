@@ -127,7 +127,7 @@ while tryagain == 1
         % G  = Gn;
 
         if plotFlag==1
-             %           keyboard
+                        %keyboard
 CoefNorm=Par(1)./g(1);
             % plot the new estimations for coil gain and PD
             figure(figH);

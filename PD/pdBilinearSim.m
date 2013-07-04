@@ -26,7 +26,7 @@ fprintf('Polynomial approximation to the data (percent error): %0.4f\n',percentE
 
 %% 2) simulte M0
 Par=OutPut.params(:,1:2);
-%Par(1,:)=100; % what if we keep the constant close to the other values 
+Par(1,:)=Par(1,:)./100; % what if we keep the constant close to the other values 
 G=OutPut.pBasis*Par;
 nVoxels=size(G,1);
 nCoilsS=size(G,2);
@@ -57,5 +57,5 @@ BLSim = pdBiLinearFit(M0SN, OutPut.pBasis,...
 
 PDfit = reshape(BLSim.PD,OutPut.SZ(1:3));
  %showMontage(PDfit);
- showMontage(PDsim./mean(PDsim(:))-PDfit./mean(PDfit(:))  );
+ showMontage(PDsim./mean(PDsim(:))-PDfit./mean(PDfit(:))  );title('the pracent error')
  

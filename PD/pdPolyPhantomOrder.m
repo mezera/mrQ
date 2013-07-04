@@ -15,9 +15,9 @@ function OutPut = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseRange
 %  oFlag             Force orthonormal pBasis
 %
 %Output:
-%  OutPut    a structure that include this field
-%            M0,M0_v, params,M0S_v,VarEx,SZ, meanVal, pBasis,
-%            s, rSize, nVoxels, nVoxels
+%  OutPut    a structure that includes these fields
+%    M0, M0_v, params, M0S_v, VarEx, SZ, meanVal, pBasis,
+%     s, rSize, nVoxels, nVoxels
 %
 % Copyright Vistasoft Team, 2013
 
@@ -67,7 +67,7 @@ nVoxels     = rSize^nDims;
 nPolyParams = size(pBasis,2);
 
 % Get the phantom polynomial coefficients assuming the phantom PD equals
-% one.  data = pMatrix * params.  So, pMatrix \ data
+% one.  data = pBasis * params.  So, pBasis \ data
 params = zeros(nPolyParams , nCoils);
 for ii=1:nCoils
     params(:,ii)= pBasis \ M0_v(:,ii);

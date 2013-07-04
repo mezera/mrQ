@@ -30,8 +30,6 @@ fprintf('Polynomial approximation to the data (percent error): %0.4f\n',percentE
 
 %% Initiate params for the ridge regression
 % 
-k = 0;% number of iteration
-tryagain = 1; % go for the while loop
 
 %  the coil we use. i try different combintion and less combination it is
 %  almost as good
@@ -39,7 +37,7 @@ coilList = 1:2;
 
 % the original estimated parameters from the noisy phantom data
 Par = OutPut.params(:,coilList);  % Each coil 
-Par = Par./Par(1);
+%Par = Par./Par(1);
 
 % The M0 values from the phantom
 maxLoops = 100;
@@ -72,7 +70,7 @@ PDFinal = reshape(BL.PD,OutPut.SZ(1:3));
 %% Now let;s simulate different shapes of PD with some noise
 
 % Simulated phantom with all 1's.
-% PD = ones(nVoxels,1);
+ PD = ones(nVoxels,1);
 % PD = 'single point';
 % PD = 'small region';
 PD = 'linear slope';
@@ -84,6 +82,7 @@ showMontage(PDsim);
 
 BLSim = pdBiLinearFit(M0SN, OutPut.pBasis,...
     Lambda, maxLoops, sCriterion, [], plotFlag, Par);
+
 showMontage(reshape(BLSim.PD,OutPut.SZ(1:3)));
 
 %%

@@ -1,14 +1,15 @@
 function [pBasis, spatialSamples, pTerms] = ...
-    polyCreateMatrix(nSamples,pOrder,sDim,oFlag)
+    polyCreateMatrix(nSamples,pOrder,sDim,BasisFlag)
 % Build 2D polynomial matrix
 %
 %    [pBasis, spatialSamples, pTerms] = ...
-%          polyCreateMatrix(nSamples,pOrder,sDim,oFlag)
+%          polyCreateMatrix(nSamples,pOrder,sDim,BasisFlag)
 %
 % nSamples: Runs from -nSamples to +nSamples
-% pOrder  : polynomial order (linear, quadratic, cubic)
-% sDim:      1, 2, or 3
-% oFlag:   Orthogonalize pBasis if true
+% pOrder  :     polynomial order (linear, quadratic, cubic)
+% sDim:    :    1, 2, or 3
+% BasisFlag:  Normalize pBasis if true to be unit lenght. if 'svd' use svd
+%                   to Orthogonalize pBasis. if 'qr' use qr to  Orthogonalize thepBasis.
 %
 % pBasis: Polynomial basis functions for nth order and some number of
 %          dimensions.   This matrix does NOT include the constant
@@ -95,25 +96,25 @@ switch pOrder
         elseif sDim == 2
             [X, Y] = meshgrid(spatialSamples,spatialSamples);
             X = X(:);     Y = Y(:);
-            X2 = X(:).^2; Y2 = Y(:).^2; 
-            X3 = X(:).^3; Y3 = Y(:).^3; 
-            XY = X(:).*Y(:); 
-            X2Y = X2.*Y(:); XY2 = X(:).*Y2(:); 
+            X2 = X(:).^2; Y2 = Y(:).^2;
+            X3 = X(:).^3; Y3 = Y(:).^3;
+            XY = X(:).*Y(:);
+            X2Y = X2.*Y(:); XY2 = X(:).*Y2(:);
             
             % 10 parameters
             pBasis = [ones(size(X)), X, X2, Y, Y2, XY, X3, Y3, X2Y, XY2];
             pTerms  = '[1, X, X2, Y, Y2, XY, X3, Y3, X2Y, XY2]';
-
+            
         elseif sDim == 3
             [X, Y, Z] = meshgrid(spatialSamples,spatialSamples,spatialSamples);
             X = X(:); Y = Y(:); Z = Z(:);
             X2 = X(:).^2; Y2 = Y(:).^2; Z2 = Z(:).^2;
             X3 = X(:).^3; Y3 = Y(:).^3; Z3 = Z(:).^3;
-
-            XY = X(:).*Y(:); XZ = X(:).*Z(:);  YZ = Y(:).*Z(:); 
+            
+            XY = X(:).*Y(:); XZ = X(:).*Z(:);  YZ = Y(:).*Z(:);
             XYZ = X(:).*Y(:).*Z(:);
-            X2Y = X2.*Y(:); X2Z = X2.*Z(:); 
-            XY2 = X(:).*Y2(:); XZ2 = X(:).*Z2(:); 
+            X2Y = X2.*Y(:); X2Z = X2.*Z(:);
+            XY2 = X(:).*Y2(:); XZ2 = X(:).*Z2(:);
             Y2Z = Y2(:).*Z(:); YZ2 = Y(:).*Z2(:);
             
             % Twenty parameters
@@ -126,16 +127,35 @@ switch pOrder
 end
 
 
-if oFlag
-    % Orthogonalize the pBasis
-    nCols = size(pBasis,2);
-    [U, ~, ~] = svd(pBasis);
-    pBasis = U(:,1:nCols);
-else
-    % Adjust the length of basis vectors, but don't orthogonalize.
-    sFactor = sqrt(diag(pBasis'*pBasis));
-    pBasis = pBasis * diag(1./sFactor);
-end
+if BasisFlag
+    if ischar(BasisFlag)
+    BasisFlag = mrvParamFormat(BasisFlag);
+   
+    
 
+    switch BasisFlag
+        case {'svd'}
+            
+            
+            % SVD Orthogonalize the pBasis
+            nCols = size(pBasis,2);
+            [U, ~, ~] = svd(pBasis);
+            pBasis = U(:,1:nCols);
+        case {'qr'}
+            % QR Orthogonalize the pBasis
+            nCols = size(pBasis,2);
+            [Q R]=qr(pBasis);
+            pBasis = Q(:,1:nCols);
+       
+        otherwise 
+                   error('BasseFlag %d not built',BasseFlag);
+
+    end
+     else        
+            % Adjust the length of basis vectors, but don't orthogonalize.
+            sFactor = sqrt(diag(pBasis'*pBasis));
+            pBasis = pBasis * diag(1./sFactor);
+    end
+end
 
 return

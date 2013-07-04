@@ -1,4 +1,4 @@
-function OutPut = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseRange,sampleLocation,printImages,smoothkernel, oFlag)
+function OutPut = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseRange,sampleLocation,printImages,smoothkernel, BasisFlag)
 % Creates a structure with various parameters needed for estimating gain
 %
 %  OutPut = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseRange,
@@ -12,7 +12,7 @@ function OutPut = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseRange
 %  pOrder                the polyoms order to fit to the problem 1 2 3
 %  noiseRange            a value of the M0 under we thing the SNR is too low
 %  plotImage             make an image defult false
-%  oFlag             Force orthonormal pBasis
+%  BasisFlag             Force normalization or orthonormal of pBasis
 %
 %Output:
 %  OutPut    a structure that includes these fields
@@ -61,7 +61,7 @@ end
 %% This is phantom data and we approximate them by polynomials
 
 % Create the basis functions for the polynomials.  Orthogoanlized.
-[pBasis, s, pTerms]  = polyCreateMatrix(nSamples,pOrder,nDims,oFlag);
+[pBasis, s, pTerms]  = polyCreateMatrix(nSamples,pOrder,nDims,BasisFlag);
 rSize       = length(s);
 nVoxels     = rSize^nDims;
 nPolyParams = size(pBasis,2);

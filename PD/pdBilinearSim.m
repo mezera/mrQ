@@ -9,7 +9,7 @@ pOrder   = 1;      % Second order is good for up to 5 samples
 nSamples = 1;      % The box is -nSamples:nSamples
 noiseFloor = 500;  % This is the smallest level we consider
 sampleLocation = 2;% Which box location
-BasisFlag = true;
+BasisFlag = 'qr';
 
 printImages = false;
 smoothkernel=[];
@@ -56,6 +56,6 @@ BLSim = pdBiLinearFit(M0SN, OutPut.pBasis,...
     Lambda, maxLoops, sCriterion, [], 1, Par);
 
 PDfit = reshape(BLSim.PD,OutPut.SZ(1:3));
- %showMontage(PDfit);
- showMontage(PDsim./mean(PDsim(:))-PDfit./mean(PDfit(:))  );title('the pracent error')
- 
+%showMontage(PDfit);
+showMontage(PDsim./mean(PDsim(:))-PDfit./mean(PDfit(:))  );
+title('the percent error')

@@ -49,7 +49,7 @@ nVoxels = prod(tData.SZ(1:3));
 %% Make simulated M0 data by multiplying PD by coil Gains
 
 % We insist that PD(1) is always 1.
-PD = ones(nVoxels,1); 
+PD = rand(nVoxels,1); 
 PD = PD/PD(1);
 M0 = diag(PD)*pBasis*cGains;
 
@@ -118,9 +118,9 @@ subplot(2,1,2)
 plot(PD(:), PDest(:),'o');
 identityLine;
 
-%% Now with lambda non-zero, we should deviate just a bit
+%% Now with lambda non-zero
 
-lambda1 = 0.05;
+lambda1 = 0.15;
 PDest = PD;
 
 % We would loop, using PDest as the starting point, and continue until
@@ -153,12 +153,12 @@ plot(PD(:), PDest(:),'o');
 identityLine;
 
 
-%% Next, initialize with a the right PD
+%% Next, initialize with the wrong PD
 % But loop a few times and check whether it starts to converge
 
 figH = mrvNewGraphWin([],'tall');
 lambda1 = 0.05;
-PDest = PD;
+PDest = ones(size(PD));
 lambda2 = 0.1;
 
 A = diag(PDest)*pBasis;
@@ -166,12 +166,10 @@ ridgeA = (A'*A + lambda1*eye(size(size(A,2))))\A';
 
 % We would loop, using PDest as the starting point, and continue until
 % PDest stabilizes.  At the moment, it makes things worse.
-for kk=1:20
+for kk=1:2
     % For known PD, estimate the coil gains
     % Minimizing || M0 - A * g || + lambda1 g' * g by ridge regression
-
-    cGainsEst = ridgeA*M0;
-    
+    cGainsEst = ridgeA*M0;   
     
     % Should we be using ridge regression here, too?
     G = pBasis*cGainsEst;

@@ -25,8 +25,8 @@ smoothkernel=[];
 % tData contains the various variables for comparing data and polynomial
 % approximations. We will turn it into a function before long. Variables
 % include M0S_v, pBasis, params, SZ
-tData = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, ...
-    noiseFloor, sampleLocation, printImages, smoothkernel, oFlag);
+OutPut = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, ...
+    noiseFloor, sampleLocation, [], smoothkernel, oFlag);
 % mrvNewGraphWin; imagesc(tData.pBasis);
 % tmp = reshape(tData.pBasis,9,9,9,20);
 % showMontage(tmp(:,:,:,1))

@@ -46,12 +46,7 @@ if ischar(PD)
             % showMontage(reshape(PD,eSize,eSize,eSize));
         case {'smallregion'}
             PD = 0.5*ones(nVoxels,1);
-            if eSize<=3
-                [X,Y,Z]=meshgrid(cPos,cPos-1:cPos+1,cPos);
-            else
-                [X,Y,Z]=meshgrid(cPos-1:cPos+1,cPos-1:cPos+1, cPos-1:cPos+1);
-                
-            end
+            [X,Y,Z]=meshgrid(,cPos-1:cPos+1,cPos-1:cPos+1);
             PD(sub2ind([eSize,eSize,eSize],X(:),Y(:),Z(:))) = 1;
         case {'linearslope'}
             PD = zeros(eSize,eSize,eSize);

@@ -1,4 +1,4 @@
-function OutPut = pdBiLinearFit(M0_v,pBasis,Lambda,maxLoops,sCriterion,PD,plotFlag,TruePar)
+function OutPut = pdBiLinearFit(M0_v,pBasis,Lambda,maxLoops,sCriterion,PD,plotFlag,TruePar,D)
 % OutPut = pdBiLinearFit(M0_v,pBasis,Lambda,maxLoops,sCriterion,PD,plotFlag,TruePar)
 %
 % This fancrtion running a while loop solving the M0=GPD bi-linear problem.
@@ -18,6 +18,10 @@ function OutPut = pdBiLinearFit(M0_v,pBasis,Lambda,maxLoops,sCriterion,PD,plotFl
 %  plotFlag   when true (1) output a set of images showing the progess of the fit
 %  TruePar       the true coil gain coepicent parameters if they are
 %                known. like in the casses of   simulation or phantoms.
+% D             a wighted identity matrix that will wighting  the ridge
+%                regration for each parameters D=(NcoefXnCoef)   (Ncoef=size(pBasis,2)); .
+%                D is a diagonal matrix position 1,1, is wight on parameter 1 position 2,2
+%                in a wight on parameter 2 ec. position (n,n) wight on parameter n.
 %
 % OutPut is a stracture with a list of outputs:
 %  OutPut.PD             -  the final PD values
@@ -47,10 +51,15 @@ if notDefined('plotFlag'), plotFlag = 0; end
 nCoils    = size(M0_v,2);
 nPolyCoef = size(pBasis,2);
 
+if notDefined('D'),  D=eye(len nPolyCoef); end
+
+
+
 % loop and solve by ridge regration
 k = 0;                % number of iteration
 tryagain = 1;         % go for the while loop
 PDchange = zeros(1,maxLoops);
+M0change = zeros(1,maxLoops);
 
 %% Initalize solution
 
@@ -64,7 +73,7 @@ for ii=1:nCoils
     g0(:,ii) = pBasis \ G(:,ii);  % Polynomial approximation
 end
 
-
+M0=G.*repmat( PD,1,nCoils);
 %% This plots the initial condition
 if plotFlag==1   
     figH = mrvNewGraphWin;
@@ -96,7 +105,7 @@ while tryagain == 1
     k = k+1; % count Ridge regression steps
     
     % fit linear equation coefficients using ridge regression
-    g = RidgeRegressCoilfit(PD, Lambda, M0_v, pBasis);
+    g = RidgeRegressCoilfit(PD, Lambda, M0_v, pBasis,D);
     
     % Calculate the coil gain of each coil over space from the estimate
     % Calculate PD for each coil
@@ -108,11 +117,15 @@ while tryagain == 1
 %     Gn  = Gn  .* mean(PDn(:));
      PDn = PDn ./ PDn(1);
      Gn  = Gn  .* PDn(1);
-%     
+     M0n=Gn.*repmat( PDn,1,nCoils);
     % Check if the new estimate differs from the one before or it's
     % converged
     PDchange(k) = std(PD - PDn);
-    if PDchange(k) < sCriterion;
+    M0change(k) = std(M0(:) - M0n(:));
+
+    %if PDchange(k) < sCriterion;
+            if M0change(k) < sCriterion;
+
         % If stable to within 1 percent, stop.
         %
         % We could check the gains, rather than PD, or both
@@ -125,6 +138,7 @@ while tryagain == 1
         % Update the new PD and and Gain
         PD = PDn;
         % G  = Gn;
+        M0 = M0n;
 
         if plotFlag==1
                         %keyboard
@@ -158,6 +172,11 @@ if plotFlag==1
     mrvNewGraphWin; 
     semilogy(1:k,PDchange(1:k),'o');
     xlabel('steps'); ylabel('Change in PD')
+    
+    mrvNewGraphWin; 
+    semilogy(1:k,M0change(1:k),'o');
+    xlabel('steps'); ylabel('Change in M0')
+    
 end
 
 %% Outputs
@@ -167,6 +186,8 @@ OutPut.PD = PDn; % the final PD values
 OutPut.Gn = Gn; % the final coils gain values
 OutPut.g  = g; % the final coils gain coeficents  (G = pBasis*g)
 OutPut.PDchange = PDchange;  % a vector of the PD change in each step
+OutPut.M0change = M0change;  % a vector of the PD change in each step
+
 OutPut.NumOfIter = k;  % number of iteration
 if k == maxLoops
     OutPut.convarge=0;  % the problem while loop got to it's last interval with out convarges

@@ -55,10 +55,10 @@ for kk=1:50
     
     % Should we be using ridge regression here, too?
     G = pBasis*cGainsEst;
-    % M0(ii,:)' =  G(ii,:)' * PDest
-    % g = G(ii,:)'; m = M0(ii,:)';
-    % ridgeG = (g'*g + lambda2*eye(size(g,2)))\g'
-    % ridgeG*m
+%     M0(ii,:)' =  G(ii,:)' * PDest
+%     g = G(ii,:)'; m = M0(ii,:)';
+%     ridgeG = (g'*g + lambda2*eye(size(g,2)))\g'
+%     ridgeG*m
     for ii=1:nVoxels
         g = G(ii,:)'; m = M0(ii,:)';
         ridgeG = (g'*g + lambda2*eye(size(g,2)))\g';
@@ -69,9 +69,9 @@ for kk=1:50
     
     figure(figH);
     subplot(3,1,1), plot(cGains(:), cGainsEst(:),'o');
-    identityLine;
+    identityLine; title('Gain')
     subplot(3,1,2), plot(PD(:), PDest(:),'o');
-    identityLine;
+    identityLine; title('PD')
     
 end
 

@@ -12,7 +12,7 @@ pOrder   = 3;      % Second order is good for up to 5 samples
 nSamples = 4;      % The box is -nSamples:nSamples
 noiseFloor = 500;  % This is the smallest level we consider
 sampleLocation = 2;% Which box location
-oFlag = true;
+oFlag = 'qr';
 
 printImages = false;
 smoothkernel=[];

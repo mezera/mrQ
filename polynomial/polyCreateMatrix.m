@@ -126,35 +126,29 @@ switch pOrder
         error('Order %d not built',pOrder);
 end
 
-
 if BasisFlag
     if ischar(BasisFlag)
-    BasisFlag = mrvParamFormat(BasisFlag);
-   
-    
-
-    switch BasisFlag
-        case {'svd'}
-            
-            
-            % SVD Orthogonalize the pBasis
-            nCols = size(pBasis,2);
-            [U, ~, ~] = svd(pBasis);
-            pBasis = U(:,1:nCols);
-        case {'qr'}
-            % QR Orthogonalize the pBasis
-            nCols = size(pBasis,2);
-            [Q R]=qr(pBasis);
-            pBasis = Q(:,1:nCols);
-       
-        otherwise 
-                   error('BasseFlag %d not built',BasseFlag);
-
-    end
-     else        
-            % Adjust the length of basis vectors, but don't orthogonalize.
-            sFactor = sqrt(diag(pBasis'*pBasis));
-            pBasis = pBasis * diag(1./sFactor);
+        BasisFlag = mrvParamFormat(BasisFlag);
+        switch BasisFlag
+            case {'svd'}
+                % SVD Orthogonalize the pBasis
+                nCols = size(pBasis,2);
+                [U, ~, ~] = svd(pBasis);
+                pBasis = U(:,1:nCols);
+            case {'qr'}
+                % QR Orthogonalize the pBasis
+                nCols = size(pBasis,2);
+                [Q R] = qr(pBasis);
+                pBasis = Q(:,1:nCols);
+                % Make sure the first one (mean) is positive
+                if pBasis(1,1) < 0, pBasis(:,1) = -1*pBasis(:,1); end
+            otherwise
+                error('BasseFlag %d not built',BasseFlag);
+        end
+    else
+        % Adjust the length of basis vectors, but don't orthogonalize.
+        sFactor = sqrt(diag(pBasis'*pBasis));
+        pBasis = pBasis * diag(1./sFactor);
     end
 end
 

@@ -25,7 +25,7 @@ percentError = 100*OutPut.percentError;
 fprintf('Polynomial approximation to the data (percent error): %0.4f\n',percentError)
 
 %% 2) simulte M0
-Par=OutPut.params(:,1:10);
+Par=OutPut.params(:,1:4);
 %Par(1,:)=Par(1,:)./100; % what if we keep the constant close to the other values 
 G=OutPut.pBasis*Par;
 nVoxels=size(G,1);
@@ -35,7 +35,7 @@ nCoilsS=size(G,2);
 % PD = 'single point';
 % PD = 'small region';
 PD = 'linear slope';
-noiseLevel = 4;
+noiseLevel = 10;
 [M0SN, M0S, SNR, PDsim]= simM0(G,PD,noiseLevel,true);
 
 PDsim = reshape(PDsim,OutPut.SZ(1:3));
@@ -49,16 +49,15 @@ showMontage(PDsim);
 %% 3)fit the sulotion by bilinear solver
 maxLoops = 100;
 sCriterion = 1e-3;  % Stopping criterion    
-Lambda = 0.00;
+Lambda = .1000;
 
-
-% M0SNdM=zeros(size(M0SN));
-% for ii=1:nCoilsS;  M0SNdM(:,ii)=M0SN(:,ii)-mean(M0SN(:,ii));end;
+D=diag(OutPut.W);D(1,1)=0.01;
 BLSim = pdBiLinearFit(M0SN, OutPut.pBasis,...
     Lambda, maxLoops, sCriterion, [], 1, Par,D);
 
 PDfit = reshape(BLSim.PD,OutPut.SZ(1:3));
  showMontage(PDfit);
- showMontage(PDsim./mean(PDsim(:))-PDfit./mean(PDfit(:))  );title('the pracent error')
- 
-title('the percent error')
+ showMontage(PDsim./mean(PDsim(:))-PDfit./mean(PDfit(:))  );
+ sum(abs(PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))))
+ RMSE=sqrt(mean(  (PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))   ).^2))
+title(['the percent error    RMSE = '   num2str(RMSE)] )

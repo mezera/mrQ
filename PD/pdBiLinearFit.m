@@ -51,7 +51,7 @@ if notDefined('plotFlag'), plotFlag = 0; end
 nCoils    = size(M0_v,2);
 nPolyCoef = size(pBasis,2);
 
-if notDefined('D'),  D=eye(length(nPolyCoef)); end
+if notDefined('D'),  D=eye(nPolyCoef); end
 
 
 
@@ -187,6 +187,8 @@ OutPut.Gn = Gn; % the final coils gain values
 OutPut.g  = g; % the final coils gain coeficents  (G = pBasis*g)
 OutPut.PDchange = PDchange;  % a vector of the PD change in each step
 OutPut.M0change = M0change;  % a vector of the PD change in each step
+OutPut.LastLoop = k;  % a vector of the PD change in each step
+
 
 OutPut.NumOfIter = k;  % number of iteration
 if k == maxLoops

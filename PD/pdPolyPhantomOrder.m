@@ -61,7 +61,7 @@ end
 %% This is phantom data and we approximate them by polynomials
 
 % Create the basis functions for the polynomials.  Orthogoanlized.
-[pBasis, s, pTerms]  = polyCreateMatrix(nSamples,pOrder,nDims,BasisFlag);
+[pBasis, s, pTerms W]  = polyCreateMatrix(nSamples,pOrder,nDims,BasisFlag);
 rSize       = length(s);
 nVoxels     = rSize^nDims;
 nPolyParams = size(pBasis,2);
@@ -100,6 +100,6 @@ OutPut.nVoxels=nVoxels;
 OutPut.nVoxels=nVoxels;
 OutPut.pTerms=pTerms;
 OutPut.SZ=SZ;
-
+OutPut.W=W;
 end
 

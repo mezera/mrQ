@@ -15,8 +15,7 @@ function [pBasis, spatialSamples, pTerms W] = ...
 %          dimensions.   This matrix does NOT include the constant
 % spatialSamples:       Spatial samples
 % pTerms:  String defining the polynomial terms
-% W             a wight list for a ridge regration sulotion. from 0 to 1
-%                  with 0.1 time biger for higer orders.
+% W             a wight list for a ridge regration suloti
 % Currently implemented for 2nd order, 1D, 2D and 3D
 %
 % Example:

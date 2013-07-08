@@ -29,20 +29,31 @@ G = pBasis*g;
 
 %% This is a big matrix approach
 
-nCoils = size(M0_v,2);
+% nCoils = size(M0_v,2);
 nPositions = size(M0_v,1);
 
-Gdiag = zeros(nPositions*nCoils,nPositions);
-for ii=1:nCoils
-    sRow = (ii-1)*nPositions + 1;
-    eRow = sRow + (nPositions-1);
-    Gdiag(sRow:eRow,:) = diag(G(:,ii));
+% M0_v has each coil M0 in a column.  The first row is all the coils at
+% position 1. The gains of each coils are in the columns of G and the gains
+% at position 1 are G(1,:);
+% So M0(1,:)' = G(1,:)'*PD(1)
+PD = zeros(nPositions,1);
+for ii=1:nPositions
+    PD(ii) = G(ii,:)' \ M0_v(ii,:)';
 end
-% mrvNewGraphWin; imagesc(Gdiag); colormap(gray)
 
-% This could be a ridge regression also, not a pseudoinverse
+% Conceptually the same, but much slower
 %
-PD = Gdiag \  M0_v(:);
+% Gdiag = zeros(nPositions*nCoils,nPositions);
+% for ii=1:nCoils
+%     sRow = (ii-1)*nPositions + 1;
+%     eRow = sRow + (nPositions-1);
+%     Gdiag(sRow:eRow,:) = diag(G(:,ii));
+% end
+% % mrvNewGraphWin; imagesc(Gdiag); colormap(gray)
+% 
+% % This could be a ridge regression also, not a pseudoinverse
+% %
+% PD = Gdiag \  M0_v(:);
 
 
 end

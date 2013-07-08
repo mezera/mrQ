@@ -53,8 +53,6 @@ nPolyCoef = size(pBasis,2);
 
 if notDefined('D'),  D=eye(nPolyCoef); end
 
-
-
 % loop and solve by ridge regration
 k = 0;                % number of iteration
 tryagain = 1;         % go for the while loop
@@ -72,12 +70,15 @@ for ii=1:nCoils
     G(:,ii)  = M0_v(:,ii) ./ PD;         % Raw estimate
     g0(:,ii) = pBasis \ G(:,ii);  % Polynomial approximation
 end
-G  = G  .* PD(1);
-PD= PD ./ PD(1);
 
-M0=G.*repmat( PD,1,nCoils);
+% You must first divide G by PD(1).  If you divided PD first, then you
+% change PD and you no longer are using the valid PD(1).
+G  = G  .* PD(1);
+PD = PD ./ PD(1);
+
+M0 = G.*repmat( PD,1,nCoils);
 %% This plots the initial condition
-if plotFlag==1   
+if plotFlag==1
     figH = mrvNewGraphWin;
     if notDefined('TruePar')
         Par=g0;
@@ -89,7 +90,7 @@ if plotFlag==1
         GetPar=0;
     end
     CoefNorm=Par(1)./g0(1);
-
+    
     % Plot the starting point
     figure(figH);
     set(figH,'Name', ['Loop ' num2str(k)]);
@@ -102,7 +103,7 @@ if plotFlag==1
     
 end
 
-%% This is the bilinear alternating solution 
+%% This is the bilinear alternating solution
 while tryagain == 1
     k = k+1; % count Ridge regression steps
     
@@ -113,24 +114,20 @@ while tryagain == 1
     % Calculate PD for each coil
     [PDn, Gn] = pdEstimate(M0_v, pBasis, g);
     
-    % normalized to have mean of 1.  Should we also multiply the gains, to
-    % keep them consistent?
-%     PDn = PDn ./ mean(PDn(:));
-%     Gn  = Gn  .* mean(PDn(:));
-   Gn  = Gn  .* PDn(1);
-     PDn = PDn ./ PDn(1);
-  
-     M0n=Gn.*repmat( PDn,1,nCoils);
+    
+    Gn  = Gn  .* PDn(1);
+    PDn = PDn ./ PDn(1);
+    
+    M0n = Gn.*repmat( PDn,1,nCoils);
     % Check if the new estimate differs from the one before or it's
     % converged
     PDchange(k) = std(PD - PDn);
     M0change(k) = std(M0(:) - M0n(:));
-
+    
     %if PDchange(k) < sCriterion;
-            if M0change(k) < sCriterion;
-
+    if M0change(k) < sCriterion;
         % If stable to within 1 percent, stop.
-        %
+        
         % We could check the gains, rather than PD, or both
         % if std(G-Gn)<0.01
         
@@ -138,14 +135,14 @@ while tryagain == 1
         tryagain=0;
     else
         % Keep going.
-        % Update the new PD and and Gain
+        
+        % Update the new PD and and estimated M0
         PD = PDn;
-        % G  = Gn;
         M0 = M0n;
-
+        
         if plotFlag==1
-                        %keyboard
-CoefNorm=Par(1)./g(1);
+            %keyboard
+            CoefNorm=Par(1)./g(1);
             % plot the new estimations for coil gain and PD
             figure(figH);
             set(figH,'Name',[ 'Loop ' num2str(k) ] );
@@ -172,11 +169,11 @@ CoefNorm=Par(1)./g(1);
 end
 
 if plotFlag==1
-    mrvNewGraphWin; 
+    mrvNewGraphWin;
     semilogy(1:k,PDchange(1:k),'o');
     xlabel('steps'); ylabel('Change in PD')
     
-    mrvNewGraphWin; 
+    mrvNewGraphWin;
     semilogy(1:k,M0change(1:k),'o');
     xlabel('steps'); ylabel('Change in M0')
     

@@ -6,7 +6,7 @@ addpath(genpath(fullfile(mrqRootPath)));
 nCoils   = 32;     % A whole bunch of coils
 nDims    = 3;      % XYZ
 pOrder   = 2;      % Second order is good for up to 5 samples
-nSamples = 3;      % The box is -nSamples:nSamples
+nSamples = 5;      % The box is -nSamples:nSamples
 noiseFloor = 500;  % This is the smallest level we consider
 sampleLocation = 2;% Which box location
 BasisFlag = 'qr';
@@ -25,7 +25,7 @@ percentError = 100*OutPut.percentError;
 fprintf('Polynomial approximation to the data (percent error): %0.4f\n',percentError)
 
 %% 2) simulte M0
-Par=OutPut.params(:,[1 :10]);
+Par=OutPut.params(:,[2:2:10]);
 %Par(1,:)=Par(1,:)./100; % what if we keep the constant close to the other values 
 G=OutPut.pBasis*Par;
 nVoxels=size(G,1);
@@ -44,25 +44,46 @@ showMontage(PDsim);
 % showMontage(M0S4D(:,:,:,1));
 % showMontage(M0S4D(:,:,:,2));
 
-
-
 %% 3)fit the sulotion by bilinear solver
-maxLoops = 400;
+maxLoops = 40;
 sCriterion = 1e-3;  % Stopping criterion    
-Lambda =0%1000.500000;
-D=[];
-D=diag(OutPut.W);%D(1,1)=0.01;
-BLSim = pdBiLinearFit(M0SN, OutPut.pBasis,...
-    Lambda, maxLoops, sCriterion, [], 1, Par,D);
+Lambda = 10;         % 1000.500000;
+
+D = diag(OutPut.W); %D(1,1)=0.01;
+% diag(D)
+% Constant term
+D(1,1) = 0;
+% Linear terms -
+lWeight = .1;
+sWeight = 1;
+cWeight = 1;
+D(2,2) = lWeight;  D(4,4) = lWeight; D(7,7) = lWeight;
+% Quadratic terms
+D(3,3) = sWeight; D(5,5)= sWeight; D(6,6) = sWeight;
+% Cross products?
+D(8,8) = cWeight; D(9,9) = cWeight; D(10,10) = cWeight;
+
+% PDinit = PDsim(:);
+PDinit = rand(size(PDsim(:)));
+% PDinit = [];
+BLSim = pdBiLinearFit(M0SN, OutPut.pBasis, ...
+    Lambda, maxLoops, sCriterion, PDinit(:), 1, Par,D);
+% PDinit = BLSim.PD(:);
+
+% To see the optimal solution
+% PDinit = PDsim(:);
+% BLSim = pdBiLinearFit(M0SN, OutPut.pBasis, ...
+%    Lambda, maxLoops, sCriterion, PDinit(:), 1, Par,D);
+%     
 %[1 2 4 7]
 PDfit = reshape(BLSim.PD,OutPut.SZ(1:3));
- showMontage(PDfit);
- showMontage(PDsim./mean(PDsim(:))-PDfit./mean(PDfit(:))  );
- sum(abs(PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))))
- RMSE=sqrt(mean(  (PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))   ).^2))
+showMontage(PDfit);
+
+showMontage(PDsim./mean(PDsim(:))-PDfit./mean(PDfit(:))  );
+sum(abs(PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))))
+
+RMSE = sqrt(mean(  (PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))   ).^2));
 title(['the percent error    RMSE = '   num2str(RMSE)] )
-
-
 
 %%  is it really better then the ratio ?
 

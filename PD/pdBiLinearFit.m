@@ -39,7 +39,7 @@ if notDefined('maxLoops'), maxLoops = 100; end
 if notDefined('sCriterion')
     sCriterion = 1e-4;  % Stopping criterion
 end
-if notDefined('PDi')
+if notDefined('PD')
     % This is the PD that will be returned if we won't have multi coil
     % information
     PD = sqrt(sum(M0_v.^2,2));
@@ -72,6 +72,8 @@ for ii=1:nCoils
     G(:,ii)  = M0_v(:,ii) ./ PD;         % Raw estimate
     g0(:,ii) = pBasis \ G(:,ii);  % Polynomial approximation
 end
+G  = G  .* PD(1);
+PD= PD ./ PD(1);
 
 M0=G.*repmat( PD,1,nCoils);
 %% This plots the initial condition
@@ -115,8 +117,9 @@ while tryagain == 1
     % keep them consistent?
 %     PDn = PDn ./ mean(PDn(:));
 %     Gn  = Gn  .* mean(PDn(:));
+   Gn  = Gn  .* PDn(1);
      PDn = PDn ./ PDn(1);
-     Gn  = Gn  .* PDn(1);
+  
      M0n=Gn.*repmat( PDn,1,nCoils);
     % Check if the new estimate differs from the one before or it's
     % converged

@@ -5,8 +5,8 @@ addpath(genpath(fullfile(mrqRootPath)));
 %% Run the script for the pdPolyPhantomOrder
 nCoils   = 32;     % A whole bunch of coils
 nDims    = 3;      % XYZ
-pOrder   = 1;      % Second order is good for up to 5 samples
-nSamples = 1;      % The box is -nSamples:nSamples
+pOrder   = 2;      % Second order is good for up to 5 samples
+nSamples = 3;      % The box is -nSamples:nSamples
 noiseFloor = 500;  % This is the smallest level we consider
 sampleLocation = 2;% Which box location
 BasisFlag = 'qr';
@@ -25,7 +25,7 @@ percentError = 100*OutPut.percentError;
 fprintf('Polynomial approximation to the data (percent error): %0.4f\n',percentError)
 
 %% 2) simulte M0
-Par=OutPut.params(:,1:4);
+Par=OutPut.params(:,[1 :10]);
 %Par(1,:)=Par(1,:)./100; % what if we keep the constant close to the other values 
 G=OutPut.pBasis*Par;
 nVoxels=size(G,1);
@@ -35,7 +35,7 @@ nCoilsS=size(G,2);
 % PD = 'single point';
 % PD = 'small region';
 PD = 'linear slope';
-noiseLevel = 10;
+noiseLevel = 5;
 [M0SN, M0S, SNR, PDsim]= simM0(G,PD,noiseLevel,true);
 
 PDsim = reshape(PDsim,OutPut.SZ(1:3));
@@ -47,17 +47,33 @@ showMontage(PDsim);
 
 
 %% 3)fit the sulotion by bilinear solver
-maxLoops = 100;
+maxLoops = 400;
 sCriterion = 1e-3;  % Stopping criterion    
-Lambda = .1000;
-
-D=diag(OutPut.W);D(1,1)=0.01;
+Lambda =0%1000.500000;
+D=[];
+D=diag(OutPut.W);%D(1,1)=0.01;
 BLSim = pdBiLinearFit(M0SN, OutPut.pBasis,...
     Lambda, maxLoops, sCriterion, [], 1, Par,D);
-
+%[1 2 4 7]
 PDfit = reshape(BLSim.PD,OutPut.SZ(1:3));
  showMontage(PDfit);
  showMontage(PDsim./mean(PDsim(:))-PDfit./mean(PDfit(:))  );
  sum(abs(PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))))
  RMSE=sqrt(mean(  (PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))   ).^2))
 title(['the percent error    RMSE = '   num2str(RMSE)] )
+
+
+
+%%  is it really better then the ratio ?
+
+% [polyRatio] = polyCreateRatio(M0SN, OutPut.pBasis);
+%  estGainCoefficients = polySolveRatio(polyRatio);
+% Res = polyRatioErr(estGainCoefficients, Par, OutPut.SZ(1:3), OutPut.pBasis);
+% PDfit= Res.PD;
+% showMontage(PDsim./mean(PDsim(:))-PDfit./mean(PDfit(:))  );
+%  sum(abs(PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))))
+%  RMSE=sqrt(mean(  (PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))   ).^2))
+% title(['the percent error    RMSE = '   num2str(RMSE)] )
+
+
+% yes much much the ratio is much worse!!!

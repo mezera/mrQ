@@ -39,11 +39,8 @@ if notDefined('maxLoops'), maxLoops = 100; end
 if notDefined('sCriterion')
     sCriterion = 1e-4;  % Stopping criterion
 end
-if notDefined('PDi')
-    % This is the PD that will be returned if we won't have multi coil
-    % information
-    PD = sqrt(sum(M0_v.^2,2));
-    PD = PD./ mean(PD);   % There are options - e.g., we could set PD(1) to 1
+if notDefined('PD')
+   
 end
 
 if notDefined('plotFlag'), plotFlag = 0; end
@@ -51,7 +48,7 @@ if notDefined('plotFlag'), plotFlag = 0; end
 nCoils    = size(M0_v,2);
 nPolyCoef = size(pBasis,2);
 
-if notDefined('D'),  D=eye(len nPolyCoef); end
+if notDefined('D'),  D=eye(nPolyCoef); end
 
 
 
@@ -72,6 +69,8 @@ for ii=1:nCoils
     G(:,ii)  = M0_v(:,ii) ./ PD;         % Raw estimate
     g0(:,ii) = pBasis \ G(:,ii);  % Polynomial approximation
 end
+G  = G  .* PD(1);
+PD= PD ./ PD(1);
 
 M0=G.*repmat( PD,1,nCoils);
 %% This plots the initial condition
@@ -115,8 +114,9 @@ while tryagain == 1
     % keep them consistent?
 %     PDn = PDn ./ mean(PDn(:));
 %     Gn  = Gn  .* mean(PDn(:));
+   Gn  = Gn  .* PDn(1);
      PDn = PDn ./ PDn(1);
-     Gn  = Gn  .* PDn(1);
+  
      M0n=Gn.*repmat( PDn,1,nCoils);
     % Check if the new estimate differs from the one before or it's
     % converged
@@ -187,6 +187,8 @@ OutPut.Gn = Gn; % the final coils gain values
 OutPut.g  = g; % the final coils gain coeficents  (G = pBasis*g)
 OutPut.PDchange = PDchange;  % a vector of the PD change in each step
 OutPut.M0change = M0change;  % a vector of the PD change in each step
+OutPut.LastLoop = k;  % a vector of the PD change in each step
+
 
 OutPut.NumOfIter = k;  % number of iteration
 if k == maxLoops

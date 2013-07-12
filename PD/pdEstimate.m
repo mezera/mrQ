@@ -9,7 +9,6 @@ function [PD, G] = pdEstimate(M0_v, pBasis, g)
 %
 % AM/BW Copyright VISTASOFT Team 2013
 
-
 % This is the coil gains (positions by coils)
 G = pBasis*g;
 
@@ -39,7 +38,10 @@ nPositions = size(M0_v,1);
 PD = zeros(nPositions,1);
 for ii=1:nPositions
     PD(ii) = G(ii,:)' \ M0_v(ii,:)';
-end
+ end
+%     g = G(ii,:)'; m = M0_v(ii,:)';
+%         ridgeG = (g'*g + Lambda*eye(size(g,2)))\g';
+%           PD(ii)  =  ridgeG*m;
 
 % Conceptually the same, but much slower
 %

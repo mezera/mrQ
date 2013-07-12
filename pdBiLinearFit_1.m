@@ -1,4 +1,4 @@
-function OutPut = pdBiLinearFit(M0_v,pBasis,Lambda,maxLoops,sCriterion,PD,plotFlag,TruePar,D)
+function OutPut = pdBiLinearFit_1(M0_v,pBasis,Lambda,maxLoops,sCriterion,PD,plotFlag,TruePar,D,HoldforCV,W)
 % OutPut = pdBiLinearFit(M0_v,pBasis,Lambda,maxLoops,sCriterion,PD,plotFlag,TruePar)
 %
 % This fancrtion running a while loop solving the M0=GPD bi-linear problem.
@@ -12,16 +12,19 @@ function OutPut = pdBiLinearFit(M0_v,pBasis,Lambda,maxLoops,sCriterion,PD,plotFl
 %  M0_v:         Columns containing the 3D M0 values in a vector (nVoxels x nCoils)
 %  pBasis:       Polynomial basis (nPositions x nCoef)
 %  Lambda        A ridge regration regularization term
-%  maxLoops      maxsimal iteration of the while loop
+%  maxLoops     maxsimal iteration of the while loop
 %  sCriterion    Stopping criterion to stop the while loop (this  define what when the problem converge)
-%  PD            initial PD sulotion
-%  plotFlag   when true (1) output a set of images showing the progess of the fit
+%  PD                  initial PD sulotion
+%  plotFlag         When true (1) output a set of images showing the progess of the fit
 %  TruePar       the true coil gain coepicent parameters if they are
-%                known. like in the casses of   simulation or phantoms.
-% D             a wighted identity matrix that will wighting  the ridge
-%                regration for each parameters D=(NcoefXnCoef)   (Ncoef=size(pBasis,2)); .
-%                D is a diagonal matrix position 1,1, is wight on parameter 1 position 2,2
-%                in a wight on parameter 2 ec. position (n,n) wight on parameter n.
+%                       known. like in the casses of   simulation or phantoms.
+% D                    A wighted identity matrix that will wighting  the ridge
+%                       regration for each parameters D=(NcoefXnCoef)   (Ncoef=size(pBasis,2)); .
+%                       D is a diagonal matrix position 1,1, is wight on parameter 1 position 2,2
+%                       in a wight on parameter 2 ec. position (n,n) wight on parameter n.
+%HoldforCV     The fraction of the data that will be hold fro cross.HoldforCV isa number between 0 to 1 HoldforCV>0 HoldforCV<1
+%W                     A diagonal matrix  (nVoxels X nVoxels)  of the wight
+%                         of each raw im M0 for the lsq fit
 %
 % OutPut is a stracture with a list of outputs:
 %  OutPut.PD             -  the final PD values
@@ -39,6 +42,14 @@ if notDefined('maxLoops'), maxLoops = 100; end
 if notDefined('sCriterion')
     sCriterion = 1e-4;  % Stopping criterion
 end
+if notDefined('HoldforCV') HoldforCV=0;end
+
+
+nCoils=size(M0_v,2);
+nvoxel=size(M0_v,1);
+nPolyCoef = size(pBasis,2);
+
+
 if notDefined('PD')
     % This is the PD that will be returned if we won't have multi coil
     % information
@@ -46,37 +57,68 @@ if notDefined('PD')
     PD = PD./ mean(PD);   % There are options - e.g., we could set PD(1) to 1
 end
 
+if HoldforCV>0  && HoldforCV<1
+    % cross validation we selecrt a random set of mesurament fot the fit
+    % and a random set to fit on
+     voxelLocations=randperm(nvoxel);
+     cut=round(nvoxel*HoldforCV);
+     
+     CVvox=voxelLocations(1:cut);
+     Fitvox=voxelLocations(cut+1:end);
+     nvoxelf=length(Fitvox);
+
+else
+    % no cross validation we will use all the mesrament to fit and to
+    % mesure the godness of the fit
+        nvoxelf=nvoxel;
+    Fitvox=1:nvoxel;
+    CVvox=Fitvox;
+    end
+    
+
 if notDefined('plotFlag'), plotFlag = 0; end
 
-nCoils    = size(M0_v,2);
-nPolyCoef = size(pBasis,2);
 
 if notDefined('D'),  D=eye(nPolyCoef); end
+if notDefined('W'),  W=[]; end
+
+
 
 % loop and solve by ridge regration
 k = 0;                % number of iteration
 tryagain = 1;         % go for the while loop
 PDchange = zeros(1,maxLoops);
 M0change = zeros(1,maxLoops);
+M0Fit = zeros(1,maxLoops);
+M0CVFit = zeros(1,maxLoops);  
+stablePD=0;
+stableM0=0;
 
+convarge=0;
 %% Initalize solution
 
 % When PD is given and M0 is given, we can form an estimate of the coil
 % gains.  But note that this estimate is not immediately inside of the
 % polynomial space.  So, we initialize.
-G = zeros(size(M0_v));
+G = zeros(nvoxel,nCoils);
 g0 = zeros(nPolyCoef,nCoils);
+% we can be spesipic with what we start the rest will be zeros.
+mask=~isnan(PD);
 for ii=1:nCoils
-    G(:,ii)  = M0_v(:,ii) ./ PD;         % Raw estimate
-    g0(:,ii) = pBasis \ G(:,ii);  % Polynomial approximation
+    G(mask,ii)  = M0_v(mask,ii) ./ PD(mask);         % Raw estimate
+    g0(:,ii) = pBasis(mask,:) \ G(mask,ii);  % Polynomial approximation
 end
 
+% now work with all the data
+[PD, G] = pdEstimate(M0_v, pBasis, g0);
 % You must first divide G by PD(1).  If you divided PD first, then you
 % change PD and you no longer are using the valid PD(1).
-G  = G  .* PD(1);
-PD = PD ./ PD(1);
-
-M0 = G.*repmat( PD,1,nCoils);
+ G  = G  .* PD(1);
+ PD = PD ./ PD(1);
+%      G  = G .* max(PD(:));
+  %  PD= PD ./ max(PD(:));
+    
+M0 = G.*repmat( PD(:),1,nCoils);
 %% This plots the initial condition
 if plotFlag==1
     figH = mrvNewGraphWin;
@@ -108,32 +150,44 @@ while tryagain == 1
     k = k+1; % count Ridge regression steps
     
     % fit linear equation coefficients using ridge regression
-    g = RidgeRegressCoilfit(PD, Lambda, M0_v, pBasis,D);
+    g = RidgeRegressCoilfit(PD(Fitvox), Lambda, M0_v(Fitvox,:), pBasis(Fitvox,:),D,W);
     
     % Calculate the coil gain of each coil over space from the estimate
     % Calculate PD for each coil
-    [PDn, Gn] = pdEstimate(M0_v, pBasis, g);
+%    [PDn, Gn] = pdEstimate(M0_v(Fitvox,:), pBasis(Fitvox,:), g);
+        [PDn, Gn] = pdEstimate(M0_v(:,:), pBasis(:,:), g);  %as we solve voxel by voxel we can run on all of them
+
     
+     Gn  = Gn  .* PDn(1);
+     PDn = PDn ./ PDn(1);
     
-    Gn  = Gn  .* PDn(1);
-    PDn = PDn ./ PDn(1);
+    %    Gn  = Gn  .* max(PDn(:));
+    %PDn = PDn ./ max(PDn(:));
+    
     
     M0n = Gn.*repmat( PDn,1,nCoils);
     % Check if the new estimate differs from the one before or it's
     % converged
     PDchange(k) = std(PD - PDn);
     M0change(k) = std(M0(:) - M0n(:));
-        M0Fit(k) = std(M0_v(:)-M0n(:));
+    
+    CVterm=M0_v(CVvox,:)-M0n(CVvox,:);
+      M0CVFit  (k) = std(CVterm(:));
+ FitTerm=M0_v(Fitvox,:)-M0n(Fitvox,:);
+        M0Fit(k) = std(FitTerm(:));
 
     %if PDchange(k) < sCriterion;
-    if M0Fit(k) < sCriterion;
-        % If stable to within 1 percent, stop.
+    if M0Fit(k) < sCriterion   %|| min(M0CVFit(1:k)) -M0CVFit(k) < -sCriterion 
+        % if the data is fitted stop
         
         % We could check the gains, rather than PD, or both
         % if std(G-Gn)<0.01
         
         % if the two solutions are stable --> stop
         tryagain=0;
+        convarge=1;
+                            fprintf(' rich the minimum for M0 fit CV  ');
+
     else
         % Keep going.
         
@@ -160,6 +214,22 @@ while tryagain == 1
         end
     end
     
+%      if k>10 &&  (max(PDchange(k-10:k))-PDchange(k))./PDchange(k)<0.01
+%             % If PD stable to within 1 percent, stop.
+%         tryagain=0;
+%         stablePD=1;
+%                     fprintf(' stop due to stable PD. \n ');
+%      
+%      end
+    
+%        if k>10 &&  (max(M0CVFit(k-10:k))-M0CVFit(k))./M0CVFit(k)<0.001
+%             % If PD stable to within 1 percent, stop.
+%         tryagain=0;
+%         stableM0=1;
+%                     fprintf(' stop due to stable M0. \n ');
+%      
+%      end
+    
     % We have to stop some time if it's not convarging
     if k == maxLoops
         tryagain=0;
@@ -169,16 +239,20 @@ while tryagain == 1
     end
 end
 
-if plotFlag==1
-    mrvNewGraphWin;
-    semilogy(1:k,PDchange(1:k),'o');
-    xlabel('steps'); ylabel('Change in PD')
-    
-    mrvNewGraphWin;
-    semilogy(1:k,M0change(1:k),'o');
-    xlabel('steps'); ylabel('Change in M0')
-    
-end
+% if plotFlag==1
+%     mrvNewGraphWin;
+%     semilogy(1:k,PDchange(1:k),'o');
+%     xlabel('steps'); ylabel('Change in PD')
+%     
+%     mrvNewGraphWin;
+%     semilogy(1:k,M0change(1:k),'o');
+%     xlabel('steps'); ylabel('Change in M0')
+%     
+%     mrvNewGraphWin;
+%     semilogy(1:k,M0Fit(1:k),'bo',1:k,M0CVFit(1:k),'ro');
+%     xlabel('steps'); ylabel('Change in M0 ')
+%     legend('Fit','CV')
+% end
 
 %% Outputs
 
@@ -189,14 +263,13 @@ OutPut.g  = g; % the final coils gain coeficents  (G = pBasis*g)
 OutPut.PDchange = PDchange;  % a vector of the PD change in each step
 OutPut.M0change = M0change;  % a vector of the PD change in each step
 OutPut.LastLoop = k;  % a vector of the PD change in each step
-
-
+OutPut.M0Fit=M0Fit;
+OutPut.M0CVFit=M0CVFit;
 OutPut.NumOfIter = k;  % number of iteration
-if k == maxLoops
-    OutPut.convarge=0;  % the problem while loop got to it's last interval with out convarges
-else
-    OutPut.convarge=1;  % the problem lo convarges
-end
 
-end
+OutPut.stablePD=stablePD;
+OutPut.stableM0=stableM0;
+OutPut.convarge=convarge;
+%keyboard
+ end
 

@@ -22,7 +22,7 @@ function [M0SN, M0S, SNR, PD,mask]=simM0(CoilGain, PD, noiseLevel, plotFlag)
 %  M0SN    The simulated M0  MOSN= CoilGain*PD+ Noise (nVoxels x nCoils)
 %  SNR     The simulated Signal to Noise ratio in desibals
 %  PD      The simulated PD
-%  mask   tissue mask in case of tissue simulation 1=WM GM=2 CSF=3;
+%
 % AM/BW Copyright VISTASOFT Team 2013
 
 %% Define the the problem dimension and parameters
@@ -70,7 +70,6 @@ if ischar(PD)
             PD = sin(x);
         case {'tissue1', '4'} %tissue
             PD = zeros(eSize,eSize,eSize);
-            mask = zeros(eSize,eSize,eSize);
             
             WM=0.7;
             GM=0.85;
@@ -80,45 +79,33 @@ if ischar(PD)
             
             loc1=(1:jump);
             PD(loc(loc1))=WM+ 0.1*randn(length(loc1),1);
-            mask(loc(loc1))=1;
-            
+            mask
             loc1=(jump+1:2*jump);
             PD(loc(loc1))=GM+ 0.1*randn(length(loc1),1);
-            mask(loc(loc1))=2;
             
             loc1=(2*jump+1:nVoxels);
             PD(loc(loc1))=CSF+  0.1*randn(length(loc1),1);
-            mask(loc(loc1))=3;
-            
-            PD = PD(:);
-            
-        case {'tissue2', '5'} % tissue with slop
+   case {'tissue2', '5'} % tissue with slop
             PD = zeros(eSize,eSize,eSize);
-            mask = zeros(eSize,eSize,eSize);
             
             WM=0.7;
             GM=0.85;
             CSF=0.95;
-            loc=randperm(nVoxels);
+             loc=randperm(nVoxels);
             jump=round(nVoxels./3);
             
             loc1=(1:jump);
             PD(loc(loc1))=WM;
-            mask(loc(loc1))=1;
-            
             loc1=(jump+1:2*jump);
             PD(loc(loc1))=GM;
-            mask(loc(loc1))=2;
             
             loc1=(2*jump+1:nVoxels);
             PD(loc(loc1))=CSF;
-            mask(loc(loc1))=3;
             
             
             for ii=1:eSize
-                PD(:,:,ii) =PD(:,:,ii) +  0.1*ii/eSize;
+                PD(:,:,ii) =PD(:,:,ii) +  0.1*ii/eSize;        
             end
-            PD = PD(:);
             
         otherwise
             error('PDtype %d not built',PDtype);
@@ -140,9 +127,9 @@ end
 %% plot
 fprintf('The simulation SNR: %0.4f\n',SNR);
 
-if plotFlag
+if plotFlag 
     mrvNewGraphWin
-    
+
     x = length(M0S(:));
     
     plot(1:x,M0S(:),'.-k',1:x,M0SN(:),'.-r')

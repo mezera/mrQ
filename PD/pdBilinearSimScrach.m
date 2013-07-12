@@ -25,7 +25,7 @@ percentError = 100*OutPut.percentError;
 fprintf('Polynomial approximation to the data (percent error): %0.4f\n',percentError)
 
 %% 2) simulte M0
-Par=OutPut.params(:,[1:1:10]);
+Par=OutPut.params(:,[1 2]);
 %Par(1,:)=Par(1,:)./100; % what if we keep the constant close to the other values 
 G=OutPut.pBasis*Par;
 nVoxels=size(G,1);
@@ -34,9 +34,12 @@ nCoilsS=size(G,2);
 %PD = ones(nVoxels,1);
 % PD = 'single point';
 % PD = 'small region';
-PD = 'linear slope';
+%PD = 'linear slope';
+PD = 'tissue1';
+PD = 'tissue2';
+
 noiseLevel = 5;
-[M0SN, M0S, SNR, PDsim]= simM0(G,PD,noiseLevel,true);
+[M0SN, M0S, SNR, PDsim, mask]= simM0(G,PD,noiseLevel,true);
 
 PDsim = reshape(PDsim,OutPut.SZ(1:3));
 showMontage(PDsim);
@@ -45,9 +48,9 @@ showMontage(PDsim);
 % showMontage(M0S4D(:,:,:,2));
 
 %% 3)fit the sulotion by bilinear solver
-maxLoops = 1000;
+maxLoops = 100;
 sCriterion = 1e-3;  % Stopping criterion    
-Lambda =0.002         % 1000.500000;
+Lambda =.0      % 1000.500000;
 
 D = diag(OutPut.W); %D(1,1)=0.01;
 % diag(D)
@@ -66,14 +69,87 @@ HoldforCV=0; %0.4;
 %PDinit = PDsim(:);
 %PDinit = rand(size(PDsim(:)));
  PDinit = [];
- wightedFlag=true;
- S=sum(M0SN,2);
-W=diag(S./max(S(:))); 
-W=W.^2;
-tic
-BLSim = pdBiLinearFit_1(M0SN, OutPut.pBasis, ...
+%   coilList=(1:10);
+%  Dat=M0SN(:,coilList);
+%%
+ PDinit=nan(size(mask));
+ PDinit(find(mask==1))=1;
+PDinit=PDinit(:);
+ W=[];
+ Lambda =.01  
+%  S=sum(M0SN,2);
+% W=diag(S./max(M0SN(:))); 
+% W=W.^2;
+
+
+ BLSim = pdBiLinearFit_1(M0SN, OutPut.pBasis, ...
+    Lambda, 1, sCriterion, PDinit(:), 1, Par,D,HoldforCV,W);
+PDfit = reshape(BLSim.PD,OutPut.SZ(1:3));
+showMontage(PDfit);
+
+showMontage(PDsim./mean(PDsim(:))-PDfit./mean(PDfit(:))  );
+sum(abs(PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))))
+
+RMSE = sqrt(mean(  (PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))   ).^2))
+title(['the percent error    RMSE = '   num2str(RMSE)] )
+
+fiterr=BLSim.M0Fit(end)
+maxLoops = 100;
+
+ BLSim = pdBiLinearFit_1(M0SN, OutPut.pBasis, ...
     Lambda, maxLoops, sCriterion, PDinit(:), 1, Par,D,HoldforCV,W);
-toc
+%%
+close all
+maxLoops=40000;
+Lambda =.001      % 1000.500000;
+
+ BLSim = pdBiLinearFit_1(M0SN, OutPut.pBasis, ...
+    Lambda, maxLoops, sCriterion, BLSim.PD(:), 0, Par,D,HoldforCV,W);
+BLSim = pdBiLinearFit_1(M0SN, OutPut.pBasis, ...
+    Lambda, 1, sCriterion, BLSim.PD(:), 1, Par,D,HoldforCV,W);
+
+
+PDfit = reshape(BLSim.PD,OutPut.SZ(1:3));
+showMontage(PDfit);
+
+showMontage(PDsim./mean(PDsim(:))-PDfit./mean(PDfit(:))  );
+sum(abs(PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))))
+
+RMSE = sqrt(mean(  (PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))   ).^2))
+title(['the percent error    RMSE = '   num2str(RMSE)] )
+
+fiterr=BLSim.M0Fit(end)
+ %%
+  coilList=(1:10);
+ Dat=M0SN(:,coilList);
+ maxLoops = 100;
+
+ 
+ 
+ S=sum(Dat,2);
+W=diag(S./max(Dat(:))); 
+W=W.^2;
+
+
+ BLSim1 = pdBiLinearFit_1(Dat, OutPut.pBasis, ...
+    Lambda, maxLoops, sCriterion, PDinit(:), 1, Par(:,coilList),D,HoldforCV,W);
+
+
+ 
+ 
+ 
+ coilList=(1:7);
+ Dat=M0SN(:,coilList);
+ 
+ 
+ 
+ S=sum(Dat,2);
+W=diag(S./max(Dat(:))); 
+W=W.^2;
+
+BLSim2 = pdBiLinearFit_1(Dat, OutPut.pBasis, ...
+    Lambda, maxLoops, sCriterion, BLSim1.PD(:), 1, Par(:,coilList),D,HoldforCV,W);
+
 % PDinit = BLSim.PD(:);
 
 % To see the optimal solution
@@ -82,7 +158,7 @@ toc
 %    Lambda, maxLoops, sCriterion, PDinit(:), 1, Par,D);
 %     
 %[1 2 4 7]
-PDfit = reshape(BLSim.PD,OutPut.SZ(1:3));
+PDfit = reshape(BLSim1.PD,OutPut.SZ(1:3));
 showMontage(PDfit);
 
 showMontage(PDsim./mean(PDsim(:))-PDfit./mean(PDfit(:))  );

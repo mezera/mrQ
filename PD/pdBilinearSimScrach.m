@@ -25,7 +25,7 @@ percentError = 100*OutPut.percentError;
 fprintf('Polynomial approximation to the data (percent error): %0.4f\n',percentError)
 
 %% 2) simulte M0
-Par=OutPut.params(:,[1 2]);
+Par=OutPut.params(:,[1 :4]);
 %Par(1,:)=Par(1,:)./100; % what if we keep the constant close to the other values 
 G=OutPut.pBasis*Par;
 nVoxels=size(G,1);
@@ -69,12 +69,15 @@ HoldforCV=0; %0.4;
 %PDinit = PDsim(:);
 %PDinit = rand(size(PDsim(:)));
  PDinit = [];
+  PDmask=nan(size(mask));
+ PDmask(find(mask==1))=1;
+ PDinit=PDmask;
 %   coilList=(1:10);
 %  Dat=M0SN(:,coilList);
 %%
- PDinit=nan(size(mask));
- PDinit(find(mask==1))=1;
-PDinit=PDinit(:);
+
+
+ PDinit=PDinit(:);
  W=[];
  Lambda =.01  
 %  S=sum(M0SN,2);
@@ -200,6 +203,93 @@ end
 
 
 
+
+
+%%
+options = optimset('Display','iter','MaxFunEvals',Inf,'MaxIter',Inf,'TolFun', 1e-10,'TolX', 1e-10);
+      nPolyCoef = size(OutPut.pBasis,2); 
+           PDsosq = sqrt(sum(M0SN.^2,2));
+
+  %%
+
+     for jj=1:3
+         if jj==1;
+% 1)  sum of squre
+   PDinit =PDsosq ;
+         elseif jj==2
+% 2)  sqmentation
+  PDinit=PDmask(:);
+         elseif jj==3
+% ture PD  
+   PDinit=PDsim(:);
+         end
+         % get inital guess
+ G = zeros(nVoxels,nCoilsS);    
+g0 = zeros(nPolyCoef,nCoilsS);
+% we can be spesipic with what we start the rest will be zeros.
+mask1=~isnan(PDinit);
+for ii=1:nCoilsS
+    G(mask1,ii)  = M0SN(mask1,ii) ./ PDinit(mask1);         % Raw estimate
+    g0(:,ii) =OutPut. pBasis(mask1,:) \ G(mask1,ii);  % Polynomial approximation
+end
+  %%
+
+[res1(:,:,jj), resnorm(jj),dd1,exitflag] = lsqnonlin(@(par)  errFitNestBiLinear(par,M0SN,OutPut.pBasis,nVoxels,nCoilsS)...
+         ,double(g0),[],[],options);
+     
+G = OutPut.pBasis*res1(:,:,jj);
+PD = zeros(nVoxels,1);
+for ii=1:nVoxels
+    PD(ii) = G(ii,:)' \ M0SN(ii,:)';
+end
+PDfit = reshape(PD,OutPut.SZ(1:3));
+showMontage(PDfit);
+
+showMontage(PDsim./mean(PDsim(:))-PDfit./mean(PDfit(:))  );
+sum(abs(PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))))
+
+RMSE = sqrt(mean(  (PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))   ).^2))
+title(['the percent error    RMSE = '   num2str(RMSE) ' the err is : ' num2str( resnorm(jj))] )
+
+
+
+     end
+
+BLSim = pdBiLinearFit_1(M0SN, OutPut.pBasis, ...
+    0, 1, 0, PDfit(:), 1, Par);
+
+
+PDfit1 = reshape(BLSim.PD,OutPut.SZ(1:3));
+showMontage(PDfit1);
+
+showMontage(PDsim./mean(PDsim(:))-PDfit1./mean(PDfit1(:))  );
+sum(abs(PDsim(:)./mean(PDsim(:))-PDfit1(:)./mean(PDfit1(:))))
+
+RMSE = sqrt(mean(  (PDsim(:)./mean(PDsim(:))-PDfit1(:)./mean(PDfit1(:))   ).^2))
+title(['the percent error    RMSE = '   num2str(RMSE)] )
+
+fiterr=BLSim.M0Fit(end)
+%%
+%conclusions:
+%with noise no matter were the starting point is even the true we ended up
+%in wrong sulotion in PD but better sulotion in M0. 
+%Fit : PD error is 0.21 M0 error 3.23  
+% True PD error is 0.0042 M0 error 3.2571
+% cheack this sulotion with no noise
+%Fit : PD error is 0.21 M0 error 0.4  
+%True PD error is 0 M0 error 0
+%
+% so we are totlay dominated by the noise!!! in error function
+% and it's make no diferent where you start
+%%
+% i like to answer 
+% 1) if we fit part of the date how it fits the other part?
+% 2) if we fit on one set of coils how it predict a differnt set?
+%%
+
+
+
+%%
 
 
 

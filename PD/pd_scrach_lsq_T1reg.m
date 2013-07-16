@@ -41,6 +41,68 @@ PD = 'tissue2';
 
 noiseLevel = 5;
 [M0SN, M0S, SNR, PDsim, mask]= simM0(G,PD,noiseLevel,true);
-R1=1./PDsim;
+R1=2.5./PDsim-0.95;
 
 PDsim = reshape(PDsim,OutPut.SZ(1:3));
+
+ 
+%% 4)intiate the search 
+options = optimset('Display','iter','MaxFunEvals',Inf,'MaxIter',Inf,'TolFun', 1e-6,'TolX', 1e-10);
+      nPolyCoef = size(OutPut.pBasis,2); 
+
+      
+ %  START PD
+%   mean of squr
+%  PDsosq = sqrt(sum(M0SN.^2,2));
+%  PDinit=PDsosq;
+%  PDinit=PDinit(:);
+
+%   random
+% PDinit = rand(size(PDsim(:)));
+% PDinit=PDinit(:);
+
+%   segmentaion
+% PDinit=nan(size(mask));
+%  PDinit(find(mask==1))=1;
+% PDinit=PDinit(:);
+
+%   true sulotiop
+PDinit=PDsim(:);     
+      
+         % get inital guess
+ G = zeros(nVoxels,nCoilsS);    
+g0 = zeros(nPolyCoef,nCoilsS);
+% we can be spesipic with what we start the rest will be zeros.
+mask1=~isnan(PDinit);
+for ii=1:nCoilsS
+    G(mask1,ii)  = M0SN(mask1,ii) ./ PDinit(mask1);         % Raw estimate
+    g0(:,ii) =OutPut. pBasis(mask1,:) \ G(mask1,ii);  % Polynomial approximation
+end
+
+R1basiss(1:nVoxels,1)=1;
+R1basiss(:,2)=R1(:);
+
+%% 5) LSQ fit
+
+  clist=[3 4];
+
+[res1, resnorm,dd1,exitflag] = lsqnonlin(@(par)  errFitNestBiLinearT1reg(par,M0SN(:,clist),OutPut.pBasis,nVoxels,length(clist),R1basiss,1)...
+         ,double(g0(:,clist)),[],[],options);
+     
+     
+%% 6) Visualiztion     
+G = OutPut.pBasis*res1(:,:);
+PD = zeros(nVoxels,1);
+for ii=1:nVoxels
+    PD(ii) = G(ii,:)' \ M0SN(ii,clist)';
+end
+PDfit = reshape(PD,OutPut.SZ(1:3));
+showMontage(PDfit);
+
+showMontage(PDsim./mean(PDsim(:))-PDfit./mean(PDfit(:))  );
+sum(abs(PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))))
+
+RMSE = sqrt(mean(  (PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))   ).^2))
+title(['the percent error    RMSE = '   num2str(RMSE) ' the err is : ' num2str( resnorm)] )
+
+

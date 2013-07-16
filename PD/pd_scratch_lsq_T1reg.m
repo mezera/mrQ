@@ -25,34 +25,39 @@ smoothkernel=[];
 percentError = 100*OutPut.percentError;
 fprintf('Polynomial approximation to the data (percent error): %0.4f\n',percentError)
 
-%% 3) simulte M0
-Par=OutPut.params(:,[1 :3]);
+%% 3) simulate M0 and R1
+
+Par = OutPut.params(:,[1:3]);
+
 %Par(1,:)=Par(1,:)./100; % what if we keep the constant close to the other values
-G=OutPut.pBasis*Par;
-nVoxels=size(G,1);
-nCoilsS=size(G,2);
+G = OutPut.pBasis*Par;
+nVoxels = size(G,1);
+nSimulatedCoils = size(G,2);
 
 %PD = ones(nVoxels,1);
-% PD = 'single point';
-% PD = 'small region';
+%PD = 'single point';
+%PD = 'small region';
 %PD = 'linear slope';
 %PD = 'tissue1';
-PD = 'tissue2';
+PD = 'tissue2';  % Subset of voxels
 
-noiseLevel = 5;
+noiseLevel = 5;   % ?? Units???
+
 [M0SN, M0S, SNR, PDsim, mask]= simM0(G,PD,noiseLevel,true);
-R1=2.5./PDsim-0.95;
 
+% This is the typical linear relationship between T1 and PD
+% Could go into simM0.
+R1 = (2.5./PDsim) - 0.95;
+
+% Put this in the form of a block.
 PDsim = reshape(PDsim,OutPut.SZ(1:3));
 
- 
-%% 4)intiate the search 
+%% 4)intiate the search parameters
 options = optimset('Display','iter','MaxFunEvals',Inf,'MaxIter',Inf,'TolFun', 1e-6,'TolX', 1e-10);
       nPolyCoef = size(OutPut.pBasis,2); 
-
       
- %  START PD
-%   mean of squr
+%  START PD
+% mean of squr
 %  PDsosq = sqrt(sum(M0SN.^2,2));
 %  PDinit=PDsosq;
 %  PDinit=PDinit(:);
@@ -63,35 +68,40 @@ options = optimset('Display','iter','MaxFunEvals',Inf,'MaxIter',Inf,'TolFun', 1e
 
 %   segmentaion
 % PDinit=nan(size(mask));
-%  PDinit(find(mask==1))=1;
+% PDinit(find(mask==1))=1;
 % PDinit=PDinit(:);
 
-%   true sulotiop
-PDinit=PDsim(:);     
+%   true solution
+PDinit = PDsim(:);     
       
-         % get inital guess
- G = zeros(nVoxels,nCoilsS);    
-g0 = zeros(nPolyCoef,nCoilsS);
-% we can be spesipic with what we start the rest will be zeros.
-mask1=~isnan(PDinit);
-for ii=1:nCoilsS
+% get inital guess
+G  = zeros(nVoxels,nSimulatedCoils);
+g0 = zeros(nPolyCoef,nSimulatedCoils);
+
+% we can be specific with what we start the rest will be zeros.
+mask1 = ~isnan(PDinit);
+for ii=1:nSimulatedCoils
     G(mask1,ii)  = M0SN(mask1,ii) ./ PDinit(mask1);         % Raw estimate
-    g0(:,ii) =OutPut. pBasis(mask1,:) \ G(mask1,ii);  % Polynomial approximation
+    g0(:,ii) = OutPut.pBasis(mask1,:) \ G(mask1,ii);  % Polynomial approximation
 end
 
-R1basiss(1:nVoxels,1)=1;
-R1basiss(:,2)=R1(:);
+R1basis(1:nVoxels,1) = 1;
+R1basis(:,2) = R1(:);
 
 %% 5) LSQ fit
 
-  clist=[3 4];
+% Coil list
+clist = [1 2];
+lambda1 = 1e4;   % Weight on T1 regularization
 
-[res1, resnorm,dd1,exitflag] = lsqnonlin(@(par)  errFitNestBiLinearT1reg(par,M0SN(:,clist),OutPut.pBasis,nVoxels,length(clist),R1basiss,1)...
-         ,double(g0(:,clist)),[],[],options);
-     
-     
+% Searching on the gain parameters, G.
+[gEst, resnorm, dd1, exitflag] = ...
+    lsqnonlin(@(par) errFitNestBiLinearT1reg(par, M0SN(:,clist),...
+    OutPut.pBasis, nVoxels, length(clist), R1basis, lambda1),...
+    double(g0(:,clist)),[],[],options);
+
 %% 6) Visualiztion     
-G = OutPut.pBasis*res1(:,:);
+G = OutPut.pBasis*gEst(:,:);
 PD = zeros(nVoxels,1);
 for ii=1:nVoxels
     PD(ii) = G(ii,:)' \ M0SN(ii,clist)';

@@ -68,9 +68,9 @@ options = optimset('Display','iter','MaxFunEvals',Inf,'MaxIter',Inf,'TolFun', 1e
 nPolyCoef = size(OutPut.pBasis,2);
 
 %   mean of squr
- PDsosq = sqrt(sum(M0SN.^2,2));
- PDinit=PDsosq;
- PDinit=PDinit(:);
+%  PDsosq = sqrt(sum(M0SN.^2,2));
+%  PDinit=PDsosq;
+%  PDinit=PDinit(:);
 
 %   random
 % PDinit = rand(size(PDsim(:)));
@@ -82,24 +82,24 @@ nPolyCoef = size(OutPut.pBasis,2);
 % PDinit=PDinit(:);
 %
 %    start with  reage regration fit
-% PDinit = rand(size(PDsim(:)));
-% PDinit=PDinit(:);
-% D = diag(OutPut.W); %D(1,1)=0.01;
-% % diag(D)
-% % Constant terme
-% D(1,1) = 0;
-% % Linear terms -
-% lWeight = .01;
-% sWeight = 1;
-% cWeight = 1;
-% D(2,2) = lWeight;  D(4,4) = lWeight; D(7,7) = lWeight;
-% % Quadratic terms
-% D(3,3) = sWeight; D(5,5)= sWeight; D(6,6) = sWeight;
-% % Cross products?
-% D(8,8) = cWeight; D(9,9) = cWeight; D(10,10) = cWeight;
-% BLSim = pdBiLinearFit_1(M0SN, OutPut.pBasis, ...
-%     1, 100, 0, PDinit(:), 1, Par,D);
-%  PDinit = BLSim.PD(:);
+PDinit = rand(size(PDsim(:)));
+PDinit=PDinit(:);
+D = diag(OutPut.W); %D(1,1)=0.01;
+% diag(D)
+% Constant terme
+D(1,1) = 0;
+% Linear terms -
+lWeight = .01;
+sWeight = 1;
+cWeight = 1;
+D(2,2) = lWeight;  D(4,4) = lWeight; D(7,7) = lWeight;
+% Quadratic terms
+D(3,3) = sWeight; D(5,5)= sWeight; D(6,6) = sWeight;
+% Cross products?
+D(8,8) = cWeight; D(9,9) = cWeight; D(10,10) = cWeight;
+BLSim = pdBiLinearFit_1(M0SN, OutPut.pBasis, ...
+    1, 500, 0, PDinit(:), 1, Par,D);
+ PDinit = BLSim.PD(:);
 
 
 
@@ -120,8 +120,8 @@ end
 
 
 %% let try a  nested CV fit
-options = optimset('Display','iter','MaxFunEvals',Inf,'MaxIter',inf,'TolFun', 1e-8,'TolX', 1e-10);
-
+options = optimset('Display','iter','MaxFunEvals',Inf,'MaxIter',inf,'TolFun', 1e-8,'TolX', 1e-10, 'OutputFcn',@(a,b,c) outputfcn(a,b,c,1) , ...
+      'Algorithm','levenberg-marquardt');
 clist=[1 2 3 ];
 Fcoils{1}=[1 2 ]  ; Fcoils{2}=[1 3 ];Fcoils{3}=[2 3 ];
 Tcoils{1}=[3 ]  ; Tcoils{2}=[2 ];Tcoils{3}=[1 ];

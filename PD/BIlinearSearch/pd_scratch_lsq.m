@@ -203,26 +203,6 @@ M0Fittrue=BLSim.M0Fit
 %
 % concultion we fitting noise but maybe we can use voxel we not fitting to contorol it? but how?
 
-%% let try a  nested CV fit
-
-clist=[1 2 3];
-   Fcoils{1}=[1 2 ]  ; Fcoils{2}=[1 3 ];Fcoils{3}=[2 3 ];
-   Tcoils{1}=[3 ]  ; Tcoils{2}=[2 ];Tcoils{3}=[1 ];
-   
-[res1, resnorm,dd1,exitflag] = lsqnonlin(@(par)  errFitNestBiLinearLnO(par,M0SN(:,clist),OutPut.pBasis,nVoxels,Fcoils,Tcoils)...
-         ,double(g0(:,clist)),[],[],options);
-  
-     G = OutPut.pBasis(:,:)*res1(:,:);
-
-PDfit = zeros(nVoxels,1);
-for ii=1:nVoxels
-    PDfit(ii) = G(ii,:)' \ M0SN(ii,clist)';
-end
-
-
-BLSim = pdBiLinearFit_1(M0SN(:,clist), OutPut.pBasis(:,:), ...
-    0, 1 ,0, PDfit(:), 1, Par(:,clist));
- M0Fit=BLSim.M0Fit
 
  
  

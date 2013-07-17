@@ -116,3 +116,63 @@ RMSE = sqrt(mean(  (PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))   ).^2))
 title(['the percent error    RMSE = '   num2str(RMSE) ' the err is : ' num2str( resnorm)] )
 
 
+%% 7) loop over  Lambda and cheack CV over voxel and coils
+plotFlag=1;
+TruePar=Par;
+TruePD=PDsim(:);
+HoldForCV=0.4;
+[hold use] =getCVvoxel(nVoxels,HoldForCV);
+lambda1 = [1e4  1e3 1e2 1e1 1e0] ;   % Weight on T1 regularization
+
+%% 7a loop over Lambda for sub set of voxel
+clist = [1 2];
+
+for ii=1:length(lambda1),
+% Searching on the gain parameters, G.
+[gEst(:,:,ii), resnorm(ii), dd1, exitflag] = ...
+    lsqnonlin(@(par) errFitNestBiLinearT1reg(par, M0SN(use,clist),...
+    OutPut.pBasis(use,:), length(use), length(clist), R1basis(use,:), lambda1(ii)),...
+    double(g0(:,clist)),[],[],options);
+
+end
+
+
+%% 7b test for CV on the other voxels
+plotFlag=1;
+TruePar=Par;
+TruePD=PDsim(:);
+%for hold voxels
+for ii=1:length(lambda1),
+%cheack if the coil coefficent can explain the hold data
+Fit{ii}=pd_CVtest_voxels(gEst(:,:,ii),OutPut.pBasis(hold,:),M0SN(hold,clist),plotFlag,TruePar(:,clist),TruePD(hold),ii)
+end
+
+
+%% &c loop over Lambda over given coils
+for jj=1:length(lambda1),
+% Searching on the gain parameters, G.
+[gEst(:,:,jj), resnorm(jj), dd1, exitflag] = ...
+    lsqnonlin(@(par) errFitNestBiLinearT1reg(par, M0SN(:,clist),...
+    OutPut.pBasis(:,:), nVoxels, length(clist), R1basis, lambda1(jj)),...
+    double(g0(:,clist)),[],[],options);
+
+end
+
+
+%% 7b test for CV on other coils
+clist = [3];
+
+
+%for hold voxels
+for jj=1:length(lambda1),
+    %get the predicted PD
+G = OutPut.pBasis*gEst(:,:,ii);
+PD = zeros(nVoxels,1);
+for ii=1:nVoxels
+    PD(ii) = G(ii,:)' \ M0SN(ii,clist)';
+end
+PDfit = reshape(PD,OutPut.SZ(1:3));
+%cheack if the predicted PD can explain the other coil
+Fit{jj}=pd_CVtest_coils(PDfit,pBasis,M0_v,plotFlag,TruePar)
+end
+

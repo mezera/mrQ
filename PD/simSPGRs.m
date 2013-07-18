@@ -40,7 +40,7 @@ nVoxels = size(CoilGain,1);
 
 if notDefined('noiseLevel'),  noiseLevel = 0; end
 if notDefined('plotFlag'), plotFlag = 0; end
-if notDefined('flipAngles') flipAngles=[4 10 20 30];end
+if notDefined('flipAngles'), flipAngles=[4 10 20 30];end
 if notDefined('B1'), B1( 1:nVoxels,1)= 1; end
 if notDefined('tr'), tr= 20; end
 

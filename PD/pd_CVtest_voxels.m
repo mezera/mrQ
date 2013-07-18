@@ -14,7 +14,11 @@ M0 = G.*repmat( PD(:),1,nCoils);
 %calculate the fit error
 Fit.M0prederr=M0-M0_v;
 Fit.Meanerr=mean(abs(Fit.M0prederr));
-
+  if ~notDefined('FigNum')
+    
+    
+fprintf(' fit number % 0.f  \n :',FigNum);
+end
 fprintf(' the M0 mean abs error fit  % 0.3f  \n :',Fit.Meanerr);
 
 if ~notDefined('TruePD')

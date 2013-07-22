@@ -5,6 +5,7 @@ function Fit=pd_CVtest_voxels(g,pBasis,M0_v,plotFlag,TruePar,TruePD,FigNum)
 %
 %
 % AM VISTASOFT Team, 2013
+if notDefined('plotFlag'), plotFlag = 0; end
 
 nCoils=size(M0_v,2);
 

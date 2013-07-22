@@ -97,58 +97,8 @@ TruePar   = Par;
 TruePD    = PDsim(:);
 HoldForCV = 0.4;
 
-% Get X-validation voxels to hold out and to use
-[hold use] = getCVvoxel(nVoxels,HoldForCV);
-
-lambda1 = [1e2 1e1 1e0 1e-1 0] ;   % Weight on T1 regularization
-%% Loop over Lambda 
-
-clist = [1];  % Coil list
-clear gEst resnorm
-
-for ii=1:length(lambda1),
-    % Searching on the gain parameters, G.
-    [gEst(:,:,ii), resnorm(ii), dd1, exitflag] = ...
-        lsqnonlin(@(par) errFitNestBiLinearT1reg(par, M0SN(use,clist),...
-        OutPut.pBasis(use,:), length(use), length(clist), R1basis(use,:), lambda1(ii)),...
-        double(g0(:,clist)),[],[],options);
-    
-end
 
 
-%% Test for X-validation error on the held out voxels
-plotFlag = 1;
-TruePar  = Par;
-TruePD   = PDsim(:);
-
-%check for hold voxels
-clear Fit
-for ii=1:length(lambda1)
-    %Check if the coil coefficent can explain the hold data
-    Fit{ii} = ...
-        pd_CVtest_voxels(gEst(:,:,ii),OutPut.pBasis(hold,:),...
-        M0SN(hold,clist),plotFlag,TruePar(:,clist),TruePD(hold),ii);
-end
-
-%Conclusion:
-%
-% The first test was starting from the true solution interesting this
-% prefers the middle lambda  1e2 over: [1e4  1e3 1e1 1e0] . In terms of PD
-% fit this is not the best but it's very close. And it is a very good
-% direction with three coils.
-% 
-% The best is 1e3 (it's probably proportional to the number of coils.
-%
-%Checks:
-%
-% 1 -- the normalization of PD and G is important first it change the best
-% lambda PD fit is not so good ect. strange
-%
-% 2 -- levenberg-marquardt is much much faster the default algoritim and
-% gets as good result maybe even sightly better.
-%
-% 3 -- using a diferent starting point true segmentation random and sum of
-%square we got the same solution!!!
 
 %% &c loop over Lambda over given coils
 clist = [1 2];

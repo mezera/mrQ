@@ -7,7 +7,7 @@ nDims    = 3;      % XYZ
 pOrder   = 3;      % Second order is good for up to 5 samples
 nSamples = 3;      % The box is -nSamples:nSamples
 noiseFloor = 500;  % This is the smallest level we consider
-sampleLocation = 2;% Which box location
+sampleLocation = 1;% Which box location
 BasisFlag = 'qr';
 
 printImages = false;
@@ -22,7 +22,7 @@ smoothkernel=[];
 % showMontage(tmp(:,:,:,1))
 percentError = 100*OutPut.percentError;
 fprintf('Polynomial approximation to the data (percent error): %0.4f\n',percentError)
-%%  intiate the search parameters
+%%  initiate the search parameters
 clist=[1:5];
 nUseCoils=length(clist);
 M0=double(OutPut.M0_v(:,clist));
@@ -61,24 +61,29 @@ for ii=1:nUseCoils
     G(mask1,ii)  = M0(mask1,ii) ./ PDinit(mask1);         % Raw estimate
     g0(:,ii) = OutPut.pBasis(mask1,:) \ G(mask1,ii);  % Polynomial approximation
 end
-lambda1 = [1e4 1e3 1e2 1e1 1e0 1e-1 0] ;   % Weight on T1 regularization
+% lambda1 = [1e4 1e3 1e2 1e1 1e0 1e-1 0] ;   % Weight on T1 regularization
+lambda1 = logspace(2,3.5,6);
 Kfolod =5;
 %% X_valdationLoop
 [X_valdationErr ,  X_gEst, Xresnorm, X_Fit]=pdX_valdationLoop( lambda1,Kfolod,M0,  OutPut.pBasis,R1basis,g0,mask,options);
 
 
-%% fit all data on the best X_valdationErr condition
- figure;plot(lambda1,X_valdationErr,'*-')
-best=find(X_valdationErr==min(X_valdationErr));
+%% Fit all data with the lambda from the best X_valdationErr condition
 
- 
+mrvNewGraphWin;
+semilogx(lambda1,X_valdationErr,'*-')
+best = find(X_valdationErr==min(X_valdationErr));
+fprintf('Choosing lambda(%d) = %f\n',best,lambda(best))
 
-      [gEst, resnorm, dd1, exitflag] = ...
-        lsqnonlin(@(par) errFitNestBiLinearTissueT1reg(par,M0,...
-      OutPut.pBasis,  nVoxels, length(clist), R1basis, lambda1(best),mask),...
-        double(g0),[],[],options);
+%%
+% best = 3;
 
- 
+[gEst, resnorm, dd1, exitflag] = ...
+    lsqnonlin(@(par) errFitNestBiLinearTissueT1reg(par,M0,...
+    OutPut.pBasis,  nVoxels, length(clist), R1basis, lambda1(best),mask),...
+    double(g0),[],[],options);
+
+
 %%  Visualiztion     
 G = OutPut.pBasis*gEst(:,:);
 PD = zeros(nVoxels,1);
@@ -86,14 +91,23 @@ for ii=1:nVoxels
     PD(ii) = G(ii,:)' \ M0(ii,clist)';
 end
 PDfit = reshape(PD,OutPut.SZ(1:3));
+mn = mean(PDfit(:));
+PDfit = PDfit/mn;
+G = G*mn;
+
 showMontage(PDfit);
 
-PDsim=ones(size(PDfit));
+% Phantom should have a PD of 1 everywhere
+PDsim = ones(size(PDfit));
 
-showMontage(PDsim./mean(PDsim(:))-PDfit./mean(PDfit(:))  );
-sum(abs(PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))))
+% Maybe we should aways insist that we have a mean of 1, rather than this.
+PDsim = PDsim/mean(PDsim(:)); 
 
-RMSE = sqrt(mean(  (PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))   ).^2))
-title(['the percent error    RMSE = '   num2str(RMSE) ' the err is : ' num2str( resnorm)] )
+% This is the difference between the simulated and estimated PD, divided by
+showMontage( (PDsim - PDfit) ./ PDsim);
 
+% sum(abs(PDsim(:)./mean(PDsim(:))-PDfit(:)./mean(PDfit(:))))
+RMSE = sqrt(mean( (100*(PDsim(:) - PDfit(:))./ PDsim(:) ).^2));
+title(['Percent error = ' num2str(RMSE)])
 
+%%

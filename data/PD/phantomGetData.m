@@ -1,4 +1,4 @@
-function [M01 boxSize meanVal ]= phantomGetData(boxsize,loc,smoothkernel)
+function [M01, boxSize, meanVal, t1]= phantomGetData(boxsize,loc,smoothkernel)
 % Load sample data from the phantom
 %
 %   [M01 boxSize meanVal ]= phantomGetData(boxsize,loc,smoothkernel)
@@ -9,11 +9,16 @@ function [M01 boxSize meanVal ]= phantomGetData(boxsize,loc,smoothkernel)
 M0=readFileNifti(fullfile(mrqRootPath,'data','PD','AligncombineCoilsM0.nii.gz'));
 M0=M0.data;
 
+T1=readFileNifti(fullfile(mrqRootPath,'data','T1','T1_lsq.nii.gz'));
+T1=T1.data;
+
 if ~notDefined('smoothkernel')
     for ii=1:size(M0,4)
         tmp=M0(:,:,:,ii);
         M0(:,:,:,ii)=smooth3(tmp,'g',smoothkernel);
     end
+        T1(:,:,:)=smooth3(T1,'g',smoothkernel);
+
 end
     
     
@@ -47,5 +52,7 @@ boxSize = size(M01);
 [meanVal, coilIndex] = sort(squeeze(mean(mean(mean(M01)))),'descend');
 M01     = M01(:,:,:,coilIndex);
 meanVal = meanVal(coilIndex);
+
+t1=T1(XX(1):XX(2),YY(1):YY(2),ZZ(1):ZZ(2));
 
 end

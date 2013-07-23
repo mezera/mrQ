@@ -43,7 +43,7 @@ if notDefined('oFlag'), oFlag = false; end
 % M0 are the phantom data.  SZ is the size.  meanVal are the mean value
 % from each coil
 
-[M0, SZ, meanVal ]= phantomGetData(nSamples,sampleLocation,smoothkernel);
+[M0, SZ, meanVal t1]= phantomGetData(nSamples,sampleLocation,smoothkernel);
 
 % Visualize the box.  The order is each panel is sorted by Z.
 % Within each panel there are -nSamples:nSamples points
@@ -101,5 +101,7 @@ OutPut.nVoxels=nVoxels;
 OutPut.pTerms=pTerms;
 OutPut.SZ=SZ;
 OutPut.W=W;
+OutPut.t1=t1;
+
 end
 

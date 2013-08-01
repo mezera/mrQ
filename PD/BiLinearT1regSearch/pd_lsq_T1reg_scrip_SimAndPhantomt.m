@@ -60,22 +60,39 @@ pBasis=OutPut.pBasis;
         %make a R1 regularazation matrix
         clear R1basis
         R1basis(1:nVoxels,1) = 1; R1basis(:,2) = OutPutSim.R1Fit; R1basis=double(R1basis);
-        
-        %get the Polinomyal basis
+         
+        PDinit=1./(OutPutSim.R1Fit*0.42+0.95); %this is the teortical T1 PD relationship see reference at Mezer et. al 2013
+          PDinit=PDinit(:);
+           % PDinit = sqrt(sum(M0_v.^2,2));   %Sum of Squres
+       
          PDsim = OutPutSim.PD;
+         BM1=logical(ones(size(PDsim)));
+        %% intiate the search parameters
+        nPolyCoef=size(pBasis,2);
+        nCoils=length(Clist);
+        
+        
+            [Seg, C]= mrQ_localT1Seg(OutPutSim.R1Fit(BM1)*1000) ;
+        Segmask=zeros(size(BM1)); Segmask(BM1)=Seg;
+
+        G  = zeros(nVoxels,nCoils);
+        g0 = zeros(nPolyCoef,nCoils);
+             
+ 
+        mask1 =find(Segmask);
+        
+        for ii=1:nCoils
+            G(mask1,ii)  = M0_v(mask1,Clist(ii)) ./ PDinit(mask1);         % Raw estimate
+            g0(:,ii) = pBasis(mask1,:) \ G(mask1,ii);  % Polynomial approximation
+        end
          
-         
-      % get initial guess
-      nPolyCoef=size(pBasis,2);
-      nCoils=length(Clist);
-G  = zeros(nVoxels,nCoils);
-g0 = zeros(nPolyCoef,nCoils);
+
   
-        mask1 = ~isnan(PDsim);   % These are the places we use. 
-for ii=1:nCoils
-    G(mask1,ii)  = M0_v(mask1,Clist(ii)) ./ PDsim(mask1);         % Raw estimate
-    g0(:,ii) = pBasis(mask1,:) \ G(mask1,ii);  % Polynomial approximation
-end
+%         mask1 = ~isnan(PDsim);   % These are the places we use. 
+% for ii=1:nCoils
+%     G(mask1,ii)  = M0_v(mask1,Clist(ii)) ./ PDsim(mask1);         % Raw estimate
+%     g0(:,ii) = pBasis(mask1,:) \ G(mask1,ii);  % Polynomial approximation
+% end
 
         
 
@@ -134,7 +151,7 @@ title(['Sim fit     RMSE = '   num2str(RMSE1_S) ])
         nVoxels=length(OutPut.t1(:));
         clear R1Dbasis
         R1Dbasis(1:nVoxels,1) = 1; R1Dbasis(:,2) = 1./(OutPut.t1(:)*1000); R1Dbasis=double(R1Dbasis);
-
+R1_D= 1./(OutPut.t1(:)*1000);
         %% visual simlation and real inputs
         mrvNewGraphWin;
         subplot(1,2,1)
@@ -147,18 +164,31 @@ title(['Sim fit     RMSE = '   num2str(RMSE1_S) ])
         identityLine
         %% Fit parameters
         % all the same beside that we will make a new  initial guess with  the phantom data
+        PDinit=1./(R1_D*0.42+0.95); %this is the teortical T1 PD relationship see reference at Mezer et. al 2013
+        PDinit=PDinit(:);
+       
         
-       % get initial guess
-%       nPolyCoef=size(pBasis,2);
-%       nCoils=length(Clist);
-G  = zeros(nVoxels,nCoils);
-g0 = zeros(nPolyCoef,nCoils);
+        
+        
+          [Seg, C]= mrQ_localT1Seg(R1_D(BM1)*1000) ;
+        Segmask=zeros(size(BM1)); Segmask(BM1)=Seg;
+
+        G  = zeros(nVoxels,nCoils);
+        g0 = zeros(nPolyCoef,nCoils);
+             
+ 
+        mask1 =find(Segmask);
+        
+        for ii=1:nCoils
+            G(mask1,ii)  = M0d_v(mask1,Clist(ii)) ./ PDinit(mask1);         % Raw estimate
+            g0(:,ii) = pBasis(mask1,:) \ G(mask1,ii);  % Polynomial approximation
+        end
   
-        mask1 = ~isnan(PDsim);   % These are the places we use. 
-for ii=1:nCoils
-    G(mask1,ii)  = M0d_v(mask1,Clist(ii)) ./ PDsim(mask1);         % Raw estimate
-    g0(:,ii) = pBasis(mask1,:) \ G(mask1,ii);  % Polynomial approximation
-end
+%         mask1 = ~isnan(PDsim);   % These are the places we use. 
+% for ii=1:nCoils
+%     G(mask1,ii)  = M0d_v(mask1,Clist(ii)) ./ PDsim(mask1);         % Raw estimate
+%     g0(:,ii) = pBasis(mask1,:) \ G(mask1,ii);  % Polynomial approximation
+% end
 
 
 %% X-validation Fit

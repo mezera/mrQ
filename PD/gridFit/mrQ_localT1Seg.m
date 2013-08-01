@@ -15,13 +15,13 @@ end
         
          [IDX,C] =kmeans(t1,3);
        %  cheack if the center are close. if so  we will use less clusters 
-         if abs(1-C(1)/C(2))>0.9  &&  abs(1-C(1)/C(3))>0.9
+         if abs(1-C(1)/C(2))<0.1  &&  abs(1-C(1)/C(3))<0.1
              [IDX,C] =kmeans(t1,1);
-         elseif abs(1-C(1)/C(2))>0.9
+         elseif abs(1-C(1)/C(2))<0.1
              [IDX,C] =kmeans(t1,2);
-         elseif abs(1-C(1)/C(3))>0.9
+         elseif abs(1-C(1)/C(3))<0.1
              [IDX,C] =kmeans(t1,2);
-         elseif abs(1-C(2)/C(3))>0.9
+         elseif abs(1-C(2)/C(3))<0.1
              [IDX,C] =kmeans(t1,2);
          end
          

@@ -276,6 +276,16 @@ save(mrQ.name,'mrQ');
 % do it is after mrQ_T1wSynthesis.m  is done (line 357 in mrQfit_T1M0_ver2). this function crate the T1
 % wighted image that can be used as an input for freesurfer.
 
+if isfield(mrQ,'brakeAfterT1');
+else
+    mrQ.brakeAfterT1=0;
+end
+
+if     mrQ.brakeAfterT1==1
+        fprintf('\n brake T1 map  are done              \n');
+
+    return
+end
 
 %% prefer to PD fit 1. get a segmentation (need freesurfer output) 2. get CSF; 3.make a M0 fies for the coils
 

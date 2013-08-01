@@ -23,7 +23,7 @@ smoothkernel=[];
 percentError = 100*OutPut.percentError;
 fprintf('Polynomial approximation to the data (percent error): %0.4f\n',percentError)
 %%  initiate the search parameters
-clist=[1:5];
+clist=[1:3];
 nUseCoils=length(clist);
 M0=double(OutPut.M0_v(:,clist));
 mask=ones(size(M0,1),1);
@@ -43,7 +43,7 @@ options = optimset('Display','iter',...
     'Algorithm','levenberg-marquardt');
 
 %  CHOOSE A START PD
-%PDinit = sqrt(sum(M0.^2,2));    % Sum of squares
+PDinit = sqrt(sum(M0.^2,2));    % Sum of squares
 %  PDinit = rand(size(OutPut.M0_v(:)));   % random
 %  PDinit = nan(size(mask)); PDinit(find(mask==1)) = 1; % segmentaion
   PDinit = ones(size(M0,1),1);            %   true solution
@@ -61,22 +61,25 @@ for ii=1:nUseCoils
     G(mask1,ii)  = M0(mask1,ii) ./ PDinit(mask1);         % Raw estimate
     g0(:,ii) = OutPut.pBasis(mask1,:) \ G(mask1,ii);  % Polynomial approximation
 end
-% lambda1 = [1e4 1e3 1e2 1e1 1e0 1e-1 0] ;   % Weight on T1 regularization
-lambda1 = logspace(2,3.5,6);
-Kfolod =5;
+ lambda1 = [1e4 5e3 1e3 5e2 1e2 5e1 1e1 5  1e0 0.5 1e-1 0] ;   % Weight on T1 regularization
+%lambda1 = logspace(-0.1,3.5,6);
+kFold =2;
 %% X_valdationLoop
-[X_valdationErr ,  X_gEst, Xresnorm, X_Fit]=pdX_valdationLoop( lambda1,Kfolod,M0,  OutPut.pBasis,R1basis,g0,mask,options);
+%[X_valdationErr2 ,  X_gEs2t, Xresnorm, X_Fit2]=pdX_valdationLoop( lambda1,kFold,M0,  OutPut.pBasis,R1basis,g0,mask,options);
 
+[X_valdationErrF33 ,  X_gEstF33, XresnormF, X_FitF33]=pdX_valdationLoop_1( lambda1,kFold,M0,  OutPut.pBasis,R1basis,g0,mask,options);
 
 %% Fit all data with the lambda from the best X_valdationErr condition
 
 mrvNewGraphWin;
-semilogx(lambda1,X_valdationErr,'*-')
-best = find(X_valdationErr==min(X_valdationErr));
-fprintf('Choosing lambda(%d) = %f\n',best,lambda(best))
-
+semilogx(lambda1,X_valdationErrF2(2,:),'*-')
+best = find(X_valdationErrF(1,:)==min(X_valdationErrF(1,:)));
+fprintf('Choosing lambda(%d) = %f\n',best,lambda1(best))
 %%
-% best = 3;
+% Sweep out the lambda values
+       
+%%
+% best = 6;
 
 [gEst, resnorm, dd1, exitflag] = ...
     lsqnonlin(@(par) errFitNestBiLinearTissueT1reg(par,M0,...
@@ -111,3 +114,23 @@ RMSE = sqrt(mean( (100*(PDsim(:) - PDfit(:))./ PDsim(:) ).^2));
 title(['Percent error = ' num2str(RMSE)])
 
 %%
+for ii=1:length(lambda1),
+    % Loop over the kFold Cross Validation
+    for jj=1:kFold
+        X_valdationErrKfold(1,jj)= sum(abs( X_FitF(jj,ii).err_X (:)));
+        X_valdationErrKfold(2,jj)= sum(  X_FitF(jj,ii).err_X (:).^2);
+                X_valdationErrKfold(3,jj)= mean(abs( X_FitF(jj,ii).err_X (:)));
+                X_valdationErrKfold(4,jj)= median(abs( X_FitF(jj,ii).err_X (:)));
+X_valdationErrKfoldcoils(jj,ii,:)= X_Fit(jj,ii).Meanerr;
+%         Ratio= length(X_Fit(jj,ii).err_X)./ length(X_Fit(jj,ii).err_F);
+        
+%         X_valdationErrKfold(3,jj)= sum(abs( X_Fit(jj,ii).err_F (:)))*Ratio;
+%         X_valdationErrKfold(4,jj)= sum(  X_Fit(jj,ii).err_F (:).^2)*Ratio;
+        
+    end
+    X_valdationErr_(1,ii)=sum(X_valdationErrKfold(1,:));
+    X_valdationErr_(2,ii)=sum(X_valdationErrKfold(2,:));
+    X_valdationErr_(3,ii)=sum(X_valdationErrKfold(3,:));
+    X_valdationErr_(4,ii)=sum(X_valdationErrKfold(4,:));
+    
+end

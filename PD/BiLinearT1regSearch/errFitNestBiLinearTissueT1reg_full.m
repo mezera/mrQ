@@ -1,8 +1,8 @@
-function err = errFitNestBiLinearTissueT1reg(g,M0,pBasis,nPositions,nCoils,R1basis,RegWeight,TissueMask,T)
+function err = errFitNestBiLinearTissueT1reg_full(g,M0,pBasis,nPositions,nCoils,R1basis,RegWeight,TissueMask,M0mask,T)
 % Bilinear estimation subject to tisuue spesipic T1 regularization as well
 %
 %  err =
-%   errFitNestBiLinearTissueT1reg(g,M0,pBasis,nPositions,nCoils,R1basis,RegWeight,TissueMask)
+%   errFitNestBiLinearTissueT1reg_full(g,M0,pBasis,nPositions,nCoils,R1basis,RegWeight,TissueMask,M0mask)
 %
 % AM/BW(c) VISTASOFT Team, 2013
 
@@ -14,18 +14,10 @@ G = pBasis*g;
 
 PD = zeros(nPositions,1);
 for ii=1:nPositions
-    PD(ii) = G(ii,:)' \ M0(ii,:)';
+    %use=M0mask(ii,:);
+    PD(ii) = G(ii,M0mask(ii,:))' \ M0(ii,M0mask(ii,:))';
 end
 
-% Normalize by the first PD value
-% Could wait until the end to do this.
-% G  = G  .* PD(1);
-% PD = PD ./ PD(1);
-G  = G  .* mean(PD(TissueMask>0));
-PD = PD ./ mean(PD(TissueMask>0));
-
-% get the predicted M0 for all of the coils
-M0P = G.*repmat( PD,1,nCoils);
 
 % Given the known T1, which is sent in, we have an expectation that it will
 % be linearly related to the estimated PD via this equation:
@@ -46,6 +38,18 @@ for ii=1:length(T);
 end
 PDpred     = 1 ./ PDpred;
 
+% Normalize by the first PD value
+% G  = G  .* PD(1);
+% PD = PD ./ PD(1);
+
+G  = G  .* mean(PD(TissueMask>0));
+PDpred = PDpred ./ mean(PD(TissueMask>0));
+PD = PD ./ mean(PD(TissueMask>0));
+
+% get the predicted M0 for all of the coils
+M0P = G.*repmat( PD,1,nCoils);
+
+
 % mrvNewGraphWin; plot(PD(:),PDpred(:),'o')
 % PDpred     = R1basis* (R1basis \ ( 1./PD(:) ));
 % PDpred     = 1 ./ PDpred;
@@ -58,7 +62,7 @@ PDpred     = 1 ./ PDpred;
 
 % The error is a vector with positive and negative values representing the
 % M0 difference and the T1 linearity failures
-%err = [ M0(:) - M0P(:); (nCoils*RegWeight)*(PD(TissueMask>0) - PDpred(TissueMask>0))];
-err = [ M0(:) - M0P(:); (RegWeight)*(PD(TissueMask>0) - PDpred(TissueMask>0))];
+%err = [ M0(M0mask) - M0P(M0mask); (nCoils*RegWeight)*(PD(TissueMask>0) - PDpred(TissueMask>0))];
+err = [ M0(M0mask) - M0P(M0mask); (RegWeight)*(PD(TissueMask>0) - PDpred(TissueMask>0))];
 
 end

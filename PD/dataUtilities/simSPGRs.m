@@ -51,6 +51,10 @@ if ischar(PD)
     eSize = round(nVoxels^.333);
     cPos = round(eSize/2);
     switch PD
+        case {'phantom'}
+            PD = ones(nVoxels,1);
+            R1=PD* 1.75;
+            R1=R1./1000;
         case {'singlepoint'}
             PD = 0.5*ones(nVoxels,1);
             PD(sub2ind([eSize,eSize,eSize],cPos,cPos,cPos)) = 1;

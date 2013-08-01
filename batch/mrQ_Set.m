@@ -80,7 +80,9 @@ switch(param)
         mrQ.proclass=varargin;
     case {'brakeaftervisualization' ,'viewbrake'}
         mrQ.brakeAfterVisualization=varargin;
-        
+     case {'brakeaftert1' ,'t1brake'}
+        mrQ.brakeAfterT1=varargin;
+            
     otherwise
         
         error('Uknown mrQ parameter');

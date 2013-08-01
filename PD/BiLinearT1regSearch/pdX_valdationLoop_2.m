@@ -1,9 +1,9 @@
-function  [X_valdationErr,   gEstT, resnorm, FitT]=pdX_valdationLoop( lambda1,kFold,M0,pBasis,R1basis,g0,mask,options)
+function  [X_valdationErr,   gEstT, resnorm, FitT useX, kFold resnormData]=pdX_valdationLoop_2( lambda1,kFold,M0,pBasis,R1basis,g0,mask,options)
 % Fit M0 for coil gain and PD with PD with different weight (lambda1) for PD
 % regularization by T1 (linear relations).
 %
 %  [X_valdationErr   gEstT, resnorm, FitT]= ...
-%     pdX_valdationloop(lambda1, kFold, M0, ...
+%     pdX_valdationloop_1(lambda1, kFold, M0, ...
 %                       pBasis,R1basis,g0,mask,options)
 %
 % Calculates the Cross Validation eror for each regularization wight
@@ -14,12 +14,13 @@ function  [X_valdationErr,   gEstT, resnorm, FitT]=pdX_valdationLoop( lambda1,kF
 %% intilaized parameters
 nVoxels=size(M0,1);
 Ncoils=size(M0,2);
-
+nPolyCoef=size(pBasis,2);
 % separate the data to Kfold fit and X-Validation part
-[holdX, useX] = getKfooldCVvoxel(nVoxels,kFold);
-
+[ useX, kFold] = getKfooldCVvoxel_full(nVoxels,Ncoils,kFold);
+ %[useX ] =getSparceCVvoxel_full(nVoxels,Ncoils);
 if notDefined('g0')
-    PDinit = sqrt(sum(M0.^2,2));    % Sum of squares
+    PDinit=Get_PDinit(1,R1basis(:,2));
+  %  PDinit = sqrt(sum(M0.^2,2));    % Sum of squares
     % get initial guess
     G  = zeros(nVoxels,Ncoils);
     g0 = zeros(nPolyCoef,Ncoils);
@@ -31,16 +32,15 @@ if notDefined('g0')
 end
 
 if notDefined('options')
-    options = optimset('Display','iter',...
+    options = optimset('Display','final',...  %'iter'
         'MaxFunEvals',Inf,...
-        'MaxIter',Inf,...
+        'MaxIter',200,...
         'TolFun', 1e-6,...
-        'TolX', 1e-10,...
+        'TolX', 1e-6,...
         'Algorithm','levenberg-marquardt');
 end
 
 if notDefined('mask');mask=ones(size(M0,1),1);end
-T=(unique(mask));T=T(find(T>0));
 
 %% loop over lambda1 regularization wight
 X_valdationErrKfold = zeros(2,kFold);
@@ -48,31 +48,37 @@ X_valdationErr  = zeros(2,length(lambda1));
 % FitT = This is an array of structs
 %        (kFold,length(lambda1));
 resnorm = zeros(kFold,length(lambda1));
-gEstT = zeros(size(pBasis,2),Ncoils,kFold,length(lambda1));
+gEstT = zeros(nPolyCoef,Ncoils,kFold,length(lambda1));
+
+
+T=(unique(mask));T=T(find(T>0));
 
 % Sweep out the lambda values
 for ii=1:length(lambda1),
     
     % Loop over the kFold Cross Validation
     for jj=1:kFold
-        useNow=logical(useX(:,jj));
+        %select the position to estimate the function
+        FitMask=zeros(size(M0));FitMask(find(useX~=jj))=1;FitMask=logical(FitMask);
         
         % Searching on the gain parameters, G.
         [gEstT(:,:,jj,ii), resnorm(ii,jj)] = ...
-            lsqnonlin(@(par) errFitNestBiLinearTissueT1reg(par,double(M0(useNow,:)),...
-            double(pBasis(useNow,:)),  length(find(useNow)), Ncoils, R1basis(useNow,:), lambda1(ii),mask(useNow),T),...
+            lsqnonlin(@(par) errFitNestBiLinearTissueT1reg_full_1(par,double(M0),...
+            double(pBasis),  nVoxels, Ncoils, double(R1basis), lambda1(ii),mask,FitMask,T),...
             double(g0),[],[],options);
         
+        % the fit err with no Lamda
+        %   resnormData(ii,jj)=errFitNestBiLinearTissueT1reg_full(gEstT(:,:,jj,ii),double(M0),...
+        %             double(pBasis),  nVoxels, Ncoils, double(R1basis), 0,mask,FitMask);
+        
         %  calculate X-Validation error
-        holdNow=logical(holdX(:,jj));
-        
+        Xmask=zeros(size(M0));Xmask(find(useX==jj))=1;Xmask=logical(Xmask);
+        [FitT(jj,ii).err_X, FitT(jj,ii).err_F] = X_validation_errHoldVoxel_full(gEstT(:,:,jj,ii),M0,pBasis,nVoxels,Ncoils,FitMask,Xmask);
         %Check if the coil coefficent can explain the hold data
-        [FitT(jj,ii)] = ...
-            pd_CVtest_voxels(gEstT(:,:,jj,ii) ,double(pBasis(holdNow,:)),double(M0(holdNow,:)));
         
-        % Change to sum of squares?
-        X_valdationErrKfold(1,jj)= sum(abs( FitT(jj,ii).M0prederr (:)));
-        X_valdationErrKfold(2,jj)= sum(  FitT(jj,ii).M0prederr (:).^2);
+        % Change to sum of squares? not sure which is better
+        X_valdationErrKfold(1,jj)= sum(abs( FitT(jj,ii).err_X (:)));
+        X_valdationErrKfold(2,jj)= sum(  FitT(jj,ii).err_X (:).^2);
     end
     
     %sum the  X-Validation error for this lambda1

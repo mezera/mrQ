@@ -1,4 +1,4 @@
-function [holdX useX] =getKfooldCVvoxel(Nvoxels,Kfolod)
+function [holdX useX] =getKfooldCVvoxel(Nvoxels,kFold)
 %[hold use] =getKfooldCVvoxel(Nvoxels,Kfold)
 % this function randomly spleetset of voxel(location) form the pool of
 % location (maximum location =Nvoxels) to two group Kfold times. the hold and use
@@ -6,23 +6,23 @@ function [holdX useX] =getKfooldCVvoxel(Nvoxels,Kfolod)
 % precent of the data. 10 Kfolod 0.1 10% ect.
 % ....
 
-if notDefined('Kfolod') 
-    Kfolod=1;
+if notDefined('kFold') 
+    kFold=1;
 end
 
-if Kfolod<0 || Kfolod>Nvoxels
-    Kfolod=1;
+if kFold<0 || kFold>Nvoxels
+    kFold=1;
 end
 
 % get a radom order of the voxels position
 N=randperm(Nvoxels);
 
-locs= round(  linspace(1,Nvoxels,Kfolod+1)); 
+locs= round(  linspace(1,Nvoxels,kFold+1)); 
 
-useX=ones(Nvoxels,Kfolod);
-holdX=zeros(Nvoxels,Kfolod);
+useX=ones(Nvoxels,kFold);
+holdX=zeros(Nvoxels,kFold);
 
-for ii=1:Kfolod
+for ii=1:kFold
     
 holdX(N(locs(ii):locs(ii+1)),ii)=1;
 useX(N(locs(ii):locs(ii+1)),ii)=0;

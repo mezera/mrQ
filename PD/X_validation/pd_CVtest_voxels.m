@@ -1,10 +1,10 @@
-function Fit=pd_CVtest_voxels(g,pBasis,M0_v,plotFlag,TruePar,TruePD,FigNum)
+function [Fit, M0prederr ] =pd_CVtest_voxels(g,pBasis,M0_v,plotFlag,TruePar,TruePD,FigNum)
 % Make X-validation values and plots
 %
 %
 %
 %
-% AM VISTASOFT Team, 2013
+% AM & BW VISTASOFT Team, 2013
 if notDefined('plotFlag'), plotFlag = 0; end
 
 nCoils=size(M0_v,2);
@@ -20,35 +20,36 @@ PD = PD ./ PD(1);
 M0 = G.*repmat( PD(:),1,nCoils);
 
 %Calculate the fit error voxel by voxel
-Fit.M0prederr = M0 - M0_v;
-
+M0prederr = M0 - M0_v;
+Fit.M0prederr =M0prederr;
 % This is average cross each coil
 Fit.Meanerr = mean(abs(Fit.M0prederr));
-fprintf(' the M0 mean abs error fit  % 0.3f  \n :',Fit.Meanerr);
-
-if ~notDefined('TruePD')
-    Fit.RMSE = sqrt(mean(  (TruePD(:)./mean(TruePD(:))-PD(:)./mean(PD(:))   ).^2));
-    fprintf(' the PD  RMSE % 0.3f  \n :',  Fit.RMSE);
-end
 
 Fit.PD = PD;
 Fit.M0 = M0;
-
-if ~notDefined('FigNum')
-    fprintf('Fig number % 0.f  \n :',FigNum);
-end
-
+M0prederr=M0prederr(:);
 % Plot
 if plotFlag==1
+    fprintf(' the M0 mean abs error fit  % 0.3f  \n :',Fit.Meanerr);
+    
+    if ~notDefined('TruePD')
+        Fit.RMSE = sqrt(mean(  (TruePD(:)./mean(TruePD(:))-PD(:)./mean(PD(:))   ).^2));
+        fprintf(' the PD  RMSE % 0.3f  \n :',  Fit.RMSE);
+    end
+    
+    if ~notDefined('FigNum')
+        fprintf('Fig number % 0.f  \n :',FigNum);
+    end
+    
     if notDefined('FigNum'), FigNum=1; end
     figH = mrvNewGraphWin([],'tall');
     set(figH,'Name',   num2str(FigNum));
     
-    if notDefined('TruePar')       
+    if notDefined('TruePar')
         plot(Fit.M0prederr./M0_v,'.');
         xlabel('voxels');ylabel('M0 pracent error')
         title(['the M0 mean abs error : ' num2str(Fit.Meanerr)])
-    else      
+    else
         Par=TruePar;
         str='True gains';
         CoefNorm=Par(1)./g(1);

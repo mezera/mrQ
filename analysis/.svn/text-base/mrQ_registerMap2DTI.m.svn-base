@@ -37,9 +37,6 @@ cmANTS=['xterm -e ANTS 3 -m CC[' B0file ',' T1file ',1,2] -o ' out '.nii.gz --ri
 [status, result] = system(cmANTS);
 
 if status ~= 0
-    % JY changed the type of image registration from CC (cross correlation)
-    % to MI mutual information because the manual suggested that this is
-    % better for cross modality registration
     cmANTS=['ANTS 3 -m CC[' B0file ',' T1file ',1,2] -o ' out '.nii.gz --rigid-affine true'];
     
     % Run the command in unix and get back status and results:
@@ -55,7 +52,7 @@ end
 
 out1=fullfile(outDir,[name '_2DTI.nii.gz']);
 
-cmWarp=['xterm -e WarpImageMultiTransform  3 ' T1file  ' ' out1 ' -R '  T1file ' ' out 'Warp.nii.gz ' out 'Affine.txt' ' --use-BSpline'];
+cmWarp=['xterm -e WarpImageMultiTransform  3 ' T1file  ' ' out1 ' -R '  T1file ' ' out 'Warp.nii.gz ' out 'Affine.txt'];
 
 % Run the command in unix and get back status and results:
 [status, result] = system(cmWarp);
@@ -66,13 +63,13 @@ if ~notDefined('otherMaps')
         [~, name]=fileparts(name);
         out1=fullfile(outDir,[name '_2DTI.nii.gz']);
         
-        cmWarp=['xterm -e WarpImageMultiTransform  3 ' otherMaps{i}  ' ' out1 ' -R '  T1file ' ' out 'Warp.nii.gz ' out 'Affine.txt' ' --use-BSpline'];
+        cmWarp=['xterm -e WarpImageMultiTransform  3 ' otherMaps{i}  ' ' out1 ' -R '  T1file ' ' out 'Warp.nii.gz ' out 'Affine.txt'];
         % Run the command in unix and get back status and results:
         
         [status, result] = system(cmWarp);
         
         if status ~= 0
-            cmWarp=['WarpImageMultiTransform  3 ' otherMaps{i}  ' ' out1 ' -R '  T1file ' ' out 'Warp.nii.gz ' out 'Affine.txt' ' --use-BSpline'];
+            cmWarp=['WarpImageMultiTransform  3 ' otherMaps{i}  ' ' out1 ' -R '  T1file ' ' out 'Warp.nii.gz ' out 'Affine.txt'];
             % Run the command in unix and get back status and results:
             
             [status, result] = system(cmWarp,'-echo');

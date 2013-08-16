@@ -1,6 +1,6 @@
-function [opt]=mrQ_PD_multicoil_RgXv_GridCall(outDir,SunGrid,proclass,M0file,T1file,BMfile,degrees,subName,outMm,boxSize,pracent_overlap,Coilsinfo,clobber)
+function [opt]=mrQ_PD_multicoil_RgXv_GridCall(outDir,SunGrid,proclass,subName,degrees,M0file,T1file,BMfile,outMm,boxSize,pracent_overlap,Coilsinfo,clobber)
 %
-% [opt]=mrQ_PD_multicoil_RgXv_GridCall(outDir,SunGrid,proclass,M0file,T1file,BMfile,degrees,subName,outMm,boxSize,pracent_overlap,Coilsinfo,clobber)
+%   [opt]=mrQ_PD_multicoil_RgXv_GridCall(outDir,SunGrid,proclass,subName,degrees,M0file,T1file,BMfile,outMm,boxSize,pracent_overlap,Coilsinfo,clobber)
 % # Create a stracture of information to fit the M0 boxes ffor coil gain
 % and PD using parallel computation (grid) using SGE
 %

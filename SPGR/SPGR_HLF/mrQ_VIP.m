@@ -94,9 +94,15 @@ end
 if(exist('T1file','var') && ~isempty(T1file))
     disp(['Loading T1 data from ' T1file '...']);
 else
+        T1file1= fullfile(outDir,'maps/T1_map_lsq.nii.gz');
     T1file= fullfile(outDir,'T1_map_lsq.nii.gz');
     if(exist(T1file,'file'))
         disp(['Loading T1 data from ' T1file '...']);
+   
+    elseif(exist(T1file1,'file') &&  ~exist(T1file,'file') )
+          disp(['Loading T1 data from ' T1file1 '...']);
+          T1file=T1file1;
+        
     else
         T1file = mrvSelectFile('r','*.nii.gz','Select T1 fit file',outDir);
         if isempty(T1file)
@@ -113,9 +119,14 @@ if(exist('WFfile','var') &&  ~isempty(WFfile))
     disp(['Loading WF data from ' WFfile '...']);
 else
     WFfile = fullfile(outDir,'WF_map.nii.gz');
+        WFfile1 = fullfile(outDir,'maps/WF_map.nii.gz');
+
     disp(['trying  to load WF from ' WFfile '...']);
     if(exist(WFfile,'file'))
         disp(['Loading WF data from ' WFfile '...']);
+    elseif(exist(WFfile1,'file') && ~exist(WFfile,'file'))
+        disp(['Loading WF data from ' WFfile1 '...']);
+        WFfile=WFfile1;
     else
         WFfile = mrvSelectFile('r','*.nii.gz','Select WF file',outDir);
         if isempty(WFfile)
@@ -223,7 +234,12 @@ TV=1-WF;
 %calculate the voulume ratio SIR
 SIR=VIP./TV;
 
+%% This is a differnt model but it's work nicly as well
 
+Csir       = zeros(size(T1));
+Csir(mask)=(1./T1(mask)- 1/4.3)./TV(mask);
+Csir(Csir>12)=0;
+Csir(Csir<0)=0;
 
 %% Save Output
 
@@ -237,6 +253,7 @@ else
     dtiWriteNiftiWrapper(single(VIP), xform, fullfile(outDir,'VIP_map.nii.gz'));
     dtiWriteNiftiWrapper(single(TV), xform, fullfile(outDir,'TV_map.nii.gz'));
     dtiWriteNiftiWrapper(single(SIR), xform, fullfile(outDir,'SIR_map.nii.gz'));
+    dtiWriteNiftiWrapper(single(Csir), xform, fullfile(outDir,'cT1SIR_map.nii.gz'));
 
 end
 

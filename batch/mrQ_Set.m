@@ -21,9 +21,20 @@ function mrQ = mrQ_Set(mrQ,param,varargin,saveflag)
 %   refim             - a path to an imge to use as arefernce string 'path'
 %   check            - if a interactive image is used to ditect movment number - 1
 %   proclus          -use the proclass number - 1
+% sungrid          - use the sgesngrid calls -1
+%  polydeg           - the polynomyals degree to fit to the Gain (defult 3)
 %  'brakeaftervisualization' or 'viewbrake' - use that to start the data
 %  visual the images wirh the check flag and then stop the code from
-%  running
+% To reverse sewpesipic steps in the fir 
+% seir_done                                1 to skip the SEIR t1 fit or 0 to redo it
+% spgr_init_done                      1 to skip the spgr init stepor 0 to redo it
+% spgr_coilweight_done           1 to skip wighting 0 to redo it
+% spgr_t1fit_done                      1 to skip T1 fit SPGR 0 to redo it
+% segmentaion                            1 to skip segmentaion 0 to redo it
+%  calm0_done                           1 to skip M0 claculation 0 to redo it
+% spgr_pdfit_done                     1 to skip PD fit0 to redo it
+%spgr_pdbuild_done                1 to skip PD fit0 to redo it
+%
 % ...                  - cheack code for others
 %
 % example:
@@ -77,12 +88,32 @@ switch(param)
     case {'runfreesurfer' }
         mrQ.runfreesurfer=varargin;
     case {'proclus' ,'proclass'}
-        mrQ.proclass=varargin;
+        mrQ.proclus=varargin;
+    case {'sungrid' ,'grid'}
+        mrQ.SunGrid=varargin;
+    case {'polydeg' ,'poly','deg'}
+        mrQ.PolyDeg=varargin;
     case {'brakeaftervisualization' ,'viewbrake'}
         mrQ.brakeAfterVisualization=varargin;
-     case {'brakeaftert1' ,'t1brake'}
+    case {'brakeaftert1' ,'t1brake'}
         mrQ.brakeAfterT1=varargin;
-            
+        case {'seir_done' }
+        mrQ.SEIR_done=varargin;
+         case {'spgr_init_done' }
+        mrQ.SPGR_init_done=varargin;
+        case {'spgr_coilweight_done'}
+            mrQ.SPGR_coilWeight_done=varargin;
+    case{ 'spgr_t1fit_done'}
+             mrQ.SPGR_T1fit_done=varargin;
+              case{ 'segmentaion','seg'}
+             mrQ.segmentaion=varargin;
+             case{ 'calm0_done'}
+             mrQ.calM0_done=varargin;
+             case{ 'spgr_pdfit_done'}
+             mrQ.SPGR_PDfit_done=varargin;
+             case{ 'spgr_pdbuild_done'}
+             mrQ.SPGR_PDBuild_done=varargin;
+         
     otherwise
         
         error('Uknown mrQ parameter');

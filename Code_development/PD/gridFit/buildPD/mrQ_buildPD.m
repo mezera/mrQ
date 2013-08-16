@@ -1,7 +1,7 @@
-function opt=mrQ_buildPD(Strfilename,csffile)
+function opt=mrQ_buildPD(opt_Log_name,csffile,segfile)
 % this function colect all the fitted coil gains in different small voulumes (box) that was fitted in paraller
 %and join them back to a PD map and calculate the WF map. Strfilenameis the log file of the parralel fits.
-%   mrQ_buildPD(Strfilename)
+%   opt=mrQ_buildPD(opt_Log_name,csffile,segfile)
 % building the WF is done is 6 steps:
 % step 0: loop and load all the fitted data of the different boses. and cheack which of them have data
 % step 1- get the x,y,z and pd values of the boxes.        --> mrQ_CalBoxPD_step1.m
@@ -9,6 +9,7 @@ function opt=mrQ_buildPD(Strfilename,csffile)
 % step 3 - join the boxes to an PD image.                     --> mrQ_BoxsWiseAlignment_step3.m
 % step 4 smooth the Gain values and re-calculate PD --> mrQ_smoothGain_step4.m
 % step 5 scale PD csf value to 1 to calculate the WF.   --> mrQ_PD2WF_step5.m
+%            step 5 use segmentation files: csffile,segfile. 
 %
 % See also mrQ_PD_multicoil_RgXv_GridCall.m & mrQ_CoilPD_gridFit.m 
 %
@@ -18,15 +19,20 @@ function opt=mrQ_buildPD(Strfilename,csffile)
 
 
 %% load  the fit information
-if (~exist(Strfilename,'file')),
+if (~exist(opt_Log_name,'file')),
     
-    disp(['cant find file : ' Strfilename  ])
+    disp(['cant find file : ' opt_Log_name  ])
     error
 else
-    load  (Strfilename)
+    load  (opt_Log_name)
 end
 
-
+if notDefined('csffile')
+    csffile = fullfile(opt.outDir, 'csf_seg_T1.nii.gz');
+end
+if notDefined('segfile')
+    segfile = fullfile(opt.outDir, 't1_bet_seg.nii.gz');
+end
 
 %% get the fit for each box
 % loop over the fitted box files and load the parameters to  matrixs
@@ -108,10 +114,5 @@ Boxes=mrQ_CalBoxPD_step1(opt,BoxesToUse,CoilGains);
 %eval(['! rm ' tmpfile])
 
 %% calculate WF by normalize PD to CSF==1
-if notDefined('csffile')
-    csffile = fullfile(opt.outDir, 'csf_seg_T1.nii.gz');
-end
-if notDefined('segfile')
-    segfile = fullfile(opt.outDir, 't1_bet_seg.nii.gz');
-end
+
 opt=mrQ_PD2WF_step5(opt,csffile,segfile);

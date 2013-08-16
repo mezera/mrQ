@@ -337,7 +337,8 @@ box.fb=fb;
 box.SD=std(ResVal(bm));
 box.SDI=std(Dat(bm));
 
-SS=c(bm);
+SS=1-(ResVal(bm)-c(bm))./ResVal(bm);
+%SS=c(bm);
 %so let check for crazy fit and exclude them
 if (box.SD<box.SDI.*1.1); %we first check that this is aresnable fit if the std of the box grow this is probabaly becouse insate of a fit the values expload in that case we won't use this box
     
@@ -368,7 +369,8 @@ if (box.SD<box.SDI.*1.1); %we first check that this is aresnable fit if the std 
         box.wh=box.wh(wh);
     end
     
-    
+     box.Val=box.Val./median(box.Val(:));
+        
     
 else
     skip =1;
@@ -439,7 +441,8 @@ for j=1:length(Buse); %run over for the reference vrs. the other boxes
         % err(i,reference)=median(abs(boxs{reference}.Val(loc1)-(boxs{i}.Val(tf)).*dc)./((boxs{reference}.Val(loc1)+(boxs{i}.Val(tf)).*dc)./2)); %the error
         err(boxs{i}.boxID,boxs{reference}.boxID)=median(abs(boxs{reference}.Val(loc1)-(boxs{i}.Val(tf)).*dc)./((boxs{reference}.Val(loc1)+(boxs{i}.Val(tf)).*dc)./2)); %the error
         
-        
+%        if (err(boxs{i}.boxID,boxs{reference}.boxID)<0.05)  &&  dc>0.5 && dc<2) %this is too much they don't fit realy
+
         if (err(boxs{i}.boxID,boxs{reference}.boxID)<0.05 &&  dc>0.5 && dc<2) %this is too much they don't fit realy
             
             % update of the scaler matrix
@@ -472,7 +475,8 @@ for jj=Buse % run over the boxes
             %            err(i,jj)=median(abs(boxs{jj}.Val(loc1)-(boxs{i}.Val(tf)).*dc)./((boxs{jj}.Val(loc1)+(boxs{i}.Val(tf)).*dc)./2)); %the error
             err(boxs{i}.boxID,boxs{jj}.boxID)=median(abs(boxs{jj}.Val(loc1)-(boxs{i}.Val(tf)).*dc)./((boxs{jj}.Val(loc1)+(boxs{i}.Val(tf)).*dc)./2)); %the error
             
-            if (err(boxs{i}.boxID,boxs{jj}.boxID)<0.05   && dc>0.5 && dc<2) %this is too much they don't fit really
+               if (err(boxs{i}.boxID,boxs{jj}.boxID)<0.05   && dc>0.5 && dc<2) %this is too much they don't fit really
+           % if (err(boxs{i}.boxID,boxs{jj}.boxID)<0.05) %  && dc>0.5 && dc<2) %this is too much they don't fit really
                 
                 % update of the scaler matrix
                 
@@ -560,8 +564,9 @@ for jj=Buse %run over the boxes
                     
                     % err(i,jj)=median(abs(boxs{jj}.Val(loc1)-(boxs{i}.Val(tf)).*dc)./((boxs{jj}.Val(loc1)+(boxs{i}.Val(tf)).*dc)./2)); %the error
                     err(boxs{i}.boxID,boxs{jj}.boxID)=median(abs(boxs{jj}.Val(loc1)-(boxs{i}.Val(tf)).*dc)./((boxs{jj}.Val(loc1)+(boxs{i}.Val(tf)).*dc)./2)); %the error
-                    
                     if (err(boxs{i}.boxID,boxs{jj}.boxID)<0.05 && dc>0.5 && dc<2) %this is too much they don't fit realy
+
+                    %if (err(boxs{i}.boxID,boxs{jj}.boxID)<0.05) %this is too much they don't fit realy
                         % update of the scaler matrix
                         
                         mat(boxs{i}.boxID,boxs{jj}.boxID)=1;

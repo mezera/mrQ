@@ -1,4 +1,4 @@
-function [AlingSPGR,s2,mmPerVox,xform] = mrQ_multicoilWeighting(datDir,niiFile,flipAngles)
+function [AlingSPGR,s2,mmPerVox,xform] = mrQ_multicoilWeighting(datDir,niiFile,flipAngles,mrQ)
 % 
 % [s2,mmPerVox,xform] = mrQ_multicoilWeighting(datDir,niiFile,flipAngles)
 % 
@@ -99,7 +99,7 @@ AlingSPGR{j}=ref;
     
     % Get the data from the nifti into a struct- (s1) Now the data will be
     % in a structure with separate entries for each channel (-1 flag).
-    s1 = makeStructFromNifti(niiFile{j},-1,[]);
+    s1 = makeStructFromNifti(niiFile{j},-1,[],mrQ.permution);
     
     
     % The number of channels in the coil (It comes up +1 why?) --> becouse

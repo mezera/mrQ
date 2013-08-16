@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/srepos/vistaproj/!svn/ver/1829/mrQ/SPGR/SPGR_phantoms
+END
+mrQ_initSPGR_pantom.m
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/srepos/vistaproj/!svn/ver/1355/mrQ/SPGR/SPGR_phantoms/mrQ_initSPGR_pantom.m
+END
+mrQfit_T1M0_Phantoms.m
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/srepos/vistaproj/!svn/ver/1828/mrQ/SPGR/SPGR_phantoms/mrQfit_T1M0_Phantoms.m
+END
+mrQ_smmothL_B1Phantoms.m
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/srepos/vistaproj/!svn/ver/1733/mrQ/SPGR/SPGR_phantoms/mrQ_smmothL_B1Phantoms.m
+END
+mrQ_multicoilWeighting_phantoms.m
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/srepos/vistaproj/!svn/ver/1355/mrQ/SPGR/SPGR_phantoms/mrQ_multicoilWeighting_phantoms.m
+END
+mrQ_initSPGR_pantom.m~
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/srepos/vistaproj/!svn/ver/1733/mrQ/SPGR/SPGR_phantoms/mrQ_initSPGR_pantom.m~
+END
+mrQfit_T1M0_Phantoms.m~
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/srepos/vistaproj/!svn/ver/1733/mrQ/SPGR/SPGR_phantoms/mrQfit_T1M0_Phantoms.m~
+END
+mrQ_smmothL_GainPhantoms.m
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/srepos/vistaproj/!svn/ver/1829/mrQ/SPGR/SPGR_phantoms/mrQ_smmothL_GainPhantoms.m
+END

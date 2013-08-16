@@ -104,20 +104,13 @@ function mrQ_run(mrQfileName,clobber)
 %  runn or run the mrQ fit
 % mrQ_run(mrQ)
 
-
-
-%
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%%
 if (~exist(mrQfileName,'file') )
     error(['cant find ' mrQfileName ])
 else
-load (mrQfileName) 
+load (mrQfileName) ;
+mrQ=mrQ_FieldNameCheck(mrQ);
 end
 
 
@@ -196,17 +189,17 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %load(name);
 
-if isfield(mrQ,'SPGR_init');
+if isfield(mrQ,'SPGR_init_done');
 else
-    mrQ.SPGR_init=0;
+    mrQ.SPGR_init_done=0;
 end
 
-if     mrQ.SPGR_init==0
+if     mrQ.SPGR_init_done==0
     
     %keep track of the variable we use  for detail see inside the function
     
     [~, ~, ~,~,~, mrQ]=mrQ_initSPGR(mrQ.SPGR,mrQ.refIm,mrQ.mmPerVox,mrQ.interp,mrQ.skip,[],mrQ);
-    mrQ.SPGR_init=1;
+    mrQ.SPGR_init_done=1;
     
     save(mrQ.name,'mrQ');
     fprintf('\n  init SPGR - done!           \n');
@@ -229,14 +222,14 @@ end
 
 
 
-if isfield(mrQ,'SPGR_coilWeight');
+if isfield(mrQ,'SPGR_coilWeight_done');
 else
-    mrQ.SPGR_coilWeight=0;
+    mrQ.SPGR_coilWeight_done=0;
 end
 
 
 
-if  (mrQ.coilWeights==1 && mrQ.coilNum(1)>8  && mrQ.SPGR_coilWeight==0)
+if  (mrQ.coilWeights==1 && mrQ.coilNum(1)>8  && mrQ.SPGR_coilWeight_done==0)
     
     fprintf('\n Determining optimal coil weighting...\n');
     % Should this return the new structure with the weighting applied?
@@ -250,17 +243,17 @@ end
 save(mrQ.name,'mrQ');
 
 
-%% %% Fit SPGR PD
+%%  Fit SPGR PD
 
-if isfield(mrQ,'SPGR_T1fit');
+if isfield(mrQ,'SPGR_T1fit_done');
 else
-    mrQ.SPGR_T1fit=0;
+    mrQ.SPGR_T1fit_done=0;
 end
 
 %vclover is implamented inside (we canadd rthis to the inputs
-if (mrQ.SPGR_T1fit==0);
+if (mrQ.SPGR_T1fit_done==0);
     [mrQ.AnalysisInfo]=mrQfit_T1M0_ver2(mrQ);
-    mrQ.SPGR_T1fit=1;
+    mrQ.SPGR_T1fit_done=1;
     
     save(mrQ.name,'mrQ');
     fprintf('\n fit T1 SPGR  - done!              \n');
@@ -310,17 +303,17 @@ if mrQ.segmentaion==0;
 end
 
 %3. coils MO
-if isfield(mrQ,'calM0');
+if isfield(mrQ,'calM0_done');
 else
-    mrQ.calM0=0;
+    mrQ.calM0_done=0;
 end
 
-if (mrQ.calM0==0);
+if (mrQ.calM0_done==0);
     fprintf('\n calculate M0 for each coil               \n');
     
     %build a multi coil M0 image for the coils raw data and then fitted T1
     [mrQ.M0combineFile] = mrQ_multicoilM0(mrQ.spgr_initDir,[],[],mrQ.SPGR_niiFile,mrQ.SPGR_niiFile_FA);
-    mrQ.calM0=1;
+    mrQ.calM0_done=1;
     save(mrQ.name,'mrQ');
 else
     fprintf('\n load M0 of each coil               \n');
@@ -331,45 +324,50 @@ end
 
 %% fit PD
 
-if isfield(mrQ,'SPGR_PDfit');
+if isfield(mrQ,'SPGR_PDfit_done');
 else
-    mrQ.SPGR_PDfit=0;
+    mrQ.SPGR_PDfit_done=0;
 end
 
 
-if mrQ.SPGR_PDfit==0;
+if mrQ.SPGR_PDfit_done==0;
     fprintf('\n calculate PD from the M0 of all the coil               \n');
     
-    %we hard code the number of poylonomyal to 3 see details inside the
-    %functions
-    mrQ.PolyDeg=3;
+   
     %send the a call for the grid to fit  PD
-    [mrQ.opt]=mrQ_fitPD_multicoil(mrQ.spgr_initDir,1,[],mrQ.PolyDeg,[],mrQ.sub,mrQ.proclass);
+%  [mrQ.opt]=mrQ_fitPD_multicoil(mrQ.spgr_initDir,1,[],mrQ.PolyDeg,[],mrQ.sub,mrQ.proclass);
+    [mrQ.opt]=mrQ_PD_multicoil_RgXv_GridCall(mrQ.spgr_initDir,mrQ.SunGrid,mrQ.proclus,mrQ.sub,mrQ.PolyDeg);
+
+    if mrQ.SunGrid==1;
+        %check for SGE is done  before you move on (while loop)
+        mrQ.SPGR_PDfit_done=mrQ_Gridcheack(mrQ.opt.logname);
+    else
+        mrQ.SPGR_PDfit_done=1;
+    end
     
-    %check for GE before you move on
-    mrQ.SPGR_PDfit=1;
     save(mrQ.name,'mrQ');
 else
-    fprintf('\n load the  claculted PD from the coils  M0               \n');
+    fprintf('\n load the claculted PD from the coils  M0               \n');
     
 end
-
 
 
 
 % bild the grid PD fits
-if isfield(mrQ,'SPGR_PDBuild');
+if isfield(mrQ,'SPGR_PDBuild_done');
     %we need a check for the GE
 else
-    mrQ.SPGR_PDBuild=0;
+    mrQ.SPGR_PDBuild_done=0;
 end
 
-if (mrQ.SPGR_PDBuild==0 && mrQ.SPGR_PDfit==1)
-    fprintf('build the WF map               ');
+if (mrQ.SPGR_PDBuild_done==0 && mrQ.SPGR_PDfit_done==1)
+    fprintf('build the WF map   form PD fit            ');
     
     
-    [mrQ.PDcombineInfo]=mrQ_BuildCoilsfitsPD(mrQ.spgr_initDir,mrQ.proclass);
-    mrQ.SPGR_PDfit=1;
+    mrQ.opt=mrQ_buildPD(mrQ.opt.logname);
+    
+    %[mrQ.PDcombineInfo]=mrQ_BuildCoilsfitsPD(mrQ.spgr_initDir,mrQ.proclass);
+    mrQ.SPGR_PDBuild_done=1;
     save(mrQ.name,'mrQ');
 else
     fprintf('load the WF map               ');
@@ -378,7 +376,7 @@ end
 
 % calculate VIP TV and SIR
 
-if (mrQ.SPGR_PDfit==1)
+if (mrQ.SPGR_PDBuild_done==1)
     fprintf('\n calculate VIP TV SIR form T1 and WF maps               \n');
     
     [mrQ.AnalysisInfo] = mrQ_VIP(mrQ.spgr_initDir);
@@ -390,7 +388,6 @@ fprintf('\n orgenized the maps in a maps directory                \n');
 
 mapDir=fullfile(mrQ.spgr_initDir,'maps');
 mkdir(mapDir);
-%eval(['! mv ' Dir{i} '/* '  name '/.']) ;
 
 cmd =(['! mv ' mrQ.spgr_initDir '/T1_map_lsq.nii.gz ' mapDir '/.']) ;
 eval(cmd);
@@ -407,15 +404,20 @@ eval(cmd);
 cmd =(['! mv ' mrQ.spgr_initDir '/SIR_map.nii.gz ' mapDir '/.']) ;
 eval(cmd);
 
+cmd =(['! mv ' mrQ.spgr_initDir '/cT1SIR_map.nii.gz ' mapDir '/.']) ;
+eval(cmd);
+
+
 mrQ.mapsDir=mapDir;
 mrQ.maps.T1path=fullfile(mapDir,'T1_map_lsq.nii.gz');
 mrQ.maps.WFpath=fullfile(mapDir,'WF_map.nii.gz');
 mrQ.maps.TVpath=fullfile(mapDir,'TV_map.nii.gz');
 mrQ.maps.SIRpath=fullfile(mapDir,'SIR_map.nii.gz');
+mrQ.maps.cT1SIRpath=fullfile(mapDir,'cT1SIR_map.nii.gz');
 
 %done
-mrQ.AnalysisDwon=1;
-mrQ.AnalysisDwonDate=date;
+mrQ.AnalysisDone=1;
+mrQ.AnalysisDoneDate=date;
 %save
 save(mrQ.name,'mrQ');
 fprintf('\n done !!! \n')

@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/srepos/vistaproj/!svn/ver/1849/mrQ/SPGR/SPGR_T1/B1_epi-spgr
+END
+mrQ_fitB1PD_SGE.m
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/srepos/vistaproj/!svn/ver/1733/mrQ/SPGR/SPGR_T1/B1_epi-spgr/mrQ_fitB1PD_SGE.m
+END
+mrQ_RB_ANTS_warp_EPI2SPGR.m
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/srepos/vistaproj/!svn/ver/1825/mrQ/SPGR/SPGR_T1/B1_epi-spgr/mrQ_RB_ANTS_warp_EPI2SPGR.m
+END
+errB1PD.m
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/srepos/vistaproj/!svn/ver/1234/mrQ/SPGR/SPGR_T1/B1_epi-spgr/errB1PD.m
+END
+mrQ_fitB1_LSQ.m
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/srepos/vistaproj/!svn/ver/1848/mrQ/SPGR/SPGR_T1/B1_epi-spgr/mrQ_fitB1_LSQ.m
+END
+mrQ_fitL_GregB1.m
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/srepos/vistaproj/!svn/ver/1100/mrQ/SPGR/SPGR_T1/B1_epi-spgr/mrQ_fitL_GregB1.m
+END
+mrQ_smmothL_B1.m
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/srepos/vistaproj/!svn/ver/1263/mrQ/SPGR/SPGR_T1/B1_epi-spgr/mrQ_smmothL_B1.m
+END
+mrQ_alignSPGR_SEIRepi.m
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/srepos/vistaproj/!svn/ver/1026/mrQ/SPGR/SPGR_T1/B1_epi-spgr/mrQ_alignSPGR_SEIRepi.m
+END
+mrQ_NLANTS_warp_SPGR2EPI_RB.m
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/srepos/vistaproj/!svn/ver/1849/mrQ/SPGR/SPGR_T1/B1_epi-spgr/mrQ_NLANTS_warp_SPGR2EPI_RB.m
+END

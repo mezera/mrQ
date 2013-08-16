@@ -1,13 +1,18 @@
-function mrQ_fitM0boxesCall(opt_logname,SunGrid,proclass)
+function mrQ_fitM0boxesCall(opt_logname,SunGrid,proclass,RunSelectedJob)
 % this function load the opt straction that have all the fit information
 % and send it in to the computer grid if one is defined (SunGrid and/or
 % proclass).  If not it will send it to local compoter solver
 %
 
-load(opt_logname);
+
+
+
+load (opt_logname);
 dirname=opt.dirname;
 sgename=opt.SGE;
 jumpindex=opt.jumpindex ;
+
+
 
 %%   Perform the gain fits
 % Perform the fits for each box using the Sun Grid Engine
@@ -25,14 +30,18 @@ if SunGrid==1;
             
         end
     else
-        % Prompt the user
-        inputstr = sprintf('An existing SGE run was found. \n Would you like to try and finish the exsist SGE run?');
-        an1 = questdlg( inputstr,'mrQ_fitPD_multiCoils','Yes','No','Yes' );
-        if strcmpi(an1,'yes'), an1 = 1; end
-        if strcmpi(an1,'no'),  an1 = 0; end
+        
+        if notDefined('RunSelectedJob')
+            
+            % Prompt the user
+            inputstr = sprintf('An existing SGE run was found. \n Would you like to try and finish the exsist SGE run?');
+            RunSelectedJob = questdlg( inputstr,'mrQ_fitM0boxesCall','Yes','No','Yes' );
+            if strcmpi(RunSelectedJob,'yes'), RunSelectedJob = true; end
+            if strcmpi(RunSelectedJob,'no'),  RunSelectedJob = false; end
+        end
         
         % User opted to try to finish the started SGE run
-        if an1==1
+        if RunSelectedJob==true
             reval = [];
             list  = ls(dirname);
             ch    = 1:jumpindex:length(opt.wh);
@@ -58,7 +67,7 @@ if SunGrid==1;
             end
             
             % User opted to restart the existing SGE run
-        elseif an1==0,
+        elseif RunSelectedJob==false,
             t = pwd;
             cd (opt.outDir)
             eval(['!rm -rf ' dirname]);
@@ -74,6 +83,7 @@ if SunGrid==1;
         else
             error('User cancelled');
         end
+        
     end
     
 else

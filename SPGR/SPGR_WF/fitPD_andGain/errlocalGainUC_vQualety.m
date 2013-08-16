@@ -62,7 +62,7 @@ err1=(((Val - repmat(mean(Val,2),1,coils)) )./repmat(mean(Val,2),1,coils));
 stds=std(err1);
 Mstd=median(stds);
 % is a coil is off then this is a bad fit
-if find(stds>Mstd.*2);nopossible(find(stds>Mstd.*2))=1;end
+if find(stds>Mstd.*3);nopossible(find(stds>Mstd.*3))=1;end
 %%
 % check 3 is there  nan or inf
 if  find(isnan(Val))  

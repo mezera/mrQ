@@ -174,8 +174,9 @@ ti(2)=length(find(mask1==2));
 ti(3)=length(find(mask1==3));
 
 most=(find(ti==max(ti))); %the tissue we have most in the box
-if (ti(most(1))./length(find(bm))>0.03  && (max(ti)>40)); %is tissue mask is exsisted we will intiate the parameters with it
-    
+%if (ti(most(1))./length(find(bm))>0.03  && (max(ti)>40)); %is tissue mask is exsisted we will intiate the parameters with it
+    if (ti(most(1))./length(find(bm))>0.7  && (max(ti)>400)); %is tissue mask is exsisted we will intiate the parameters with it
+
 %    go over the coils
     for i=1:outcoils,
         %fit poylnomyals

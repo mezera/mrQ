@@ -32,11 +32,12 @@ Gain = Poly*x(:,:)';
 
 %we checak if the coil gain fit goes wild. Gain can't be less then one we
 %don't lose signal ....
-err4=0;
-if find(Gain<1) ; err4=1-mean(Gain(Gain<1));end
+
 
 %%  calculate the PD
-Gain =reshape(Gain(use),[],coils);
+%Gain =reshape(Gain(use),[],coils);
+err4=0;
+if find(Gain<1) ; err4=1-mean(Gain(Gain<1));end
 %this is the predicted brain in each coil (row)
 %  the reshape is faster way to do that --> the gain in the useable voxels
 %    for i=1:10; tt(:,i)=Gain(use(:,i),i);end
@@ -124,23 +125,27 @@ return
 
 
 % err0=((abs(Val - repmat(mean(Val,2),1,coils)) )./repmat(mean(Val,2),1,coils));
-% % 
+% % % 
 % Gain1 = Poly*x(:,:)';
 %  box1=zeros([27 27 25 coils]);
 %  val1=zeros([27 27 25 coils]);
-%  G=zeros([27 27 25 coils]);
+%  %G=zeros([27 27 25 coils]);
 %   val2=zeros([27 27 25 coils]);
 % for i=1:coils,
-%     
+%         tmp1=zeros([27 27 25]);
+% 
 %     tmp=zeros([27 27 25]);
 %     tmp(use(:,1))=Val(:,i);
+%     tmp1(use(:,1))=Val(:,i)./Gain1(:,i);
 % val1(:,:,:,i)=tmp;
-%   tmp(use(:,1))=box(:,i);
-% box1(:,:,:,i)=tmp;
-% tmp=reshape(Gain1(:,i),size(tmp));
-% G(:,:,:,i)=tmp;
-% val2(:,:,:,i)=box1(:,:,:,i)./G(:,:,:,i);
-% end
+% val2(:,:,:,i)=tmp1;
+% %  tmp(use(:,1))=box(:,i);
+%box1(:,:,:,i)=tmp;
+%tmp=reshape(Gain1(:,i),size(tmp));
+%G(:,:,:,i)=tmp;
+%val2(:,:,:,i)=box1(:,:,:,i)./G(:,:,:,i);
+
+end
 
 
 %%

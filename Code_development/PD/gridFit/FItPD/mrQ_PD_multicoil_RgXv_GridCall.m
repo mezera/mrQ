@@ -128,7 +128,7 @@ if (exist(BMfile,'file'))
 
     % In casses of high resltion data we can undersample the data when we fit the coil gains this may shorter the fit time.  not that the Coil gain was writtern for 2X2X2 resultion.
     % images different resultion may need some changes in the regularization protocol.
-    if outMm~=mmPerVox 
+    if (outMm(1)~=mmPerVox(1) || outMm(2)~=mmPerVox(2) || outMm(3)~=mmPerVox(3) )
         [opt]=mrQ_resamp4G_fit(opt,outMm);
         brainMask = readFileNifti(opt.BMfile);
         mmPerVox  = brainMask.pixdim;

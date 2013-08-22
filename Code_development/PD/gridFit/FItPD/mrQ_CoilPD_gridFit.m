@@ -116,6 +116,7 @@ for ii= st:ed,
         
         %% Select the coils to fit
         %
+        if length(useCoil)>SZ(4); useCoil=useCoil(1:SZ(4));end
         c=nchoosek(useCoil,maxCoil);
         Cor=ones(maxCoil,size(c,1))*100;
         for k=minCoil:maxCoil

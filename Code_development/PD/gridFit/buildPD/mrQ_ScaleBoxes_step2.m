@@ -14,8 +14,8 @@ BM=readFileNifti(opt.BMfile);
 BM=BM.data;
 Boxes(1).loc=[];
 for ii=BoxesToUse %loop over boxes
-    tic
-    ii
+   % tic
+   
     donemask(ii,ii)=1;
     % what are the candidate boxes to be overlap with ii box
     wh=find(donemask(ii,:)==0);
@@ -88,5 +88,5 @@ err= median(abs(Boxes(jj).PD(overlap_jj)*Ratio -Boxes(ii).PD(overlap_ii)) ./ Box
         donemask(ii,jj)=1;
         donemask(jj,ii)=1;
     end
-    toc
+    %toc
 end

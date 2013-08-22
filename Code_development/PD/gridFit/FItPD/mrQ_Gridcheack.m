@@ -1,4 +1,4 @@
-function PDGridFit_done=mrQ_Gridcheack(opt_Log_name,PDGridFit_done)
+function PDGridFit_done=mrQ_Gridcheack(opt_Log_name,SunGrid,proclus)
 %%
 % This loop checks if all the outputs have been saved or waits until
 % they are all done, it it's too long run again
@@ -11,9 +11,10 @@ else
     load  (opt_Log_name)
 end
 
-if notDefined('PDGridFit_done')
-    PDGridFit_done=false;
-end
+
+if notDefined('SunGrid');SunGrid=0;end
+if notDefined('proclus');proclus=0;end
+PDGridFit_done=false;
 
 %%
 
@@ -41,7 +42,7 @@ while PDGridFit_done~=true
             
             RunSelectedJob=true;
             
-            mrQ_fitM0boxesCall(opt_logname,SunGrid,proclass,RunSelectedJob)
+            mrQ_fitM0boxesCall(opt_Log_name,SunGrid,proclus,RunSelectedJob)
            
             
         end

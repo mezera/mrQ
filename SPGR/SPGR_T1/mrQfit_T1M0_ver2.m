@@ -109,11 +109,10 @@ if ~isfield(mrQ,'sub');
     disp([' Subject name for lsq fit is ' mrQ.sub]);
 end
 sub = mrQ.sub;
-
-if ~isfield(mrQ,'coilWeights');
-    mrQ.coilWeights = 1;
+if ~isfield(mrQ,'SPGR_coilWeight');
+    mrQ.SPGR_coilWeight = 0;
 end
-coilWeights = mrQ.coilWeights;
+coilWeights = mrQ.SPGR_coilWeight;
 
 if ~isfield(mrQ,'name');
     mrQ.name = fullfile(outDir,'mrQParams');

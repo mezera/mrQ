@@ -1,4 +1,4 @@
-function [opt]=mrQ_PD_multicoil_RgXv_GridCall(outDir,SunGrid,proclass,subName,degrees,M0file,T1file,BMfile,outMm,boxSize,pracent_overlap,Coilsinfo,clobber)
+function [logname]=mrQ_PD_multicoil_RgXv_GridCall(outDir,SunGrid,proclass,subName,degrees,M0file,T1file,BMfile,outMm,boxSize,pracent_overlap,Coilsinfo,clobber)
 %
 %   [opt]=mrQ_PD_multicoil_RgXv_GridCall(outDir,SunGrid,proclass,subName,degrees,M0file,T1file,BMfile,outMm,boxSize,pracent_overlap,Coilsinfo,clobber)
 % # Create a stracture of information to fit the M0 boxes ffor coil gain
@@ -246,7 +246,6 @@ if clobber && (exist(dirname,'dir'))
 end
 
 
-mrQ_fitM0boxesCall(opt.logname,SunGrid,proclass);
 
 % %%   Perform the gain fits
 % % Perform the fits for each box using the Sun Grid Engine

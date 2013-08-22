@@ -25,7 +25,7 @@ function mrQ = mrQ_Set(mrQ,param,varargin,saveflag)
 %  polydeg           - the polynomyals degree to fit to the Gain (defult 3)
 %  'brakeaftervisualization' or 'viewbrake' - use that to start the data
 %  visual the images wirh the check flag and then stop the code from
-% To reverse sewpesipic steps in the fir 
+% To reverse sewpesipic steps in the fir
 % seir_done                                1 to skip the SEIR t1 fit or 0 to redo it
 % spgr_init_done                      1 to skip the spgr init stepor 0 to redo it
 % spgr_coilweight_done           1 to skip wighting 0 to redo it
@@ -97,23 +97,27 @@ switch(param)
         mrQ.brakeAfterVisualization=varargin;
     case {'brakeaftert1' ,'t1brake'}
         mrQ.brakeAfterT1=varargin;
-        case {'seir_done' }
+    case {'siemens'}
+        mrQ.siemens=varargin;
+    case {'permution'}
+        mrQ.permution=varargin;
+    case {'seir_done' }
         mrQ.SEIR_done=varargin;
-         case {'spgr_init_done' }
+    case {'spgr_init_done' }
         mrQ.SPGR_init_done=varargin;
-        case {'spgr_coilweight_done'}
-            mrQ.SPGR_coilWeight_done=varargin;
+    case {'spgr_coilweight_done'}
+        mrQ.SPGR_coilWeight_done=varargin;
     case{ 'spgr_t1fit_done'}
-             mrQ.SPGR_T1fit_done=varargin;
-              case{ 'segmentaion','seg'}
-             mrQ.segmentaion=varargin;
-             case{ 'calm0_done'}
-             mrQ.calM0_done=varargin;
-             case{ 'spgr_pdfit_done'}
-             mrQ.SPGR_PDfit_done=varargin;
-             case{ 'spgr_pdbuild_done'}
-             mrQ.SPGR_PDBuild_done=varargin;
-         
+        mrQ.SPGR_T1fit_done=varargin;
+    case{ 'segmentaion','seg'}
+        mrQ.segmentaion=varargin;
+    case{ 'calm0_done'}
+        mrQ.calM0_done=varargin;
+    case{ 'spgr_pdfit_done'}
+        mrQ.SPGR_PDfit_done=varargin;
+    case{ 'spgr_pdbuild_done'}
+        mrQ.SPGR_PDBuild_done=varargin;
+        
     otherwise
         
         error('Uknown mrQ parameter');

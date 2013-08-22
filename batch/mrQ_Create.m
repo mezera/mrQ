@@ -49,23 +49,27 @@ if setDefault
     mrQ.channels=[];
     %% SEIR
     % SEIR alignment and fit
+    mrQ.MakeNewSEIRDir=1;
+    
     mrQ.SEIR_done=0;
     mrQ.complexFlag=0;
     % for comlex data that we not use for now.
     
     mrQ.useAbs=0;
     % for comlex data that we like to use as magnitude data use 1
-     % A cell array with the SEIR series numbers
+    % A cell array with the SEIR series numbers
     mrQ.SEIR_seriesNumbers = {};
-   
+    
     %% SPGR
+    mrQ.MakeNewSPGRRDir=1;
+    
     mrQ.SPGR_init_done=0;
     mrQ.SPGR_coilWeight_done=0;
     mrQ.SPGR_T1fit_done=0;
-
-        % SPGR alignmen
+    
+    % SPGR alignmen
     mrQ.coilWeights=1;
-mrQ.alignFlag=1;
+    mrQ.alignFlag=1;
     % this to align the SEIR data.we like that unless  if phantom dead or
     % maybe complex (zero)
     mrQ.interp=[];
@@ -73,14 +77,15 @@ mrQ.alignFlag=1;
     
     mrQ.refIm=[];
     mrQ.skip=[];
-    
-     % A cell array with the SPGR series numbers
+    mrQ.permution=0;
+    % A cell array with the SPGR series numbers
     mrQ.SPGR_seriesNumbers = {};
     
     % brack and cheaks
-        mrQ.cheack=0;
+    mrQ.cheack=0;
     mrQ.brakeAfterVisualization=0;
     mrQ.brakeAfterT1=0;
+    mrQ.viewbrake=0;
     %%  T1 fit of SPGR
     mrQ.lsq=1; %see for detail inside we recomand the lsq version
     
@@ -89,7 +94,7 @@ mrQ.alignFlag=1;
     mrQ.runfreesurfer=0;
     
     
-   
+    
     %% fit PD
     mrQ.calM0_done=0;
     SPGR_PDfit_done=0;

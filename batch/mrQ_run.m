@@ -104,13 +104,21 @@ function mrQ_run(mrQfileName,clobber)
 %  runn or run the mrQ fit
 % mrQ_run(mrQ)
 
+
+
+%
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 if (~exist(mrQfileName,'file') )
     error(['cant find ' mrQfileName ])
 else
-load (mrQfileName) ;
-mrQ=mrQ_FieldNameCheck(mrQ);
+load (mrQfileName) 
+
 end
 
 
@@ -137,7 +145,6 @@ sub = mrQ.sub;
 
 
 
-%% for T1 fit
 
 %% arange data form the magnet
 
@@ -156,6 +163,12 @@ else
     save(mrQ.name,'mrQ');
 end
 
+% usege of  SUnGrid is advised and is the defult.it can be turn off with
+% mrQSet : mrQ=mrQ_Set(mrQ,'sungrid',0)
+
+if ~isfield(mrQ,'SunGrid');
+    mrQ.SunGrid = 1;
+end
 
 
 %% fit SEIR
@@ -170,7 +183,7 @@ end
 if (mrQ.SEIR_done==0);
     
     %keep track of the variable we use  for detail see inside the function
-    [~, ~, ~, mrQ.SEIRsaveData]=mrQ_initSEIR(mrQ.SEIRepiDir,mrQ.alignFlag,mrQ.complexFlag,mrQ.useAbs);
+    [~, ~, ~, mrQ.SEIRsaveData]=mrQ_initSEIR(mrQ,mrQ.SEIRepiDir,mrQ.alignFlag,mrQ.complexFlag,mrQ.useAbs);
     
     [mrQ]=mrQ_fitSEIR_T1(mrQ.SEIRepiDir,[],[],0,mrQ);
     mrQ.SEIR_done=1;
@@ -181,7 +194,6 @@ else
     fprintf('\n  load fit SEIR data ! \n');
     
 end
-
 
 %% intiate and  Align SPGR
 %  param for Align SPGR
@@ -197,7 +209,6 @@ end
 if     mrQ.SPGR_init_done==0
     
     %keep track of the variable we use  for detail see inside the function
-    
     [~, ~, ~,~,~, mrQ]=mrQ_initSPGR(mrQ.SPGR,mrQ.refIm,mrQ.mmPerVox,mrQ.interp,mrQ.skip,[],mrQ);
     mrQ.SPGR_init_done=1;
     
@@ -233,7 +244,7 @@ if  (mrQ.coilWeights==1 && mrQ.coilNum(1)>8  && mrQ.SPGR_coilWeight_done==0)
     
     fprintf('\n Determining optimal coil weighting...\n');
     % Should this return the new structure with the weighting applied?
-    [mrQ.AligndSPGR]=mrQ_multicoilWeighting(mrQ.spgr_initDir,mrQ.SPGR_niiFile,mrQ.SPGR_niiFile_FA);
+    [mrQ.AligndSPGR]=mrQ_multicoilWeighting(mrQ.spgr_initDir,mrQ.SPGR_niiFile,mrQ.SPGR_niiFile_FA,mrQ);
     mrQ.SPGR_coilWeight=1;
     fprintf('\n SPGR  coil weighting - done!               \n');
     
@@ -312,7 +323,8 @@ if (mrQ.calM0_done==0);
     fprintf('\n calculate M0 for each coil               \n');
     
     %build a multi coil M0 image for the coils raw data and then fitted T1
-    [mrQ.M0combineFile] = mrQ_multicoilM0(mrQ.spgr_initDir,[],[],mrQ.SPGR_niiFile,mrQ.SPGR_niiFile_FA);
+    [mrQ.M0combineFile] = mrQ_multicoilM0(mrQ.spgr_initDir,[],[],mrQ.SPGR_niiFile,mrQ.SPGR_niiFile_FA,mrQ);
+
     mrQ.calM0_done=1;
     save(mrQ.name,'mrQ');
 else
@@ -336,11 +348,18 @@ if mrQ.SPGR_PDfit_done==0;
    
     %send the a call for the grid to fit  PD
 %  [mrQ.opt]=mrQ_fitPD_multicoil(mrQ.spgr_initDir,1,[],mrQ.PolyDeg,[],mrQ.sub,mrQ.proclass);
-    [mrQ.opt]=mrQ_PD_multicoil_RgXv_GridCall(mrQ.spgr_initDir,mrQ.SunGrid,mrQ.proclus,mrQ.sub,mrQ.PolyDeg);
+ if isfield(mrQ,'opt_logname');
+else
+[mrQ.opt_logname]=mrQ_PD_multicoil_RgXv_GridCall(mrQ.spgr_initDir,mrQ.SunGrid,mrQ.proclus,mrQ.sub,mrQ.PolyDeg);
+save(mrQ.name,'mrQ');
+mrQ_fitM0boxesCall(mrQ.opt_logname,mrQ.SunGrid,mrQ.proclus);
 
+
+ end
+ 
     if mrQ.SunGrid==1;
         %check for SGE is done  before you move on (while loop)
-        mrQ.SPGR_PDfit_done=mrQ_Gridcheack(mrQ.opt.logname);
+        mrQ.SPGR_PDfit_done=mrQ_Gridcheack(mrQ.opt_logname,mrQ.SunGrid,mrQ.proclus);
     else
         mrQ.SPGR_PDfit_done=1;
     end
@@ -364,7 +383,7 @@ if (mrQ.SPGR_PDBuild_done==0 && mrQ.SPGR_PDfit_done==1)
     fprintf('build the WF map   form PD fit            ');
     
     
-    mrQ.opt=mrQ_buildPD(mrQ.opt.logname);
+    mrQ.opt=mrQ_buildPD(mrQ.opt_logname);
     
     %[mrQ.PDcombineInfo]=mrQ_BuildCoilsfitsPD(mrQ.spgr_initDir,mrQ.proclass);
     mrQ.SPGR_PDBuild_done=1;
@@ -385,8 +404,23 @@ end
 
 %% last orgnized the brain maps in a directory named maps
 fprintf('\n orgenized the maps in a maps directory                \n');
-
 mapDir=fullfile(mrQ.spgr_initDir,'maps');
+
+            % if we redo it and maps dir is already exsist we will saved
+            % the old before we make a new one
+if (exist(mapDir,'dir'))
+    ex=0; num=0;
+    while ex==0
+        num=num+1;
+        mapDirOld=fullfile(mrQ.spgr_initDir,['mapsOld_' num2str(num)] );
+        if (~exist(mapDirOld,'dir'))
+            
+            eval(['! mv ' mapDir  ' ' mapDirOld]);
+            ex=1;
+        end
+    end
+end
+
 mkdir(mapDir);
 
 cmd =(['! mv ' mrQ.spgr_initDir '/T1_map_lsq.nii.gz ' mapDir '/.']) ;

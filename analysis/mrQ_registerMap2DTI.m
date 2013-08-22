@@ -37,9 +37,7 @@ cmANTS=['xterm -e ANTS 3 -m CC[' B0file ',' T1file ',1,2] -o ' out '.nii.gz --ri
 [status, result] = system(cmANTS);
 
 if status ~= 0
-    % JY changed the type of image registration from CC (cross correlation)
-    % to MI mutual information because the manual suggested that this is
-    % better for cross modality registration
+
     cmANTS=['ANTS 3 -m CC[' B0file ',' T1file ',1,2] -o ' out '.nii.gz --rigid-affine true'];
     
     % Run the command in unix and get back status and results:

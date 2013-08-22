@@ -9,6 +9,7 @@ function Boxes=mrQ_CalBoxPD_step1(opt,BoxesToUse,CoilGains)
 %multi coil M0
 M0=readFileNifti(opt.M0file);
 M0=M0.data;
+SZ=size(M0);
 %T1
 T1=readFileNifti(opt.T1file);
 T1=T1.data;
@@ -23,6 +24,8 @@ pBasis = mrQ_CreatePoly(opt.boxS,opt.degrees,3,opt.BasisFlag);
 maxCoil=opt.maxCoil;
 minCoil=opt.minCoil;
 useCoil=opt.useCoil;
+        if length(useCoil)>SZ(4); useCoil=useCoil(1:SZ(4));end
+
 nPolyCoef=size(pBasis,2);
 nVoxels=size(pBasis,1);
 
@@ -51,13 +54,16 @@ for ii=BoxesToUse
     for jj=1:nVoxels
         PD(jj) = G(jj,:)' \ M0_v(jj,Clist)';
     end
+    %if there are zeors we will get NAN. 
+    %if it less then Zerow it is just wrong
+    mask=PD>0; 
     
     % 3. solve all coils Gain
     G  = zeros(nVoxels,Ncoils);
     g0 = zeros(nPolyCoef,Ncoils);
     for jj=1:Ncoils
-        G(:,jj)  = M0_v(:,jj) ./ PD(:);         % Raw estimate
-        g0(:,jj) = pBasis(:,:) \ G(:,jj);  % Polynomial approximation
+        G(mask,jj)  = M0_v(mask,jj) ./ PD(mask);         % Raw estimate
+        g0(:,jj) = pBasis(mask,:) \ G(mask,jj);  % Polynomial approximation
     end
     G = pBasis*g0;
     % 4 solve all coil PD

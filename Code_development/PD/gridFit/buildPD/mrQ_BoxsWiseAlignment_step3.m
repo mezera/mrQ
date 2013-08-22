@@ -23,10 +23,23 @@ doneSt=0;
 M0=zeros(size(BM));
 Wait=M0;
 count=1;
+
+%% let check that the box we select to start with have boxes around to work with. if not look for other box
+ok=0;kk=1;
+while ok~=1
+wh=find(ScaleMat(:,DoNow)); wh=[DoNow wh'];
+if length(wh)<8
+    kk=kk+1;
+    DoNow=BoxesToUse(kk);
+else
+    ok=1;
+end
+end
+    
 %%
 %loop over boxes
 while any (ToDo==1)
-    tic
+   % tic
     %for i=1:length(DoNext)
     
     %the over lapping boxes
@@ -96,7 +109,7 @@ while any (ToDo==1)
     end
     %book keeping
     Boxorder(DoNow)=count;
-    count=count+1
+    count=count+1;
     ToDo(DoNow)=0;
     clear Im1 MMii use Im good ImS Mdc tf loc dc whV
     
@@ -131,7 +144,7 @@ while any (ToDo==1)
         mostOverLap=find(overlap==max(overlap));
         DoNow=wh(mostOverLap(1));
         clear wh whV tf  overlap
-        toc
+      %  toc
     end
     
 end

@@ -61,7 +61,11 @@ end;
 
 % make the polynomial that will be use to fit the coil gains
     [Poly,str] = constructpolynomialmatrix3d(opt{1}.boxS,find(ones(opt{1}.boxS)),opt{1}.degrees);
-    opt{1}.Poly=Poly;
+%[Poly,str] = constructpolynomialmatrix3d_1(opt{1}.boxS,find(ones(opt{1}.boxS)),[],[],opt{1}.str);
+
+opt{1}.Poly=Poly;
+opt{1}.lb = ones(opt{1}.numIn,size(opt{1}.Poly,2)).*-inf;
+opt{1}.ub = ones(opt{1}.numIn,size(opt{1}.Poly,2)).*inf;
 
     %intilazie parameters and saved outputs
 nn=1;
@@ -75,14 +79,14 @@ coilList=zeros(opt{1}.numIn,ed-st+1);
 
 for i= st:ed,   
      %run over the box you like to fit
-  
+  %%
     tic
     %find the x,y,z location of the box (this is not x,y,z location in image space but
     %grid of boxes we made by mashgrid in  mrQ_fitPD_multicoil
     [fb(i,1,1) fb(i,1,2) fb(i,1,3)]=ind2sub(size(opt{1}.X),opt{1}.wh(i));
     
     % get all the relevant box information raday to be fitted
-    [x01,inDat1,bm1,szB,skip(nn) coils_list]= mrQM0fitini_Param_v(opt{1},fb(i,:),M,coils);
+    [x01,inDat1,bm1,szB,skip(nn) coils_list]= mrQM0fitini_Param_vv(opt{1},fb(i,:),M,coils);
     
     %cheack that there is usabale coils information if not we won't fit this box 
     if (size(inDat1,2))<4 
@@ -170,14 +174,14 @@ for i= st:ed,
     %next box
     nn=nn+1
     toc
-    
+    %%
 end
 
 %% Save
 %the name of the saved file is usfule to detecet what box are in it (st ed)
 name=[ opt{1}.name '_' num2str(st) '_' num2str(ed)];
 
-save(name,'res','resnorm','exitflag','st','ed','skip' ,'coilList','Poly')
+save(name,'res','resnorm','exitflag','st','ed','skip' ,'coilList', 'str')
 %saving the information about those boxes we fit.
 %the coils fitted polynomial coefishents (res)
 %the fittting residuals (resnorm)
@@ -212,7 +216,7 @@ coefdat=tril(corrcoef(inDat),-1);
 
 
 %call to lsq fit
-[res1, resnorm,dd1,exitflag] = lsqnonlin(@(par) errlocalGainUC_v2(par,inDat,opt{1}.Poly,coefdat,bm,length(use)),x0,opt{1}.lb,opt{1}.ub,options);
+[res1, resnorm,dd1,exitflag] = lsqnonlin(@(par) errlocalGainUC_v2(par,inDat,opt{1}.Poly(bm(:,1),:),coefdat,bm,length(use)),x0,opt{1}.lb(1:length(use),:),opt{1}.ub(1:length(use),:),options);
 res=zeros(opt{1}.numIn,size(res1,2));
 res(1:size(res1,1),:)=res1;
 

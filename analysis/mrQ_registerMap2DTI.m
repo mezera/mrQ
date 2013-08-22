@@ -1,5 +1,12 @@
-function mrQ_registerMap2DTI(B0file,T1file,otherMaps,outDir)
+function mrQ_registerMap2DTI(B0file,T1file,otherMaps,outDir, interpMethod)
 
+if notDefined('interpMethod')
+    interpMethod = '--use-BSpline';
+elseif strcmp(interpMethod,'spline')
+    interpMethod = '--use-BSpline';
+elseif strcmp(interpMethod,'nn') || strcmp(interpMethod,'nearestneighbor')
+    interpMethod =  '--use-NN';
+end
 
 orig_path = getenv('LD_LIBRARY_PATH');
 
@@ -37,6 +44,7 @@ cmANTS=['xterm -e ANTS 3 -m CC[' B0file ',' T1file ',1,2] -o ' out '.nii.gz --ri
 [status, result] = system(cmANTS);
 
 if status ~= 0
+
     cmANTS=['ANTS 3 -m CC[' B0file ',' T1file ',1,2] -o ' out '.nii.gz --rigid-affine true'];
     
     % Run the command in unix and get back status and results:
@@ -52,7 +60,7 @@ end
 
 out1=fullfile(outDir,[name '_2DTI.nii.gz']);
 
-cmWarp=['xterm -e WarpImageMultiTransform  3 ' T1file  ' ' out1 ' -R '  T1file ' ' out 'Warp.nii.gz ' out 'Affine.txt'];
+cmWarp=['xterm -e WarpImageMultiTransform  3 ' T1file  ' ' out1 ' -R '  T1file ' ' out 'Warp.nii.gz ' out 'Affine.txt ' interpMethod];
 
 % Run the command in unix and get back status and results:
 [status, result] = system(cmWarp);
@@ -63,13 +71,13 @@ if ~notDefined('otherMaps')
         [~, name]=fileparts(name);
         out1=fullfile(outDir,[name '_2DTI.nii.gz']);
         
-        cmWarp=['xterm -e WarpImageMultiTransform  3 ' otherMaps{i}  ' ' out1 ' -R '  T1file ' ' out 'Warp.nii.gz ' out 'Affine.txt'];
+        cmWarp=['xterm -e WarpImageMultiTransform  3 ' otherMaps{i}  ' ' out1 ' -R '  T1file ' ' out 'Warp.nii.gz ' out 'Affine.txt ' interpMethod];
         % Run the command in unix and get back status and results:
         
         [status, result] = system(cmWarp);
         
         if status ~= 0
-            cmWarp=['WarpImageMultiTransform  3 ' otherMaps{i}  ' ' out1 ' -R '  T1file ' ' out 'Warp.nii.gz ' out 'Affine.txt'];
+            cmWarp=['WarpImageMultiTransform  3 ' otherMaps{i}  ' ' out1 ' -R '  T1file ' ' out 'Warp.nii.gz ' out 'Affine.txt ' interpMethod];
             % Run the command in unix and get back status and results:
             
             [status, result] = system(cmWarp,'-echo');

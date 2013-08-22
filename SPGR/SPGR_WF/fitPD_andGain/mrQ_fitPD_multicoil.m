@@ -165,9 +165,9 @@ else
 end
 
 opt{1}.numIn = 8; %number of coil we will use to fit (best 8);
-[opt{1}.Poly,str] = constructpolynomialmatrix3d(boxS,find(ones(boxS)),degrees);
-opt{1}.lb = ones(opt{1}.numIn,size(opt{1}.Poly,2)).*-inf;
-opt{1}.ub = ones(opt{1}.numIn,size(opt{1}.Poly,2)).*inf;
+%[opt{1}.Poly,opt{1}.str] = constructpolynomialmatrix3d(boxS,find(ones(boxS)),degrees);
+%opt{1}.lb = ones(opt{1}.numIn,size(opt{1}.Poly,2)).*-inf;
+%opt{1}.ub = ones(opt{1}.numIn,size(opt{1}.Poly,2)).*inf;
 
 
 
@@ -233,7 +233,7 @@ for j=1:length(M0cfile)
         % deleat them
         eval(['! rm -r ' dirname]);
     end
-    
+    clear  brainMask donemask options controlmask M0f
     %%   Perform the gain fits
     % Perform the fits for each box using the Sun Grid Engine
     if SunGrid==1;
@@ -244,10 +244,9 @@ for j=1:length(M0cfile)
             mkdir(dirname);
             eval(['!rm -f ~/sgeoutput/*' sgename '*'])
             if proclass==1
-                sgerun2('FitM0_sanGrid_v2(opt,jumpindex,jobindex);',sgename,1,1:ceil(length(opt{1}.wh)/jumpindex),[],[],5000);
+                sgerun2('FitM0_sanGrid_v2(opt,jumpindex,jobindex);',sgename ,1,1:ceil(length(opt{1}.wh)/jumpindex),[],[],8000); 
             else
-                sgerun('FitM0_sanGrid_v2(opt,jumpindex,jobindex);',sgename,1,1:ceil(length(opt{1}.wh)/jumpindex),[],[],5000);
-                
+                sgerun('FitM0_sanGrid_v2(opt,jumpindex,jobindex);',sgename,1,1:ceil(length(opt{1}.wh)/jumpindex),[],[],8000);
             end
         else
             % Prompt the user
@@ -275,10 +274,12 @@ for j=1:length(M0cfile)
                     eval(['!rm -f ~/sgeoutput/*' sgename '*'])
                     if proclass==1
                         for kk=1:length(reval)
-                        sgerun2('FitM0_sanGrid_v2(opt,jumpindex,jobindex);',[sgename num2str(kk)],1,reval(kk),[],[],5000);
+                        sgerun2('FitM0_sanGrid_v2(opt,jumpindex,jobindex);',[sgename num2str(kk)],1,reval(kk),[],[],3000);
+                        %sgerun2('FitM0_sanGrid_v2(opt,jumpindex,jobindex);',[sgename 'redo'],1,reval,[],[],8000);
+
                         end
                     else
-                        sgerun('FitM0_sanGrid_v2(opt,jumpindex,jobindex);',sgename,1,reval,[],[],5000);
+                        sgerun('FitM0_sanGrid_v2(opt,jumpindex,jobindex);',sgename,1,reval,[],[],8000);
                     end
                 end
                 
@@ -291,16 +292,44 @@ for j=1:length(M0cfile)
                 eval(['!rm -f ~/sgeoutput/*' sgename '*'])
                 mkdir(dirname);
                 if proclass==1
-                    sgerun2('FitM0_sanGrid_v2(opt,jumpindex,jobindex);',sgename,1,1:ceil(length(opt{1}.wh)/jumpindex),[],[],5000);
+                    sgerun2('FitM0_sanGrid_v2(opt,jumpindex,jobindex);',sgename,1,1:ceil(length(opt{1}.wh)/jumpindex),[],[],8000);
                 else
-                    sgerun('FitM0_sanGrid_v2(opt,jumpindex,jobindex);',sgename,1,1:ceil(length(opt{1}.wh)/jumpindex),[],[],5000);
+                    sgerun('FitM0_sanGrid_v2(opt,jumpindex,jobindex);',sgename,1,1:ceil(length(opt{1}.wh)/jumpindex),[],[],8000);
                     
                 end
             else
                 error('User cancelled');
             end
         end
+    else 
+         fprintf('\n fit the PD map localy, may be slow. SunGrid use can be much faster             \n');
+
+        if (~exist(dirname,'dir')),
+            mkdir(dirname);
+            jobindex=1:ceil(length(opt{1}.wh)/jumpindex);
+        else
+              jobindex = [];
+                list  = ls(dirname);
+                ch    = 1:jumpindex:length(opt{1}.wh);
+                k     = 0;
+                
+                for ii=1:length(ch),
+                    ex=['_' num2str(ch(ii)) '_'];
+                    if length(regexp(list, ex))==0,
+                        k=k+1;
+                        jobindex(k)=(ii);
+                    end
+                end
+                
+            
+        end
         
+         if ~isempty(jobindex)
+        for i=jobindex
+            FitM0_sanGrid_v2(opt,jumpindex,i);
+        end
+        end
+       
     end
     
 end

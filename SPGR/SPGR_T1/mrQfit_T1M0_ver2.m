@@ -17,7 +17,7 @@ function [AnalysisInfo]=mrQfit_T1M0_ver2(mrQ,clobber)
 %                            The epi SEIR directory should contain the
 %                            out-put from fit mrQ_fitSEIR_T1 (see above)
 %       coilWeights         - if a coill Weighting data exsist we will use it . in tje other case we
-%                              will use the coil Weighting as given from the magnets 
+%                              will use the coil Weighting as given from the magnets
 %
 %      runfreesurfer        - if a freesurfer is needed we will make a call
 %                           for that after we crate a sysntetic T1-Weighted image
@@ -45,8 +45,8 @@ function [AnalysisInfo]=mrQfit_T1M0_ver2(mrQ,clobber)
 %                           mrQ_PD and mrQ_HLF.
 %                           maps like T1 M0 B1, etc. are written to the
 %                           output directory ('outDir').
-%                     
-%       
+%
+%
 %
 %
 % WEB RESOURCES
@@ -74,15 +74,15 @@ function [AnalysisInfo]=mrQfit_T1M0_ver2(mrQ,clobber)
 if ~isfield(mrQ,'spgr_initDir');
     mrQ.spgr_initDir = pwd;
 end
-    dataDir = mrQ.spgr_initDir;
+dataDir = mrQ.spgr_initDir;
 
 
 if ~isfield(mrQ,'lsq');
     mrQ.lsq = 1;
 end
-    lsqfit = mrQ.lsq;
+lsqfit = mrQ.lsq;
 
-if ~isfield(mrQ,'SEIRepiDir') 
+if ~isfield(mrQ,'SEIRepiDir')
     error('can not fit SEIR epi to spgr the SEIRepi_Dir path is missing')
 end
 
@@ -90,35 +90,44 @@ end
 if ~isfield(mrQ,'outDir');
     mrQ.outDir = mrQ.spgr_initDir;
 end
-    outDir = mrQ.outDir;
+outDir = mrQ.outDir;
 
- 
+
 if ~isfield(mrQ,'complexFlag');
     mrQ.complexFlag = 0;
 end
-    complexFlag = mrQ.complexFlag;
+complexFlag = mrQ.complexFlag;
 
 if ~isfield(mrQ,'runfreesurfer')
     mrQ.runfreesurfer=0;
 end
-    runfreesurfer = mrQ.runfreesurfer;
+runfreesurfer = mrQ.runfreesurfer;
 
 if ~isfield(mrQ,'sub');
     % This is a job name we get from the for SGE
     [~, mrQ.sub] = fileparts(fileparts(fileparts(fileparts(fileparts(dataDir)))));
     disp([' Subject name for lsq fit is ' mrQ.sub]);
 end
-    sub = mrQ.sub;
-
+sub = mrQ.sub;
 if ~isfield(mrQ,'SPGR_coilWeight');
-    mrQ.SPGR_coilWeight = 1;
+    mrQ.SPGR_coilWeight = 0;
 end
-    coilWeights = mrQ.SPGR_coilWeight;
+coilWeights = mrQ.SPGR_coilWeight;
 
 if ~isfield(mrQ,'name');
     mrQ.name = fullfile(outDir,'mrQParams');
 end
 
+if ~isfield(mrQ,'lsq');
+    mrQ.lsq = 1;
+end
+lsqfit = mrQ.lsq;
+
+if ~isfield(mrQ,'SunGrid');
+    mrQ.SunGrid = 1;
+end
+ SunGrid = mrQ.SunGrid;
+ 
 save(mrQ.name,'mrQ')
 
 % Clobber flag. Overwrite existing fit if it already exists and redo the T1
@@ -183,30 +192,37 @@ end
 %% II. Load aligned data
 
 if coilWeights==1
-    outFile  = fullfile(dataDir,'dat_aligned.mat'); %without coilWeights data 
-    outFile1 = fullfile(dataDir,'dat_alignedBest.mat');%with coilWeights data 
+    outFile  = fullfile(dataDir,'dat_aligned.mat'); %without coilWeights data
+    outFile1 = fullfile(dataDir,'dat_alignedBest.mat');%with coilWeights data
 else
     outFile  = fullfile(dataDir,'dat_aligned.mat'); %in this case the is no  coilWeights data
     outFile1 = fullfile(dataDir,'dat_aligned.mat');
 end
-    
-    
+
+
 disp(['Loading aligned data from ' outFile '...']);
 
 load(outFile);
 load(outFile1);
 
+if notDefined('s2')
+    s2=s;
+end
 %% III. Get field strength
-
-fieldStrength = s(1).fieldStrength;
-disp(['Magnet field strength is: ' num2str(fieldStrength) 'T']);
+if isfield(s,'fieldStrength');
+    
+    fieldStrength = s(1).fieldStrength;
+    disp(['Magnet field strength is: ' num2str(fieldStrength) 'T']);
+else
+    fieldStrength = input(['please provid the Magnet Filed  (0.5 1.5 or 3)  ']) ;
+end
 
 if  (fieldStrength~=(1.5) && fieldStrength~=(3) && fieldStrength~=(0.5))
     error('please provid a Magnet Filed  (0.5 1.5 or 3)')
 end
 
 
-%% IV. Setup and save AnalysisInfo file. 
+%% IV. Setup and save AnalysisInfo file.
 % a structure that keep records of the T1 fit
 infofile=fullfile(outDir,'AnalysisInfo.mat');
 if (exist(infofile,'file'))
@@ -284,8 +300,8 @@ else
     [tt,M01]    = relaxFitT1(cat(4,s(:).imData),flipAngles0,tr,B1);
     
     % Create the brain mask
-    [brainMask,checkSlices] = mrAnatExtractBrain(M01, mmPerVox, 0.5);
-    
+    [brainMask,checkSlices] = mrAnatExtractBrain(M01, mmPerVox, 0.5,outDir);
+    eval(['! rm ' outDir '/bet* '])
     % Replace all nan values in the brain mask with zeros.
     for dd=1:length(s)
         brainMask(isnan(s(dd).imData))=0;
@@ -362,8 +378,8 @@ else
         [file_se path_se]= uigetfile(pwd,'Select the T1 SEIR map');
         SET1file=[path_se file_se];
     end
-        
-     
+    
+    
     
     SET1Fitfile=[SEIRepi_Dir '/fitT1_GS/T1FitNLSPR_SEIR_Dat.mat'];
     SET1=readFileNifti(SET1file);
@@ -385,6 +401,17 @@ else
             load (AlignFile)
         else
             flipAngles = [s2(:).flipAngle];
+            
+            if ~isfield(mrQ,'AligndSPGR'); % if the Align image was not crated we will make them know 
+                for j=1:length(s2)
+                    ref   = fullfile(outDir,['Align' num2str(flipAngles(j)) 'deg']);
+                    dtiWriteNiftiWrapper(single(s2(j).imData), xform,ref);
+                    mrQ.AligndSPGR{j}=ref;
+                    
+                end
+                save(mrQ.name,'mrQ');
+            end
+            
             [AnalysisInfo,Res]=mrQ_NLANTS_warp_SPGR2EPI_RB(AnalysisInfo,SET1file,t1fileHM,flipAngles,outDir,AlignFile,mrQ.AligndSPGR);
             
         end
@@ -430,11 +457,11 @@ else
         end
         
         % USE sge make the B1 fit faster
-        SunGrid = 1;
+       
         
         % This is lsq fit that uses the grid but you can make it not use
         % SGE: see help inside mrQ_fitB1_LSQ
-        [B1 resNorm dd] = mrQ_fitB1_LSQ(Res, tisuuemask_, tr,flipAngles, outDir, intM0, SE_Xform, SunGrid, 1, [sub 'B1fit'],mrQ.proclass);
+        [B1 resNorm dd] = mrQ_fitB1_LSQ(Res, tisuuemask_, tr,flipAngles, outDir, intM0, SE_Xform, SunGrid, 1, [sub 'B1fit'],mrQ.proclus);
         dtiWriteNiftiWrapper(single(B1), SE_Xform, B1epifile);
         dtiWriteNiftiWrapper(single(resNorm), SE_Xform, B1epiResidfile);
         
@@ -450,18 +477,18 @@ else
     
     
     % Create the synthetic T1 weighted images and save them to disk
-   AnalysisInfo.T1wSynthesis=mrQ_T1wSynthesis(dataDir,B1file,outDir);
-       save(infofile,'AnalysisInfo');
-
-
-
-if runfreesurfer==1
-    subjID=['freesufer_' AnalysisInfo.sub];
-    [AnalysisInfo.freeSufer_subdir]=mrQ_Callfs_autosegment(subjID, AnalysisInfo.T1wSynthesis);
-     save(infofile,'AnalysisInfo');
-end
-
-
+    AnalysisInfo.T1wSynthesis=mrQ_T1wSynthesis(dataDir,B1file,outDir);
+    save(infofile,'AnalysisInfo');
+    
+    
+    
+    if runfreesurfer==1
+        subjID=['freesufer_' AnalysisInfo.sub];
+        [AnalysisInfo.freeSufer_subdir]=mrQ_Callfs_autosegment(subjID, AnalysisInfo.T1wSynthesis);
+        save(infofile,'AnalysisInfo');
+    end
+    
+    
 end
 
 
@@ -506,9 +533,9 @@ if lsqfit==1,
         tr = [s(:).TR];
         
         Gain=double(HeadMask);
-        SunGrid=1;
+       
         % LSQ fit of M0 and T1: Use the sun-grid to excelerate this fit
-        [T1,M0] = mrQ_fitT1PD_LSQ(s2,HeadMask,tr,flipAngles,M0,t1,Gain,B1,outDir,xform,SunGrid,[],sub,mrQ.proclass);
+        [T1,M0] = mrQ_fitT1PD_LSQ(s2,HeadMask,tr,flipAngles,M0,t1,Gain,B1,outDir,xform,SunGrid,[],sub,mrQ.proclus);
         
         
         %
@@ -575,7 +602,7 @@ else
     
 end;
 
-     save(infofile,'AnalysisInfo');
+save(infofile,'AnalysisInfo');
 
 
 

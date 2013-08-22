@@ -1,4 +1,4 @@
-function combineFile = mrQ_multicoilM0(datDir,T1file,B1file,niifile,flip_Angles,~)
+function combineFile = mrQ_multicoilM0(datDir,T1file,B1file,niifile,flip_Angles,mrQ)
 % 
 % combineFile = mrQ_multicoilM0(datDir,T1file,B1file,niifile,flip_Angles,sics)
 % 
@@ -16,7 +16,7 @@ function combineFile = mrQ_multicoilM0(datDir,T1file,B1file,niifile,flip_Angles,
 %                 acquisitions 
 %   flip_Angles - An array of flip angles in the order that the data should
 %                 be combined.
-%   sics        - ** Unused - will be removed.
+
 % 
 % 
 % OUTPUTS:
@@ -83,7 +83,7 @@ for j=1:length(flip_Angles)
     refIM = readFileNifti(ref);
     
     % niifile here is the raw image???
-    s1 = makeStructFromNifti(niifile{j},-1,[]);
+    s1 = makeStructFromNifti(niifile{j},-1,[],mrQ.permution);
     
     channels = length(s1)-1;
     [s11,xform1 s1] = relaxAlignAll_multichanels(s1(channels+1), refIM, mmPerVox, true, 1,s1(1:channels));

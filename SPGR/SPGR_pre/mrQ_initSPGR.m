@@ -99,7 +99,7 @@ end
 
 % Rerference Image
 if notDefined('refImg') || ~exist(refImg,'file')
-    fprintf('\nNo reference image selected. ACPC alignemnt will be performed on raw data...\n')
+ %   fprintf('\nNo reference image selected. ACPC alignemnt will be performed on raw data...\n')
 elseif exist(refImg,'file')
     fprintf('Volumes will be aligned to: %s\n',refImg);
 end
@@ -151,7 +151,7 @@ end
 %                 process = false;
 %                 outDir = p;
 %             catch ME
-%                 disp(ME.message)
+%                 disp(ME.messvage)
 %                 disp('dat_aligned.mat was found but could not be loaded. \nProcessing...[process=true]');
 %                 process = true;
 %             end
@@ -176,7 +176,12 @@ end
 process = true;
 %%  Get paths to nifti SPGR data (get niiFiles)
 % Get a structure that has the paths to each of the spgr nifti files.
-
+if isfield(mrQ,'inputdata_spgr') %infut of list of nifti file and the relevant scan parameters
+    [s niiFiles]=mrQ_input2Stuck(mrQ.inputdata_spgr,0);
+    t1Inds(1:length(s))=1;
+    t1Inds=logical(t1Inds);
+else
+    
 dicomDir = fullfile(spgrDir,'data');
 niiFiles = [];
 
@@ -242,19 +247,34 @@ if ~process
         niiFiles = tmp;
     end
 end
-
+end
 
 %% Load data from niftis or dicoms - reshape and permute data (nifti)
 
 if process
     
-    % Make a dummy structure so we will have the dicom info
+    % Make a dummy structure so we will have the dicom info for GE scans
+    % using the dicoms
+    if notDefined('s')
     s = dicomLoadAllSeries(dicomDir);
     
+    
+     % Check which volumes match SPGR sequence name: '3DGRASS' or 'EFGRE3D'
+        spgrInds(1:length(s)) = 0;
+        sequenceNames = {s(:).sequenceName};
+        spgrInds(strcmp('3DGRASS',sequenceNames)) = 1;
+        spgrInds(strcmp('EFGRE3D',sequenceNames)) = 1;
+        
+        
+        % Find MT & T1 indices
+        mtInds = [s(:).mtOffset] > 0;
+        t1Inds = spgrInds & ~mtInds;
+    
+    end
     % Loop over niiFiles to get the data from the nifti and combine
     % with the dicom info - reshape and permute.
     for ii = 1:numel(niiFiles)
-        [s1(ii) mrQ.coilNum(ii)]= makeStructFromNifti(niiFiles{ii},-2,s(ii));
+        [s1(ii) mrQ.coilNum(ii)]= makeStructFromNifti(niiFiles{ii},-2,s(ii),mrQ.permution);
     end
     clear s
     s = s1;
@@ -271,16 +291,9 @@ end
 
 %if process
 
-% Check which volumes match SPGR sequence name: '3DGRASS' or 'EFGRE3D'
-spgrInds(1:length(s)) = 0;
-sequenceNames = {s(:).sequenceName};
-spgrInds(strcmp('3DGRASS',sequenceNames)) = 1;
-spgrInds(strcmp('EFGRE3D',sequenceNames)) = 1;
 
-
-% Find MT & T1 indices
-mtInds = [s(:).mtOffset] > 0;
-t1Inds = spgrInds & ~mtInds;
+       
+    
 
 
 % Get the TR for the T1s [1 x numel(d)]

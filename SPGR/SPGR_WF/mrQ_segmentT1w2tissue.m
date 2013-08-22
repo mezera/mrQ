@@ -86,7 +86,6 @@ fprintf('\n T1 map and ventrical location restrictions \n');
 % T1 cliping of csf
 seg=readFileNifti(segfile);
 CSF1=zeros(size(T1));CSF1(seg.data==1)=1;
-CSF1= CSF1 & T1>4. & T1< 5;
 
 %cliping the center box
 
@@ -112,8 +111,25 @@ CSF1(:,:,szH(3)+ZZ:end)=0;
 if notDefined('csffile')
     csffile = fullfile(outDir, 'csf_seg_T1.nii.gz');
 end
+
+CSFtmp=CSF1;
+
+CSF1= CSF1 & T1>4. & T1< 5;
 dtiWriteNiftiWrapper(single(CSF1), xform, csffile);
 
+if length(find(CSF1))<100
+           fprintf(['\n wornign we could find only ' num2str(length(find(CSF1))) ' csf voxel this make the CSF WF estimation very noise cosider to edit csf_seg_T1.nii.gz fiel see below \n']);
+end
+           % we save also ROI that  will include more voxel in the CSF ROI but will be more permisive to
+% patial voulume. this should be use if CSF is hard hard to estime form
+% small number of voxel. this can happen with subject with small vertricals
+% and low resulotion scans.
+CSFtmp= CSFtmp & T1>3;
+
+%length(find(CSF1));
+csffile1 = fullfile(outDir, 'csf_seg_T1_large.nii.gz');
+dtiWriteNiftiWrapper(single(CSFtmp), xform, csffile1);
+clear CSFtmp
 %%
 mask = zeros(size(brainMask));
 mask = double(mask);
@@ -145,7 +161,7 @@ mask(find(cortex)) = 3;
 filefsl = fullfile(outDir,'T1w_tissue.nii.gz');
 dtiWriteNiftiWrapper(single(mask), xform, filefsl);
 
-
+mrQ.csf_large=csffile1;
 mrQ.csf=csffile;
 mrQ.T1w_tissue=filefsl;
 

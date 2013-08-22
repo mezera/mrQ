@@ -62,7 +62,7 @@ else
     options =  optimset('LevenbergMarquardt','on','Display', 'off','Tolx',1e-12);%'TolF',1e-12
     
 end% we put all the relevant data in a structure call op.t thiss will make it  easyer to send it between the computer in the grid
-
+sz=size(brainMask);
 for i=1:length(s)
     
     tmp=s(i).imData(brainMask);
@@ -83,13 +83,15 @@ opt.outDir = [outDir '/tmpSG'];
 opt.lb     = [0 0];
 opt.ub     = [inf 10000];
 opt.name   = '/T1PDlsqVx';
-
+ jumpindex=2000;
 
 %% Perform the optimization (optionally using the SGE)
 
 % USE THE SGE
+
+    clear brainMask tmp Res M0 options
 if SGE==1;
-    jumpindex=2000;
+   
     if (~exist([outDir '/tmpSG'],'dir')), mkdir([outDir '/tmpSG']);
         % the result form the grid will be saved in a tmporery directory
         if proclass==1
@@ -120,8 +122,10 @@ if SGE==1;
                 % clean the sge output dir and run the missing fit
                 eval(['!rm -f ~/sgeoutput/*' sgename '*'])
                 if proclass==1
+                    a=num2str(ceil(rand(1)*10));
+                    %sgerun2('mrQ_fitT1PD_SGE(opt,2000,jobindex);',[sgename a],1,reval)
                     for kk=1:length(reval)
-                        sgerun2('mrQ_fitT1PD_SGE(opt,2000,jobindex);',[sgename num2str(kk)],1,reval(kk)); % we run the missing oupput again
+                       sgerun2('mrQ_fitT1PD_SGE(opt,2000,jobindex);',[sgename num2str(kk)],1,reval(kk)); % we run the missing oupput again
                     end
                    
                 else
@@ -215,10 +219,11 @@ if SGE==1;
                     eval(['!rm -f ~/sgeoutput/*' sgename '*'])
                     if proclass==1
                       
-                        
-                        for kk=1:length(reval)
-                        sgerun2('mrQ_fitT1PD_SGE(opt,2000,jobindex);',[sgename num2str(kk)],1,reval(kk)); % we run the missing oupput again
-                        end
+                       % sgerun2('mrQ_fitT1PD_SGE(opt,2000,jobindex);',[sgename 'redo'],1,reval); % we run the missing oupput again
+
+                       for kk=1:length(reval)
+                       sgerun2('mrQ_fitT1PD_SGE(opt,2000,jobindex);',[sgename num2str(kk)],1,reval(kk)); % we run the missing oupput again
+                       end
                         
                     else
                         sgerun('mrQ_fitT1PD_SGE(opt,2000,jobindex);',sgename,1,reval);
@@ -269,12 +274,12 @@ if SGE==1;
 %                     if proclass==1
 %                         
 %                         
-%                         for kk=1:length(reva)l
-%                         sgerun2('mrQ_fitT1PD_SGE(opt,500,jobindex);',sgename,1,reval(kk),[],[],5000); % we run the missing oupput again
+%                         for kk=1:length(reva)
+%                         sgerun2('mrQ_fitT1PD_SGE(opt,500,jobindex);',sgename,1,reval(kk),[],[],3000); % we run the missing oupput again
 %                         end
 %                     else
 %                         
-%                         sgerun('mrQ_fitT1PD_SGE(opt,500,jobindex);',sgename,1,reval,[],[],5000); % we run the missing oupput again
+%                         sgerun('mrQ_fitT1PD_SGE(opt,500,jobindex);',sgename,1,reval,[],[],3000); % we run the missing oupput again
 %                     end
 %                     else
 %                         display('somting is wrong in SGE run')
@@ -286,20 +291,77 @@ if SGE==1;
             
             % NO SGE
             %using the local computer to fit T1 and the sunGrid
-            else
-                % Run the optimization without using the SGE
-                for i= 1:length(opt.wh)
+else
+           
+     fprintf('\n fit the T1 map localy, may be slow. SunGrid use can be much faster             \n');
+
+    if (~exist([outDir '/tmpSG'],'dir')),
+        mkdir([outDir '/tmpSG']);
+        jobindex=1:ceil(length(opt.wh)/jumpindex);
+    else
+          jobindex=[];
+            list=ls(opt.outDir);
+            ch= 1:jumpindex:length(opt.wh) ;
+            k=0;
+            for ii=1:length(ch),
+                
+                ex=['_' num2str(ch(ii)) '_'];
+                if length(regexp(list, ex))==0,
+                    k=k+1;
+                    jobindex(k)=(ii);
+                end
+            end
+    end
+        
+        
+        if ~isempty(jobindex)
+        for i=jobindex
+            mrQ_fitT1PD_SGE(opt,2000,i);
+        end
+        end
+        
+     %Build the  T1 and M0 maps
+        fNum=ceil(length(opt.wh)/jumpindex);
+             % List all the files that have been created from the call to the
+            % grid
+            
+            list=ls(opt.outDir);
+            % Check if all the files have been made.  If they are, then collect
+            % all the nodes and move on.
+                
+                % Loop over the nodes and collect the output
+                for i=1:fNum
+                    st=1 +(i-1)*jumpindex;
+                    ed=st+jumpindex-1;
                     
-                    [res(:,i), resnorm(i)] = lsqnonlin(@(par) errT1PD(par,opt.flipAngles,opt.tr,opt.s(i,:),opt.Gain(i),opt.B1(i),1,[]),opt.x0(i,:),opt.lb,opt.ub,options);
+                    if ed>length(opt.wh), ed=length(opt.wh);end
+                    
+                    name=[opt.outDir '/' opt.name '_' num2str(st) '_' num2str(ed) '.mat'];
+                    load (name);
+                    t11(st:ed)=res(2,:);
+                    pd1(st:ed)=res(1,:);
+                    resnorm1(st:ed)=resnorm;
                     
                 end
-                
-                t11(:)=res(:,2);
-                pd1(st:ed)=res(:,1);
+                % Once we have collected all the nodes we delete the temporary
+                t=pwd;
+                cd (outDir)
+                !rm -r tmpSG
+                cd (t);
+                eval(['!rm -f ~/sgeoutput/*' sgename '*'])
+            
+                % Run the optimization without using the SGE
+%                 for i= 1:length(opt.wh)
+%                     
+%                     [res(:,i), resnorm(i)] = lsqnonlin(@(par) errT1PD(par,opt.flipAngles,opt.tr,opt.s(i,:),opt.Gain(i),opt.B1(i),1,[]),opt.x0(i,:),opt.lb,opt.ub,options);
+%                     
+%                 end               
+%                t11(:)=res(:,2);
+%                pd1(st:ed)=res(:,1);
                 
         end
         
-        T1 = zeros(size(brainMask));
+        T1 = zeros(sz);
         PD = T1; resNorm=PD;
         T1(opt.wh) = t11(:)./1000;
         PD(opt.wh) = pd1(:);

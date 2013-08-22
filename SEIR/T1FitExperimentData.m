@@ -123,23 +123,26 @@ dataOriginal = data;
 %% Mask the background
 
 % For each slice we mask points dimmer than maskFactor*the brightest point. 
-
+mesures=size(data,4);
 maskFactor = 0.03;
-mask = zeros(nbrow, nbcol, nbslice);
+mask = zeros(nbrow, nbcol, nbslice,mesures);
 
-[u,v] = max(extra.tVec); %#ok<ASGLU>
+%[u,v] = max(extra.tVec); %#ok<ASGLU>
 % The intensity mask is taken with respect to the image with the largest TI, 
 % where we expect the magnetization to have almost fully recovered. 
+for v=1:size(data,4)
 for kk = 1:nbslice
 	maskTmp = mask(:,:,kk);
-	maskTmp = medfilt2(maskTmp); % remove salt and pepper noise
+	%maskTmp = medfilt2(maskTmp); % remove salt and pepper noise
 	maskThreshold = maskFactor * max(max(abs(data(:,:,kk,v))));
+    maskTmp=logical(abs(data(:,:,kk,v))>maskThreshold);
 	maskTmp(find(abs(data(:,:,kk,v)) > maskThreshold)) = 1; %#ok<FNDSB>
-	mask(:,:,kk) = maskTmp;
+	mask(:,:,kk,v) = maskTmp;
 	clear maskTmp
 end
-
-
+end
+mask=(sum(mask,4));
+mask=logical(mask==mesures);
 %let fit also around the mask so we won't have holes (that can help registration to the SPGR)
 mask1=logical(smooth3(mask));%,'box',[5 5 5]
  

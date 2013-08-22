@@ -195,8 +195,13 @@ end
 
 
 %% get teh estimate gain for each coil
-mask=BM & PD>0 & fs==3 %(fs==2 | fs==41); %we will fit the smooth data when we have a good data (the white matter ).
-  [XI YI]=meshgrid(1:size(PD,1),1:size(PD,2));
+mask=BM & PD>0 & fs==3 ;%(fs==2 | fs==41); %we will fit the smooth data when we have a good data (the white matter ).
+  medVal=nanmedian(PD(mask)); 
+ mask=mask & PD>medVal.*0.9  & PD<medVal.*1.1; %this prosiger clean alot of the miss fit result. we just clip the strange values. we used the fact the we are working on WM roi where we not expect use variation with in the subject.
+ %if there are real variation it is easyer not to use them for the fit then
+ %include them with wrong fits
+ 
+[XI YI]=meshgrid(1:size(PD,1),1:size(PD,2));
 ZZI=zeros(size(PD));
 V1=zeros(size(PD));
 M01=zeros(size(M0));
@@ -240,10 +245,10 @@ for  i=1:size(PD,3)
     M01(:,:,:,ii)=pd_corect;
    
 end
-
+clear V1 ZZI PD XI ZI YI zg xg yg x y tmp wh mask
 %% avrage the coils
  % let make waites by SNR for each coil in each voxel
- 
+
  W=sum(M0,4);
 for i=1:size(M0,4)
     W1(:,:,:,i)=W;
@@ -251,10 +256,13 @@ end
 
 W1=M0./W1;
 
+M0_=sqrt(sum(M0.^2,4));
+     clear M0 W
+
 [~, In]=sort(W1,4,'descend');
+clear W1
 
-
-coilMask=nan(size(W1));
+coilMask=nan(size(In));
 %let use the first 16 coils (so we wont avrage noise). if there are less
 %then we use all the coil we got
 for i=1:min(size(In,4),16)
@@ -270,7 +278,7 @@ end
 clear In T TT TTT
 % let keep only the value we like (high SNR) the other will be nans 
 II=M01.*coilMask;
-
+clear coilMask M01
 II(find(II<0))=nan; % if we have negativ value it fits of noise...
 
 pd_corect=nanmedian(II,4);
@@ -283,9 +291,7 @@ clear II coilMask;
    % the median is defently better and we don't get the remained coils biases but we loss some SNR. maybe it is good to treshold the coil by there precental signal below some value is better nit to use
  %  and then the SNR will be better (?)
    
-    M0_=sqrt(sum(M0.^2,4));
-     clear M0
-
+    
 
 
 
@@ -314,7 +320,10 @@ end;
   
       %THe ventrical CSF ROI is where the free surfare defind, where T1 is reisnable (see mrQ_CSF)  but it can't have a White matter  values and not double it (maybe worng for kids)
    CSF1=CSF & pd_corect>wmV & pd_corect< wmV*2; 
-
+if length(find(CSF1))<100
+       fprintf(['\n wornign we could find only ' num2str(length(find(CSF1))) ' csf voxel this make the CSF WF estimation very noise cosider to edit csf_seg_T1.nii.gz file or use csf_seg_T1_large.nii.gz see also mrQ_segmentT1w2tissue.m  \n']);
+end
+   
  % CalibrationVal=median(pd_corect(find(CSF1)));
   % pd_corect=pd_corect./CalibrationVal;
 % %  

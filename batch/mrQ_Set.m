@@ -101,6 +101,10 @@ switch(param)
         mrQ.siemens=varargin;
     case {'permution'}
         mrQ.permution=varargin;
+        case {'inputdata_seir'}
+        mrQ.inputdata_seir=varargin;
+    case {'inputdata_spgr'}
+        mrQ.inputdata_spgr=varargin;
     case {'seir_done' }
         mrQ.SEIR_done=varargin;
     case {'spgr_init_done' }

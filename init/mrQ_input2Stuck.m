@@ -84,3 +84,13 @@ if isfield(input,'fieldStrength')
     end;
 end;
 
+if isfield(input,'orientation')
+     % if the convention of X Y and Z need to be fliped
+for ii=1:length(input.name)
+    s(ii).imToScanXform(1,1)=input.orientation(1)*s(ii).imToScanXform(1,1);
+    s(ii).imToScanXform(2,2)=input.orientation(2)*s(ii).imToScanXform(2,2);
+    s(ii).imToScanXform(3,3)=input.orientation(3)*s(ii).imToScanXform(3,3);
+
+end
+end
+

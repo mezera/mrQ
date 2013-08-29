@@ -117,7 +117,7 @@ CSFtmp=CSF1;
 CSF1= CSF1 & T1>4. & T1< 5;
 dtiWriteNiftiWrapper(single(CSF1), xform, csffile);
 
-if length(find(CSF1))<100
+if length(find(CSF1))<200
            fprintf(['\n wornign we could find only ' num2str(length(find(CSF1))) ' csf voxel this make the CSF WF estimation very noise cosider to edit csf_seg_T1.nii.gz fiel see below \n']);
 end
            % we save also ROI that  will include more voxel in the CSF ROI but will be more permisive to

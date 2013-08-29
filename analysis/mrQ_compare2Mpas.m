@@ -22,7 +22,7 @@ alignvolumedata(im2.data,im2.pixdim,im1.data,im1.pixdim);
 
 % to re define:
 %   [f,mn,sd] = defineellipse3d(double(im1.data),[],[],mn,sd);
-%   alignvolumedata(im2.data,im2.pixdim,im1.data,im1.pixdim,tr);
+%   alignvolumedata(im2.data,im2.pixdim,im1.data,im1.pixdim,ttr);
 
 
 for i=1:10

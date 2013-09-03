@@ -1,7 +1,7 @@
-function OutPut = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseRange,sampleLocation,printImages,smoothkernel, BasisFlag)
+function phantomP = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseRange,sampleLocation,printImages,smoothkernel, BasisFlag)
 % Creates a structure with various parameters needed for estimating gain
 %
-%  OutPut = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseRange,
+%  phantomP = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseRange,
 %                sampleLocation, printImages,smoothkernel)
 %
 %Inputs:
@@ -15,9 +15,9 @@ function OutPut = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseRange
 %  BasisFlag             Force normalization or orthonormal of pBasis
 %
 %Output:
-%  OutPut    a structure that includes these fields
-%    M0, M0_v, params, M0S_v, VarEx, SZ, meanVal, pBasis,
-%     s, rSize, nVoxels, nVoxels
+%  phantomP    a structure that includes these fields
+%              M0, M0_v, params, M0S_v, VarEx, SZ, meanVal, pBasis,
+%              s, rSize, nVoxels, nVoxels
 %
 % Copyright Vistasoft Team, 2013
 
@@ -26,24 +26,23 @@ function OutPut = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseRange
 % Which phantom location
 if notDefined('sampleLocation'), sampleLocation = 3;  end
 % positions are -nSamples:nSamples
-if notDefined('nSamples'), nSamples = 1; end
-if notDefined('nCoils'), nCoils = 1; end
-if notDefined('nDims'),  nDims = 3;   end  % Spatial dimensions
-if notDefined('pOrder'),     pOrder =2;  end
-if notDefined('noiseRange'), noiseRange =5; end
-if notDefined('printImages'), printImages = false;  end
+if notDefined('nSamples'),     nSamples = 1;end
+if notDefined('nCoils'),       nCoils = 1;  end
+if notDefined('nDims'),        nDims = 3;   end  % Spatial dimensions
+if notDefined('pOrder'),       pOrder =2;   end
+if notDefined('noiseRange'),   noiseRange =5;       end
+if notDefined('printImages'),  printImages = false; end
 if notDefined('smoothkernel'), smoothkernel = [];
-else  OutPut.smoothkernel=smoothkernel;
+else                           phantomP.smoothkernel=smoothkernel;
 end
-if notDefined('oFlag'), oFlag = false; end
+% if notDefined('oFlag'), oFlag = false; end
 
 %% Get M0 sample data from the coil
 
-%4D
+% 4D
 % M0 are the phantom data.  SZ is the size.  meanVal are the mean value
 % from each coil
-
-[M0, SZ, meanVal t1]= phantomGetData(nSamples,sampleLocation,smoothkernel);
+[M0, SZ, meanVal, t1] = phantomGetData(nSamples,sampleLocation,smoothkernel);
 
 % Visualize the box.  The order is each panel is sorted by Z.
 % Within each panel there are -nSamples:nSamples points
@@ -55,13 +54,13 @@ if notDefined('oFlag'), oFlag = false; end
 % We think it cycles as x, then, y, then z.  So, (1,1,1), (2,1,1), ... and
 % then (1, 2, 1), (2, 2, 1), ...
 M0_v = reshape(M0, prod(SZ(1:3)), nCoils);
-if printImages==1
+if printImages == 1
     mrvNewGraphWin; imagesc(M0_v)
 end
 %% This is phantom data and we approximate them by polynomials
 
 % Create the basis functions for the polynomials.  Orthogoanlized.
-[pBasis, s, pTerms W]  = polyCreateMatrix(nSamples,pOrder,nDims,BasisFlag);
+[pBasis, s, pTerms, W]  = polyCreateMatrix(nSamples,pOrder,nDims,BasisFlag);
 rSize       = length(s);
 nVoxels     = rSize^nDims;
 nPolyParams = size(pBasis,2);
@@ -87,21 +86,22 @@ percentError=std( (M0S_v(lst) - M0_v(lst)) ./ M0_v(lst));
 if printImages==1
     mrvNewGraphWin; plot(M0S_v(:),M0_v(:),'.');
 end
-OutPut.M0=M0;
-OutPut.M0_v=M0_v;
-OutPut.params=params;
-OutPut.M0S_v=M0S_v;
-OutPut.percentError=percentError;
-OutPut.meanVal=meanVal;
-OutPut.pBasis=pBasis;
-OutPut.s=s;
-OutPut.rSize=rSize;
-OutPut.nVoxels=nVoxels;
-OutPut.nVoxels=nVoxels;
-OutPut.pTerms=pTerms;
-OutPut.SZ=SZ;
-OutPut.W=W;
-OutPut.t1=t1;
+
+%% Assign parameters to output
+phantomP.M0     = M0;
+phantomP.M0_v   = M0_v;
+phantomP.params = params;
+phantomP.M0S_v = M0S_v;
+phantomP.percentError = percentError;
+phantomP.meanVal= meanVal;
+phantomP.pBasis = pBasis;
+phantomP.s = s;
+phantomP.rSize   = rSize;
+phantomP.nVoxels = nVoxels;
+phantomP.pTerms = pTerms;
+phantomP.SZ  = SZ;
+phantomP.W   = W;
+phantomP.t1  = t1;
 
 end
 

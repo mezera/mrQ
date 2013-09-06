@@ -6,10 +6,10 @@ function [M01, boxSize, meanVal, t1]= phantomGetData(boxsize,loc,smoothkernel)
 %
 % Helper routine to get the data
 
-M0=readFileNifti(fullfile(mrqRootPath,'PDGain_FIt_article','ExampleData','PD','AllCoilsM0_phantomExample.nii.gz'));
+M0=readFileNifti(fullfile(mrqRootPath,'Manuscript-PDGain','ExampleData','PD','AllCoilsM0_phantomExample.nii.gz'));
 M0=M0.data;
 
-T1=readFileNifti(fullfile(mrqRootPath,'PDGain_FIt_article','ExampleData','T1','T1_lsq_phantomExample.nii.gz'));
+T1=readFileNifti(fullfile(mrqRootPath,'Manuscript-PDGain','ExampleData','T1','T1_lsq_phantomExample.nii.gz'));
 T1=T1.data;
 
 if ~notDefined('smoothkernel')

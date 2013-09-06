@@ -75,7 +75,9 @@ end
 %% Show the PD and a few coil gains.  These combine to make the M0
 
 % PD image
-mrvNewGraphWin;
+mrvNewGraphWin([],'tall');
+    subplot(3,3,6)
+
 imagesc(PD);
 colormap(gray); axis image; axis off
 title('PD');
@@ -84,32 +86,32 @@ title('PD');
 
 % Gains
 coils = [1 3 5];
-n = 1;
-mrvNewGraphWin([],'tall');
+n = 2;
+%mrvNewGraphWin([],'tall');
 tmp = G(:,:,slice,coils); mn = min(tmp(:)); mx = max(tmp(:));
 for ii=coils
-    subplot(3,1,n)
+    subplot(3,3,n)
     imagesc(G(:,:,slice,ii));
     caxis([mn mx]);
     colormap(gray); axis image; axis off;
     title(sprintf('Gain for coil %d\n',ii));
-    n = n+1;
+    n = n+3;
     
     % mrUtilResizeFigure(gcf, 900, 900);
     % mrUtilPrintFigure(['Gain_example_slice' num2str(ii) '.eps']);
 end
 
 % Choose the coils M0
-mrvNewGraphWin([],'tall');
+%mrvNewGraphWin([],'tall');
 n = 1;
 tmp = M0(:,:,coils); mn = min(tmp(:)); mx = max(tmp(:));
 for ii=coils
-    subplot(3,1,n)
+    subplot(3,3,n)
     imagesc(M0(:,:,ii)); 
     caxis([mn mx]);
     colormap(gray); axis image; axis off;
     title(sprintf('M0 for coil %d\n',ii));
-    n = n+1;
+    n = n+3;
     
     % mrUtilResizeFigure(gcf, 900, 900);
     % mrUtilPrintFigure(['M0_example_slice' num2str(ii) '.eps']);

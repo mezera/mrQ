@@ -17,7 +17,7 @@ nCoils   = 32;     % A whole bunch of coils
 nDims    = 3;      % XYZ
 pOrder   = 2;      % Second order is good for up to 5 samples
 noiseFloor = 500;  % This is the smallest level we consider
-sampleLocation = 2;% Which box 
+sampleLocation = 2;% Which box
 printImages  = false;   % No printing now
 smoothkernel = [];      % Fit to the unsmoothed M0 data
 BasisFlag    = 'qr';    % Which matrix decomposition for fitting.
@@ -28,140 +28,140 @@ BasisFlag    = 'qr';    % Which matrix decomposition for fitting.
 % such as the box size.
 phantomP = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, ...
     noiseFloor, sampleLocation, printImages, smoothkernel, BasisFlag);
+boxSize = repmat(phantomP.rSize,1,nDims);
 
-%% simulte PD
-[X,Y Z] = meshgrid(-nSamples:nSamples,-nSamples:nSamples, -nSamples:nSamples);
+%% simulate PD
+[X,Y, Z] = meshgrid(-nSamples:nSamples,-nSamples:nSamples, -nSamples:nSamples);
 R  = sqrt(X.^2 + Y.^2 + + Z.^2);
 PD = sin(R)./R;PD(isnan(PD))=1;
 PD = abs(PD);
 PD = sqrt(sqrt(sqrt(PD)));
 
-%% simultae coil Gain (we are using the poylnomyal fits to the phantom data a typical coil function)
-%select a set of coils
+%% Simulate coil gain 
+% We use the poylnomial fits to the phantom data a typical coil function
+
+% Select a set of coils
 coils = [1 3 5 9];
-% get those coil poylnomyal coeficents 
+% Get those coil poylnomyal coeficents
 GainPolyPar = phantomP.params(:,coils);
 
-% Create the coil gains over voxels by multipal the polynomyals coeficents
-% and the polynomyal basis.
+% Create the coil gains over voxels by multiplying the polynomials
+% coeficents and the polynomial basis.
 G = phantomP.pBasis*GainPolyPar;
 
 
-%% simulte MRI SPGR  signal with and with out Noise
+%% Simultae MRI SPGR signal with and with out noise
 noiseLevel = 2;   % ?? Units???
-% simultate the M0 and T1 fits of multi SPGR images. 
+
+% Simultate the M0 and T1 fits of multi SPGR images.
 [MR_Sim]= simSPGRs(G,PD(:),[],[],[],[],noiseLevel,true);
-% MR_Sim is a stracture with multipal fielled that inculde the simulation
-% inputs MR sigunalinputsand the calculate of this signal after
-% fitting the signal eqation.
 
-%% Try to sparate the M0 component (PD,Gain) using bilinear slosion loop. N0 Noise
- 
-%set the fiiting loop parmeters 
-maxLoops=10e4;
-sCriterion = 1e-3;  % Stopping criterion    
+% MR_Sim is a structure with multiple field that includes the simulation
+% inputs MR sigunal inputs and the calculate of this signal after fitting
+% the signal equation.
 
-% Fit BILinear loop
-% the bilinear search is very slow. many many iteration are needed
-
-%     BLFit_N0Noise = pdBiLinearFit(MR_Sim.M0S, phantomP.pBasis, ...
- %  [], maxLoops, sCriterion, [], 1 ,GainPolyPar,PD(:));
-%save('/home/avivm/Documents/PD_article/figures/BL_NONoise','BLFit_N0Noise')
-
-%% Alternativly one can use a nonlinear sreach: to reach similar results with very few iteration and much much faster
-
-% Bi-linear problem  non linear solver
-NL_noNoise = pdBiLinearFit_lsqSeach(MR_Sim.M0S,phantomP.pBasis);
-
+%% Separate the M0 component into (PD,Gain) using bilinear ALS
+%
+% The alternating least squares approach is slow.  We did it for a while,
+% and it returns the same answer as the much faster search, below.
+%
+% Set the fiiting loop parmeters
+% maxLoops=10e4;
+% sCriterion = 1e-3;  % Stopping criterion
+%
+% Fit Bilinear loop
+% The bilinear search is very slow. many many iteration are needed
+%
+% BLFit_N0Noise = pdBiLinearFit(MR_Sim.M0S, phantomP.pBasis, ...
+%                  [], maxLoops, sCriterion, [], 1 ,GainPolyPar,PD(:));
+% save('/home/avivm/Documents/PD_article/figures/BL_NONoise','BLFit_N0Noise')
+%
 %% With Noise
 % Make PD Gain and M0 with noise
-% Fit 
+% Fit
 % BLFit_Noise = pdBiLinearFit(MR_Sim.M0SN, phantomP.pBasis, ...
- %   [], maxLoops, sCriterion, [], 1 ,GainPolyPar,PD(:));
+%   [], maxLoops, sCriterion, [], 1 ,GainPolyPar,PD(:));
 % save('/home/avivm/Documents/PD_article/figures/BL_Noise','BLFit_Noise')
 
+%% The nonlinear search returns the same result with very few iterations
 
-%% Alternativly one can use a nonlinear sreach: to reach similar results with very few iteration and much much faster
+% No simulated noise
+NL_noNoise = pdBiLinearFit_lsqSeach(MR_Sim.M0S,phantomP.pBasis);
 
-% Bi-linear problem  non linear solver
-NL_Noise = pdBiLinearFit_lsqSeach(MR_Sim.M0SN,phantomP.pBasis);
+% With simulated noise
+NL_Noise   = pdBiLinearFit_lsqSeach(MR_Sim.M0SN,phantomP.pBasis);
 
+%% Show an example slice of PD the map
 
+mrvNewGraphWin;
 
-
-%% figure  
-%% slice of PD the map
-slice=4
-
-mrvNewGraphWin
+slice = 4;
 imagesc(PD(:,:,slice));
 colormap(gray); axis image; axis off
-title('PD');
+title('Simulated PD');
+
 % mrUtilResizeFigure(gcf, 900, 900);
 % mrUtilPrintFigure('PD_example_slim.eps');
 
-%% slice ofPD estimation with out noise form M0
-PD_NoNoise=reshape(NL_noNoise.PD,size(PD));
-scale=PD(1,1,1)/PD_NoNoise(1,1,1);
-PD_NoNoise=PD_NoNoise.*scale;
+%% Slice of PD estimate in zero noise case 
+
+PD_NoNoise  = reshape(NL_noNoise.PD, boxSize);
+scale       = PD(1,1,1)/PD_NoNoise(1,1,1);
+PD_NoNoise  = PD_NoNoise.*scale;
+
 mrvNewGraphWin
 imagesc(PD_NoNoise(:,:,slice));
 colormap(gray); axis image; axis off
 title('PD estimate with no noise');
 
+%% Slice of PD estimation with noise form M0
 
+PD_Noise = reshape(NL_Noise.PD,boxSize);
+scale    = PD(1,1,1)/PD_Noise(1,1,1);
+PD_Noise = PD_Noise.*scale;
 
-
-
-%% slice of PD estimation with out noise form M0
-PD_Noise=reshape(NL_Noise.PD,size(PD));
-scale=PD(1,1,1)/PD_Noise(1,1,1);
-PD_Noise=PD_Noise.*scale;
 mrvNewGraphWin
 imagesc(PD_Noise(:,:,slice));
 colormap(gray); axis image; axis off
-title('PD estimate with  noise');
+title('PD estimate with noise');
 
-%%  PD estimation with out noise vs Simulated PD
+%%  Scatter plot of PD estimate with out noise vs Simulated PD
 
-MM=minmax([ PD PD_NoNoise]);
-mrvNewGraphWin
-                hold on
-                                                  plot(PD_NoNoise(:),PD(:),'o' ,'MarkerSize',10,'MarkerFaceColor','b')
-                xlabel('Estimated PD'); ylabel('True PD');
-                                identityLine(gca);
-                xlim([MM(1) MM(2)])
-                ylim([MM(1) MM(2)])
+MM = minmax([ PD PD_NoNoise]);
+mrvNewGraphWin;
+hold on
+plot(PD_NoNoise(:),PD(:),'o' ,'MarkerSize',10,'MarkerFaceColor','b')
 
-axis image; axis square  
+xlabel('Estimated PD'); ylabel('True PD');
+identityLine(gca);
+xlim([MM(1) MM(2)]); ylim([MM(1) MM(2)])
+axis image; axis square
 legend('PD estimate without noise','Location','NorthWest')
-                
 
+%%  PD estimation with noise vs Simulated PD
 
-%%  PD estimation with out noise vs Simulated PD
+mrvNewGraphWin;
 
-MM=minmax([PD_Noise PD PD_NoNoise]);
-mrvNewGraphWin
-                hold on
-                                 plot(PD_Noise(:),PD(:),'or','MarkerSize',10)
-                                                  plot(PD_NoNoise(:),PD(:),'o' ,'MarkerSize',10,'MarkerFaceColor','b')
-                xlabel('Estimated PD'); ylabel('True PD');
-                                identityLine(gca);
-                xlim([MM(1) MM(2)])
-                ylim([MM(1) MM(2)])
+MM = minmax([PD_Noise PD PD_NoNoise]);
+hold on
+plot(PD_Noise(:),PD(:),'or','MarkerSize',10)
+plot(PD_NoNoise(:),PD(:),'o' ,'MarkerSize',10,'MarkerFaceColor','b')
 
-axis image; axis square  
+xlabel('Estimated PD'); ylabel('True PD');
+identityLine(gca);
+xlim([MM(1) MM(2)]);ylim([MM(1) MM(2)]);
+axis image; axis square
 legend('PD estimate with noise','PD estimate without noise','Location','NorthWest')
-                
+
 %% The M0 images
 mrvNewGraphWin([],'tall');
 
- mn = min(MR_Sim.M0SN(:)); mx = max(MR_Sim.M0SN(:));
+mn = min(MR_Sim.M0SN(:)); mx = max(MR_Sim.M0SN(:));
 for ii=1:4
     subplot(4,1,ii)
     M0=MR_Sim.M0SN(:,ii);
     M0=reshape(M0,size(PD));
-    imagesc(M0(:,:,slice)); 
+    imagesc(M0(:,:,slice));
     caxis([mn mx]);
     colormap(gray); axis image; axis off;
     title(sprintf('M0 for coil %d\n',ii));
@@ -170,3 +170,4 @@ for ii=1:4
     % mrUtilPrintFigure(['M0_example_slice' num2str(ii) '.eps']);
 end
 
+%% End

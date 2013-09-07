@@ -1,7 +1,7 @@
 function [OutPutSim]=simSPGRs(CoilGain, PD, B1,R1,flipAngles,tr, noiseLevel, plotFlag)
-% Simulate SPGR signal and the M0 T1 fit with gaussian noise
+% Simulate SPGR signal and the M0 T1 fit with Gaussian noise
 %
-% [OutPutSim]=simSPGRs(CoilGain, PD, B1,R1,flipAngles,tr, noiseLevel, plotFlag)
+% [OutPutSim] = simSPGRs(CoilGain, PD, B1,R1,flipAngles,tr, noiseLevel, plotFlag)
 %
 % The noise model is
 %
@@ -15,22 +15,24 @@ function [OutPutSim]=simSPGRs(CoilGain, PD, B1,R1,flipAngles,tr, noiseLevel, plo
 %                    (1) 'dots'     - every tenth PD eqal 10 all other PD eqal 1
 %                    (2) 'lowfreq'  - PD= sin(0:pi);
 %                    (3) 'highfreq' - PD= sin(0:10*pi);
-%  plotFlag   when true (1) plot M0S vs MOSN
-% B1              The excite in-homogenity at a number that multipal the
-%                   flip angel in each location (nVoxels x 1). the defult is no in-homogenity (B1=1)
-%R1          The R1 value is msec-1 in each location(nVoxels x 1). if not
+% plotFlag    When true (1) plot M0S vs MOSN
+% B1          The excite in-homogenity at a number that multipal the
+%              flip angel in each location (nVoxels x 1). (default no
+%              in-homogenity (B1=1))
+% R1          The R1 value is msec-1 in each location(nVoxels x 1). If not
 %               defined the defult will be a linear function of PD.
-% flipAngles. The flip Angles in degrees. for more then one flipAngles
-%               (flipAngles X 1). defult flipangle=[4 10 20 30];
-% tr          time to repeat is msec defult (tr=20)
-% te          is not yet impameted and assumed to be not important with
-%              very short te
+% flipAngles  The flip angles in degrees. for more then one flipAngles
+%               (flipAngles X 1). default flipangle=[4 10 20 30];
+% tr          Time to repeat is msec defult (tr=20)
+% te          Not yet implemented and assumed to be not important with
+%                very short te
 % OutPut:
 %  M0S     Noise free simulated M0  MOS= CoilGain*PD (nVoxels x nCoils)
 %  M0SN    The simulated M0  MOSN= CoilGain*PD+ Noise (nVoxels x nCoils)
 %  SNR     The simulated Signal to Noise ratio in desibals
 %  PD      The simulated PD
-%  mask   tissue mask in case of tissue simulation 1=WM GM=2 CSF=3;
+%  mask    Tissue mask in case of tissue simulation 1=WM GM=2 CSF=3;
+%
 % AM/BW Copyright VISTASOFT Team 2013
 
 %% Define the the problem dimension and parameters
@@ -110,7 +112,7 @@ if ischar(PD)
             
             PD = PD(:);
             R1=R1(:)./1000;
-        case {'tissue2', '5'} % tissue with slop
+        case {'tissue2', '5'} % tissue with slope
             PD = zeros(eSize,eSize,eSize);
             mask = zeros(eSize,eSize,eSize);
             
@@ -147,7 +149,8 @@ if ischar(PD)
     end
 end
 
-%when R1 is not define or symulated we will use the litrature linear relations with PD
+%when R1 is not defined or simulated we will use the literature linear
+%relations with PD
 if notDefined('R1')
     R1 = (2.5./PD) - 2.26;
     R1=R1./1000;
@@ -186,30 +189,29 @@ options = optimset('Algorithm', 'levenberg-marquardt','Display', 'off','Tolx',1e
 %get the sum of sqr for T1 and M0 fit
 SIG=sqrt(sum(SigN.^2,3));
 % initilize the fit by the linear aproxsimation of the signal eqation sulotion
-    [t1t,M0t]     = relaxFitT1(SIG,flipAngles,tr,B1);
+[t1t,M0t]     = relaxFitT1(SIG,flipAngles,tr,B1);
 % fit each voxel with lsq non linear fit on the full single eqation
 for ii= 1:nVoxels
     x0(1)=M0t(ii);
     x0(2)=t1t(ii)*1000;
-    
     [res(:,ii), resnorm(ii)] = lsqnonlin(@(par) errT1PD(par,flipAngles,tr,SIG(ii,:),1,1,1,[]),x0,[],[],options);
     
 end
-M0Fit=res(1,:);
-R1Fit=1./res(2,:);
+
+M0Fit  = res(1,:);
+R1Fit  = 1./res(2,:);
 
 %%  calcultate the fitted M0 per coil given the T1 fit
 for jj=1:length(flipAngles)
     for ii=1:nCoils
-          fa=flipAngles(jj).*B1;
+        fa=flipAngles(jj).*B1;
         fa = fa./180.*pi;
+        M0SNf(:,jj,ii)= (SigN(:,jj,ii).*(1-exp(-tr.*R1Fit(:)).*cos(fa)))./((1-exp(-tr.*R1Fit(:))).*sin(fa));
         
-        M0SNf(:,jj,ii)=       (SigN(:,jj,ii).*(1-exp(-tr.*R1Fit(:)).*cos(fa)))./((1-exp(-tr.*R1Fit(:))).*sin(fa));
-         
     end
 end
 M0SN=squeeze( mean(M0SNf,2));
-    
+
 
 
 %% OutPutSim
@@ -226,8 +228,6 @@ OutPutSim.tr=tr;
 OutPutSim.flipAngles=flipAngles;
 
 
-
-
 %% plot
 fprintf('The simulation SNR: %0.4f\n',SNR);
 
@@ -241,13 +241,13 @@ if plotFlag
     xlabel('voxels')
     ylabel('M0')
     
-      subplot(1,2,2)
+    subplot(1,2,2)
     x = length(R1(:));
     
     plot(1:x,R1(:),'.-k',1:x,R1Fit(:),'.r')
     legend('R1','R1 Fit')
     xlabel('voxels')
-    ylabel('R1') 
+    ylabel('R1')
     
 end
 

@@ -9,7 +9,6 @@
 
 %%  Make sure mrQ is on the path
 addpath(genpath(fullfile(mrqRootPath)));
-rmpath('folderName') 
 %% Generate example parameters for the coils from the phantom data
 
 nSamples = 3;      % The box is -nSamples:nSamples
@@ -43,23 +42,23 @@ PD = sqrt(sqrt(sqrt(PD)));
 %% simultae coil Gain (we are using the poylnomyal fits to the phantom data a typical coil function)
 %select a set of coils
 
-%we can sort coils by minmial correlation between them
+%we can sort coils by minmial correlation between the coils to find the
+%best set.
+NuseCoils=4;
+            c=nchoosek(1:16,NuseCoils);
+             Cor=ones(4,size(c,1))*100;
+            for kk=1:size(c,1)
+                A=(corrcoef(phantomP.M0_v(:,c(kk,:))));
+                Cor(NuseCoils,kk)=(sum(abs(A(:)))-NuseCoils)/((length(A(:))-NuseCoils)*0.5);
+                
+                Cloc(NuseCoils,kk,1:4)=c(kk,:);
+            end
+        [v ind]=sort(Cor(:)); %sort the coils by minimum corralation
+        [xx yy]=ind2sub(size(Cor),ind(1)); % find the combination with minimal corralation
+       coils=[squeeze(Cloc(xx,yy,1:xx))']
 
-%             c=nchoosek(1:16,k);
-%              Cor=ones(4,size(c,1))*100;
-%             for kk=1:size(c,1)
-%                 A=(corrcoef(phantomP.M0_v(:,c(kk,:))));
-%                 %    Cor(k,kk)=(sum(A(:))-k)/2;
-%                 Cor(k,kk)=(sum(abs(A(:)))-k)/((length(A(:))-k)*0.5);
-%                 
-%                 Cloc(k,kk,1:k)=c(kk,:);
-%             end
-%         [v ind]=sort(Cor(:)); %sort the coils by minimum corralation
-%         [xx yy]=ind2sub(size(Cor),ind(1)); % find the combination with minimal corralation
-%        coils=[squeeze(Cloc(xx,yy,1:xx))']
 
-
-coils = [1 3 5 9];
+%coils = [1 3 5 9];
 % get those coil poylnomyal coeficents 
 GainPolyPar = phantomP.params(:,coils);
 

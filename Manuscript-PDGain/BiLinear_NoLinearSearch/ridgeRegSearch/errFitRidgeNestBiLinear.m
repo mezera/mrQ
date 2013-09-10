@@ -8,7 +8,7 @@ function err = errFitRidgeNestBiLinear(g,M0,pBasis,nVoxels,nCoils,W)
 % pBasis  - Polynomial basis in columns (nVoxels x nCoeffs)
 % nVoxels - Number of voxels
 % nCoils  - Number of measurement coils
-%W -           are the ridge regreion coefisents
+% W       - The ridge regression coefficients
 %
 % This function is an lsq version of the bilinear ridge regression
 % solution. this regularization can be usful to reduce the noie effect.

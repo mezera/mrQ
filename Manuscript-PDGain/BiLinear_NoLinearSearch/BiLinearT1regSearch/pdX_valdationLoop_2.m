@@ -15,9 +15,8 @@ function  [X_valdationErr,   gEstT, resnorm, FitT useX, kFold ]=pdX_valdationLoo
 nVoxels=size(M0,1);
 Ncoils=size(M0,2);
 nPolyCoef=size(pBasis,2);
-% separate the data to Kfold fit and X-Validation part
-[ useX, kFold] = getKfooldCVvoxel_full(nVoxels,Ncoils,kFold);
-%[useX ] =getSparceCVvoxel_full(nVoxels,Ncoils);
+
+
 if notDefined('g0')
     PDinit=Get_PDinit(1,R1basis(:,2));
     %  PDinit = sqrt(sum(M0.^2,2));    % Sum of squares
@@ -42,18 +41,23 @@ end
 
 if notDefined('mask');mask=ones(size(M0,1),1);end
 
-%% loop over lambda1 regularization wight
+%% intilaized X-Validation and fits
+
+% separate the data to Kfold fit and X-Validation part
+[ useX, kFold] = getKfooldCVvoxel_full(nVoxels,Ncoils,kFold);
+
+% argumante to save the X-Validation results
 X_valdationErrKfold = zeros(2,kFold);
 X_valdationErr  = zeros(2,length(lambda1));
-% FitT = This is an array of structs
-%        (kFold,length(lambda1));
+
+% argumante to save the estimated parameters 
 resnorm = zeros(kFold,length(lambda1));
 gEstT = zeros(nPolyCoef,Ncoils,kFold,length(lambda1));
 
 % T is the number of different tissue type. tissue type can be defined by segmtation (WM GM CSF ect...). Each tissue
 % type will be used to regularized PD fit by linear model.each tissue type  will have a differnt linear model
 T=(unique(mask));T=T(find(T>0));
-
+%% loop over lambda1 regularization wight
 % Sweep out the lambda values
 for ii=1:length(lambda1),
     
@@ -68,21 +72,21 @@ for ii=1:length(lambda1),
             double(pBasis),  nVoxels, Ncoils, double(R1basis), lambda1(ii),mask,FitMask,T),...
             double(g0),[],[],options);
         
-        % the fit err with no Lamda
-        %   resnormData(ii,jj)=errFitNestBiLinearTissueT1reg_full(gEstT(:,:,jj,ii),double(M0),...
-        %             double(pBasis),  nVoxels, Ncoils, double(R1basis), 0,mask,FitMask);
+     
+        %%  calculate X-Validation error:
         
-        %  calculate X-Validation error
-        Xmask=zeros(size(M0));Xmask(find(useX==jj))=1;Xmask=logical(Xmask);
+        Xmask=zeros(size(M0));Xmask(find(useX==jj))=1;Xmask=logical(Xmask); % Xmask are the hold position form X-Validation.
+        
+                %Check if the coil coefficent can explain the hold data
         [FitT(jj,ii).err_X, FitT(jj,ii).err_F] = X_validation_errHoldVoxel_full(gEstT(:,:,jj,ii),M0,pBasis,nVoxels,Ncoils,FitMask,Xmask);
-        %Check if the coil coefficent can explain the hold data
         
-        % Change to sum of squares? not sure which is better
-        X_valdationErrKfold(1,jj)= sum(abs( FitT(jj,ii).err_X (:)));
-        X_valdationErrKfold(2,jj)= sum(  FitT(jj,ii).err_X (:).^2);
+        % Two posible error function. we don't find a big different between
+        % them
+        X_valdationErrKfold(1,jj)= sum(abs( FitT(jj,ii).err_X (:))); %sum of absulot erro
+        X_valdationErrKfold(2,jj)= sum(  FitT(jj,ii).err_X (:).^2); %RMSE
     end
     
-    %sum the  X-Validation error for this lambda1
+    %sum over the Kfold X-Validation error for this lambda1
     X_valdationErr(1,ii)=sum(X_valdationErrKfold(1,:));
     X_valdationErr(2,ii)=sum(X_valdationErrKfold(2,:));
     

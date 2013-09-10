@@ -41,24 +41,23 @@ PD = sqrt(sqrt(sqrt(PD)));
 
 %% simultae coil Gain (we are using the poylnomyal fits to the phantom data a typical coil function)
 %select a set of coils
-
-%we can sort coils by minmial correlation between the coils to find the
-%best set.
-NuseCoils=4;
-            c=nchoosek(1:16,NuseCoils);
-             Cor=ones(4,size(c,1))*100;
-            for kk=1:size(c,1)
-                A=(corrcoef(phantomP.M0_v(:,c(kk,:))));
-                Cor(NuseCoils,kk)=(sum(abs(A(:)))-NuseCoils)/((length(A(:))-NuseCoils)*0.5);
-                
-                Cloc(NuseCoils,kk,1:4)=c(kk,:);
-            end
-        [v ind]=sort(Cor(:)); %sort the coils by minimum corralation
-        [xx yy]=ind2sub(size(Cor),ind(1)); % find the combination with minimal corralation
-       coils=[squeeze(Cloc(xx,yy,1:xx))']
-
-
 %coils = [1 3 5 9];
+%we can sort coils by minmial correlation between the coils to find the best set.
+
+NuseCoils=4;
+            c=nchoosek(1:16,NuseCoils); %all the potintial combination of the coils
+             Cor=ones(4,size(c,1))*100;   % intiate the Cor to max
+            for kk=1:size(c,1) loop % over coils sets
+                A=(corrcoef(phantomP.M0_v(:,c(kk,:)))); % calculate the correlations
+                Cor(NuseCoils,kk)=(sum(abs(A(:)))-NuseCoils)/((length(A(:))-NuseCoils)*0.5); % sum the abs correlation after coracting for number of coils and the identity correlations
+                
+                Cloc(NuseCoils,kk,1:4)=c(kk,:);% keep track of the coils set we test
+            end
+        [v ind]=sort(Cor(:)); %sort the coils by minimum corralation (min abs corr give us the set with corr that are closer to zero)
+        [xx yy]=ind2sub(size(Cor),ind(1)); % find the coils set with minimal corralation
+       coils=[squeeze(Cloc(xx,yy,1:xx))'] %peak the best coils set
+
+
 % get those coil poylnomyal coeficents 
 GainPolyPar = phantomP.params(:,coils);
 
@@ -67,7 +66,7 @@ GainPolyPar = phantomP.params(:,coils);
 G = phantomP.pBasis*GainPolyPar;
 
 
-%% simulte MRI SPGR  signal with and with out Noise
+%% simulte MRI SPGR  signal with Noise
 noiseLevel = 2;   % ?? Units???
 % simultate the M0 and T1 fits of multi SPGR images. 
 [MR_Sim]= simSPGRs(G,PD(:),[],[],[],[],noiseLevel,true);
@@ -75,31 +74,38 @@ noiseLevel = 2;   % ?? Units???
 % inputs MR sigunalinputsand the calculate of this signal after
 % fitting the signal eqation.
 
-%%
+%% solve theBilinear  problem with no regularization
 
 NL   = pdBiLinearFit_lsqSeach(MR_Sim.M0SN,phantomP.pBasis);
 
 
-%% T1 reg
-% find the best cross validation
-kFold=2;
-lambda1= [1e4 5e3 1e3 5e2 1e2 5e1 1e1 5  1e0 0.5 1e-1 0];
-R1basis(1:phantomP.nVoxels,1) = 1;  R1basis(:,2) =MR_Sim.R1Fit;
+%% add a T1 reg
+
+%1. find the best wight of T1 reg by X-validation
+kFold=2; % fit on half test on half 
+lambda1= [1e4 5e3 1e3 5e2 1e2 5e1 1e1 5  1e0 0.5 1e-1 0]; % wights of regularization to test
+
+R1basis(1:phantomP.nVoxels,1) = 1;  R1basis(:,2) =MR_Sim.R1Fit; % set the R1 linear model. by makeing an R1 basis.
 R1basis=double(R1basis);
+%the model we regularize with : 
+% 1/PD= c1(1/R1)+c2;
+
+% loop over wights of regularization and calculate the X-validation error
 [X_valdationErr,   gEstT, resnorm, FitT useX, kFold ]=pdX_valdationLoop_2( lambda1,kFold,MR_Sim.M0SN,phantomP.pBasis,R1basis,[],[],[]);
 
-% find the lamda that best to cross validate (minimal RMSE error)
+% find the lamda that best to X-validation (minimal RMSE error)
 BestReg = find(X_valdationErr(2,:)==min(X_valdationErr(2,:)))% 
 
 %        figure;  semilogy(lambda1,X_valdationErr(2,:),'*-');         xlabel('lambda');ylabel('CV error');X_valdationErr(2,:)./min(X_valdationErr(2,:))
-% use the best CV lamda to fit the data
+
+% use the best X-validation lamda to fit the data
 [NL_T1reg.PD,~,NL_T1reg.G,NL_T1reg.g, NL_T1reg.resnorm,NL_T1reg.exitflag ]=pdCoilSearch_T1reg( lambda1(BestReg),MR_Sim.M0SN,phantomP.pBasis,R1basis,gEstT(:,:,1,BestReg));
 
 % figure;plot(PD(:)./mean(PD(:)), NL_T1reg.PD(:)./mean(NL_T1reg.PD(:)),'*')
 
-% save the fitting outputs 
 
-%%
+%%  reshape and scale the PD fits
+
 % PD with T1 reg
 PD_T1reg = reshape(NL_T1reg.PD, boxSize);
 scale       = PD(1,1,1)/PD_T1reg(1,1,1);
@@ -109,9 +115,8 @@ PD_T1reg  = PD_T1reg.*scale;
 PD_Noreg = reshape(NL.PD, boxSize);
 scale       = PD(1,1,1)/PD_Noreg(1,1,1);
 PD_Noreg  = PD_Noreg.*scale;
-return
 
-%%  PD estimation with T1 reg vs without 
+%%  make the figure
 
 mrvNewGraphWin;
 
@@ -124,11 +129,12 @@ xlabel('Estimated PD'); ylabel('True PD');
 identityLine(gca);
 xlim([MM(1) MM(2)]);ylim([MM(1) MM(2)]);
 axis image; axis square
-legend('PD estimate with T1 reg','PD estimate without T1 reg','Location','NorthWest')
+legend('PD estimate without T1 reg','PD estimate with T1 reg','Location','NorthWest')
+
+return
 
 
-
-%% ridge reg
+%% ridge reg (not helpfull)
 kFold=2;
 lambda1= [1e4 5e3 1e3 5e2 1e2 5e1 1e1 5  1e0 0.5 1e-1 0];
 [X_valdationErr,   gEstT, resnorm, FitT useX, kFold ]=pdX_valdationRidgeLoop( lambda1,kFold,MR_Sim.M0SN,phantomP.pBasis);

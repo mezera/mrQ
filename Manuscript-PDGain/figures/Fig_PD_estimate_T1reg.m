@@ -21,8 +21,7 @@ printImages  = false;   % No printing now
 smoothkernel = [];      % Fit to the unsmoothed M0 data
 BasisFlag    = 'qr';    % Which matrix decomposition for fitting.
 
-% This produces the key parameters for the polynomial approximations. We
-% will turn it into a function before long. The returned variables includes
+% This produces the key parameters for the polynomial approximations.  The returned variables includes
 % the polynomial basis, pBasis, the M0 data, M0S_v, additional parameters,
 % such as the box size.
 phantomP = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, ...
@@ -135,14 +134,14 @@ return
 
 
 %% ridge reg (not helpfull)
-kFold=2;
-lambda1= [1e4 5e3 1e3 5e2 1e2 5e1 1e1 5  1e0 0.5 1e-1 0];
-[X_valdationErr,   gEstT, resnorm, FitT useX, kFold ]=pdX_valdationRidgeLoop( lambda1,kFold,MR_Sim.M0SN,phantomP.pBasis);
-%        figure;  semilogy(lambda1,X_valdationErr(2,:),'*-');         xlabel('lambda');ylabel('CV error');X_valdationErr(2,:)./min(X_valdationErr(2,:))
-
-BestReg = find(X_valdationErr(2,:)==min(X_valdationErr(2,:)))% 
-
-
-NL_Ridge = pdBiLinearFit_lsqRidgeSeach(MR_Sim.M0SN,phantomP.pBasis,gEstT(:,:,1,BestReg),[],lambda1(BestReg));
+% kFold=2;
+% lambda1= [1e4 5e3 1e3 5e2 1e2 5e1 1e1 5  1e0 0.5 1e-1 0];
+% [X_valdationErr,   gEstT, resnorm, FitT useX, kFold ]=pdX_valdationRidgeLoop( lambda1,kFold,MR_Sim.M0SN,phantomP.pBasis);
+% %        figure;  semilogy(lambda1,X_valdationErr(2,:),'*-');         xlabel('lambda');ylabel('CV error');X_valdationErr(2,:)./min(X_valdationErr(2,:))
+% 
+% BestReg = find(X_valdationErr(2,:)==min(X_valdationErr(2,:)))% 
+% 
+% 
+% NL_Ridge = pdBiLinearFit_lsqRidgeSeach(MR_Sim.M0SN,phantomP.pBasis,gEstT(:,:,1,BestReg),[],lambda1(BestReg));
 
 %%

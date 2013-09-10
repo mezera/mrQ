@@ -22,8 +22,7 @@ printImages  = false;   % No printing now
 smoothkernel = [];      % Fit to the unsmoothed M0 data
 BasisFlag    = 'qr';    % Which matrix decomposition for fitting.
 
-% This produces the key parameters for the polynomial approximations. We
-% will turn it into a function before long. The returned variables includes
+% This produces the key parameters for the polynomial approximations.  The returned variables includes
 % the polynomial basis, pBasis, the M0 data, M0S_v, additional parameters,
 % such as the box size.
 phantomP = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, ...
@@ -73,7 +72,7 @@ noiseLevel = 2;   % ?? Units???
 % The bilinear search is very slow. many many iteration are needed
 %
 % BLFit_N0Noise = pdBiLinearFit(MR_Sim.M0S, phantomP.pBasis, ...
-%                  [], maxLoops, sCriterion, [], 1 ,GainPolyPar,PD(:));
+                 [], maxLoops, sCriterion, [], 1 ,GainPolyPar,PD(:));
 % save('/home/avivm/Documents/PD_article/figures/BL_NONoise','BLFit_N0Noise')
 %
 %% With Noise

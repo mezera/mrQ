@@ -50,7 +50,10 @@ if notDefined('tr'), tr= 20; end
 if notDefined('PD'), PD = ones(nVoxels,1); end
 if ischar(PD)
     PD = mrvParamFormat(PD);
-    [PD, R1]=mrQ_simulate_PD(PD,nVoxels) 
+    [PD, R11]=mrQ_simulate_PD(PD,nVoxels) 
+    if (notDefined('R1') || isempty(R1))
+        R1=R11;
+    end
 end
 %when R1 is not defined or simulated we will use the literature linear
 %relations with PD

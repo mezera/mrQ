@@ -1,16 +1,14 @@
-%% Figure 3
-%
-% Illustrate how PD can be measured from noise M0 while estimate the coil
-% gain using bilinear solutions with a T1 regularization term.
-%
-% The problem we solve by the T1 regularization is the effect of noise on
-% this solutions.
-%
+% figure 5
+
+% The problem we pace is the effect of regularization PD fit  by T1 when more then T1 PD reletions exist.
+%  like in case of different brain tissue types.
+%  we test what could be the error by simulation.
 %
 % AM/BW Vistaosft Team, 2013
 
 %%  Make sure mrQ is on the path
 addpath(genpath(fullfile(mrqRootPath)));
+
 %% Generate example parameters for the coils from the phantom data
 
 nSamples = 3;      % The box is -nSamples:nSamples
@@ -18,7 +16,7 @@ nCoils   = 32;     % A whole bunch of coils
 nDims    = 3;      % XYZ
 pOrder   = 2;      % Second order is good for up to 5 samples
 noiseFloor = 500;  % This is the smallest level we consider
-sampleLocation = 2;% Which box 
+sampleLocation = 2;% Which box
 printImages  = false;   % No printing now
 smoothkernel = [];      % Fit to the unsmoothed M0 data
 BasisFlag    = 'qr';    % Which matrix decomposition for fitting.
@@ -28,7 +26,6 @@ BasisFlag    = 'qr';    % Which matrix decomposition for fitting.
 % such as the box size.
 phantomP = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, ...
     noiseFloor, sampleLocation, printImages, smoothkernel, BasisFlag);
-
 boxSize = repmat(phantomP.rSize,1,nDims);
 
 %% Simulate PD 
@@ -42,16 +39,27 @@ PD = sin(R)./R;
 PD(isnan(PD) )= 1;
 PD = abs(PD);
 PD = PD .^ (1/6);
-% sqrt(sqrt(sqrt(PD)));
 
-%% Simulate coil gain using the poylnomial fits to the phantom data
-% These are typical coil functions
+%% let's split R1 to three tissue types with different  R1 relations to PD
+tissue1=find(PD<=0.7);
+tissue2=find(PD>0.7 & PD<=0.77);
+tissue3=find(PD>0.77);
+
+R1=zeros(size(PD));
+R1(tissue1)= (2.5./PD(tissue1)) - 2.26;
+R1(tissue2)= (1.3./PD(tissue2)) - 0.9;
+R1(tissue3)= (1./PD(tissue3)) - 0.5;
+    R1=R1./1000;
+
+    mask=zeros(size(PD));
+mask(tissue1)=1;
+mask(tissue2)=2;
+mask(tissue3)=3;
+
+%% Simulate coil gain 
+% We use the poylnomial fits to the phantom data a typical coil function
 
 % Select a set of coils 
-% Arbitrary choice: coils = [1 3 5 9]; 
-% We can sort coils by minimalcorrelation between the coils to find the best set.
-
-% We use this algorithm to
 nUseCoils = 4;                         % How many coils to use
 c = nchoosek(1:16,nUseCoils);          % All the potential combinations of nCoils
 Cor = ones(nUseCoils,size(c,1))*100;   % Initiate the Cor to max
@@ -72,25 +80,22 @@ end
 [v, minCor] = min(Cor(nUseCoils,:)); 
 coils       = c(minCor,:);
 
-% Get the poylnomial coeficents for those coils
+% Get those coil poylnomyal coeficents
 GainPolyPar = phantomP.params(:,coils);
 
-% Create the coil gains over voxels by multiplying the polynomial
+% Create the coil gains over voxels by multiplying the polynomials
 % coeficents and the polynomial basis.
 G = phantomP.pBasis*GainPolyPar;
 
-%% Simulate MRI SPGR signal with noise
 
+%% Simultae MRI SPGR signal with and with out noise
 noiseLevel = 2;   % ?? Units???
 
-% Simulate the M0 and T1 fits of multi SPGR images. 
-[MR_Sim]= simSPGRs(G,PD(:),[],[],[],[],noiseLevel,true);
+% Simultate the M0 and T1 fits of multi SPGR images.
+[MR_Sim]= simSPGRs(G,PD(:),[],R1(:),[],[],noiseLevel,true);
 
-% MR_Sim is a structure with multiple fields that include the simulation
-% inputs MR sigunal inputs and the calculations from fitting the signal
-% equation. 
 
-%% Solve the bilinear  problem with no regularization
+%%
 
 % NL is a new structure with the coil coefficients (g), PD and coil image
 % (G) of the volume.
@@ -147,45 +152,74 @@ BestReg = find(X_valdationErr(2,:) == min(X_valdationErr(2,:)))
 % mrvNewGraphWin; 
 % plot(PD(:)./mean(PD(:)), NL_T1reg.PD(:)./mean(NL_T1reg.PD(:)),'*')
 
+%% repit the regularization now allowing differen tissues 
+% Loop over regularization weights and calculate the X-validation error
+[X_valdationErr,   gEstT, resnorm, FitT, useX, kFold ] = ...
+    pdX_valdationLoop_2(lambda,kFold,MR_Sim.M0SN,phantomP.pBasis,Rmatrix,[],mask,[]);
+
+% Find the lambda that best X-validates (minimal RMSE error)
+BestReg = find(X_valdationErr(2,:) == min(X_valdationErr(2,:))) 
+
+% semilogy(lambda,X_valdationErr(2,:),'*-'); xlabel('lambda');ylabel('CV error'); 
+% X_valdationErr(2,:)./min(X_valdationErr(2,:))
+
+% Use the best lambda and fit the full data set
+[NL_T1regTissues.PD,~,NL_T1regTissues.G,NL_T1regTissues.g, NL_T1regTissues.resnorm,NL_T1regTissues.exitflag ] = ...
+    pdCoilSearch_T1reg(lambda(BestReg),MR_Sim.M0SN,phantomP.pBasis, ...
+    Rmatrix, gEstT(:,:,1,BestReg),mask);
+
+
 %%  reshape and scale the PD fits
 
 % PD with T1 reg
+
 PD_T1reg  = reshape(NL_T1reg.PD, boxSize);
-scale     = PD(1,1,1)/PD_T1reg(1,1,1);
+%scale     = PD(1,1,1)/PD_T1reg(1,1,1);
+scale     = mean(PD(:)./PD_T1reg(:));
 PD_T1reg  = PD_T1reg.*scale;
 
-% PD with out T1 reg
+
+PD_T1regTisuue  = reshape(NL_T1regTissues.PD, boxSize);
+%scale     = PD(1,1,1)/PD_T1regTisuue(1,1,1);
+scale     = mean(PD(:)./PD_T1regTisuue(:));
+PD_T1regTisuue  = PD_T1regTisuue.*scale;
+
+
+
 PD_Noreg  = reshape(NL.PD, boxSize);
-scale     = PD(1,1,1)/PD_Noreg(1,1,1);
+%scale     = PD(1,1,1)/PD_Noreg(1,1,1);
+scale     = mean(PD(:)./PD_Noreg(:));
+
 PD_Noreg  = PD_Noreg.*scale;
+% for visualizaton i will clip it to be up to 1005 error
+PD_Noreg(PD_Noreg>2)=2;
+PD_Noreg(PD_Noreg<0)=0;
 
 %%  make the figure
 
 mrvNewGraphWin;
 
-MM = minmax([PD_T1reg PD PD_Noreg]);
+MM = minmax([PD_T1reg PD PD_T1regTisuue]);
 hold on
-plot(PD_Noreg(:),PD(:),'o' ,'MarkerSize',10,'MarkerFaceColor','b')
-plot(PD_T1reg(:),PD(:),'or','MarkerSize',10)
+plot(PD_T1regTisuue(:),PD(:),'o' ,'MarkerSize',10,'MarkerFaceColor','w','MarkerEdgeColor','k')
+plot(PD_T1reg(:),PD(:),'o' ,'MarkerSize',10,'MarkerFaceColor','w','MarkerEdgeColor','b')
 
 xlabel('Estimated PD'); ylabel('True PD');
 identityLine(gca); xlim([MM(1) MM(2)]); ylim([MM(1) MM(2)]);
 axis image; axis square
-legend('PD estimate without T1 reg','PD estimate with T1 reg','Location','NorthWest')
-
-return
-
-%% End
-
-%% ridge reg (not helpfull)
-% kFold=2;
-% lambda1= [1e4 5e3 1e3 5e2 1e2 5e1 1e1 5  1e0 0.5 1e-1 0];
-% [X_valdationErr,   gEstT, resnorm, FitT useX, kFold ]=pdX_valdationRidgeLoop( lambda1,kFold,MR_Sim.M0SN,phantomP.pBasis);
-% %        figure;  semilogy(lambda1,X_valdationErr(2,:),'*-');         xlabel('lambda');ylabel('CV error');X_valdationErr(2,:)./min(X_valdationErr(2,:))
-% 
-% BestReg = find(X_valdationErr(2,:)==min(X_valdationErr(2,:)))% 
-% 
-% 
-% NL_Ridge = pdBiLinearFit_lsqRidgeSeach(MR_Sim.M0SN,phantomP.pBasis,gEstT(:,:,1,BestReg),[],lambda1(BestReg));
+legend('PD estimate  T1 reg','PD estimate  T1 reg Tissues','Location','NorthWest')
 
 %%
+mrvNewGraphWin;
+
+MM = minmax([PD_T1reg PD PD_T1regTisuue]);
+hold on
+
+plot(PD_Noreg(:),PD(:),'o' ,'MarkerSize',10,'MarkerFaceColor','w','MarkerEdgeColor','r')
+plot(PD_T1regTisuue(:),PD(:),'o' ,'MarkerSize',10,'MarkerFaceColor','w','MarkerEdgeColor','k')
+plot(PD_T1reg(:),PD(:),'o' ,'MarkerSize',10,'MarkerFaceColor','w','MarkerEdgeColor','b')
+
+xlabel('Estimated PD'); ylabel('True PD');
+identityLine(gca); xlim([MM(1) MM(2)]); ylim([MM(1) MM(2)]);
+axis image; axis square
+legend('PD estimate without T1 reg','PD estimate  T1 reg','PD estimate  T1 reg Tissues','Location','NorthWest')

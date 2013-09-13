@@ -4,6 +4,9 @@ function phantomP = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseRan
 %  phantomP = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, noiseRange,
 %                sampleLocation, printImages,smoothkernel)
 %
+% This fits the M0 data under the assumption that the PD is constant (1),
+% as it is in a phantom.
+
 %Inputs:
 %  nSamples              number of voxel around the center voxal.
 %  sampleLocation        location of central voxel. posibale location are peaked and number 1:5is used to chose betwwn them
@@ -65,14 +68,16 @@ rSize       = length(s);
 nVoxels     = rSize^nDims;
 nPolyParams = size(pBasis,2);
 
-% Get the phantom polynomial coefficients assuming the phantom PD equals
-% one.  data = pBasis * params.  So, pBasis \ data
+%% Solve for the polynomial coefficients assuming the phantom PD equals one
+
+% The assumption of constant PD is embedded in this equation.
+% data = pBasis * params.  So, pBasis \ data
 params = zeros(nPolyParams , nCoils);
 for ii=1:nCoils
     params(:,ii)= pBasis \ M0_v(:,ii);
 end
 
-%% We check whether the approximation is accurate for the box
+%% Calculate the accuracy of the fit for the box
 
 % M0 prediction as a vector for each coil
 M0S_v = zeros(nVoxels,nCoils);
@@ -82,7 +87,7 @@ end
 
 %  std(  M0S_v(:) - M0_v(:) )
 lst = M0_v > noiseRange;
-percentError=std( (M0S_v(lst) - M0_v(lst)) ./ M0_v(lst));
+percentError = 100*std( (M0S_v(lst) - M0_v(lst)) ./ M0_v(lst));
 if printImages==1
     mrvNewGraphWin; plot(M0S_v(:),M0_v(:),'.');
 end

@@ -1,4 +1,4 @@
-function PDinit=Get_PDinit(T1reg,R1,Guesstype)
+function[ PDinit,g0] =Get_PDinit(T1reg,R1,Guesstype,M0,pBasis)
 %PDinit=Get_PDinit(lambda1,T1,Guesstype)
 % estimate a PD from the data
 %  Guesstype=1 or T1reg=0 use the sum of sqr (or M0) as PD
@@ -24,3 +24,20 @@ if (T1reg>0 || Guesstype==3)% T1 PD linear relations
           PDinit=1./(R1*0.42+0.95); %this is the teortical T1 PD relationship see reference at Mezer et. al 2013
 end
 
+%guess the g0
+
+if ~notDefined('pBasis')
+ 
+    nVoxels=size(M0,1);
+    Ncoils=size(M0,2);
+    nPolyCoef=size(pBasis,2);
+    
+     G  = zeros(nVoxels,Ncoils);
+    g0 = zeros(nPolyCoef,Ncoils);
+    for ii=1:Ncoils
+        G(:,ii)  = M0(:,ii) ./ PDinit(:);         % Raw estimate
+        g0(:,ii) = pBasis(:,:) \ G(:,ii);  % Polynomial approximation
+    end
+else
+    g0=[];
+end

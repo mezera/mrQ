@@ -1,4 +1,4 @@
-function OutPut = pdBiLinearFit(M0_v,pBasis,Lambda,maxLoops,sCriterion,PD,plotFlag,TruePar,D)
+function OutPut = pdBiLinearFit(M0_v,pBasis,Lambda,maxLoops,sCriterion,PD,plotFlag,TruePar,TruePD,D)
 % OutPut = pdBiLinearFit(M0_v,pBasis,Lambda,maxLoops,sCriterion,PD,plotFlag,TruePar)
 %
 % This fancrtion running a while loop solving the M0=GPD bi-linear problem.
@@ -58,7 +58,8 @@ k = 0;                % number of iteration
 tryagain = 1;         % go for the while loop
 PDchange = zeros(1,maxLoops);
 M0change = zeros(1,maxLoops);
-
+M0FitErr = zeros(1,maxLoops);
+RelativeChange = zeros(1,maxLoops);
 %% Initalize solution
 
 % When PD is given and M0 is given, we can form an estimate of the coil
@@ -97,10 +98,17 @@ if plotFlag==1
     subplot(1,2,1); plot(g0(:).*CoefNorm,Par(:),'.')
     identityLine(gca);
     xlabel('Estimated gains'); ylabel(str);
-    
-    subplot(1,2,2); plot(PD,'.');set(gca,'ylim',[min(PD(:))*0.9 max(PD(:))*1.1]);
-    ylabel('Estimated PD');xlabel('voxel');
-    
+    if notDefined('TruePD')
+        subplot(1,2,2); plot(PD,'.');set(gca,'ylim',[min(PD(:))*0.9 max(PD(:))*1.1]);
+        ylabel('Estimated PD');xlabel('voxel');
+    else
+        subplot(1,2,2);
+        scale     = mean(TruePD(:)./PD(:));
+        
+        plot(TruePD(:),PD(:)*scale,'.')
+        identityLine(gca);
+             ylabel('Estimated PD');xlabel('true PD');
+    end
 end
 
 %% This is the bilinear alternating solution
@@ -123,10 +131,14 @@ while tryagain == 1
     % converged
     PDchange(k) = std(PD - PDn);
     M0change(k) = std(M0(:) - M0n(:));
-        M0Fit(k) = std(M0_v(:)-M0n(:));
-
+    M0FitErr(k) = std(M0_v(:)-M0n(:));
+    
+    % we look 100 interval back and calculate the change in fit. this will
+    % allow to see if we gain any think in fitting M0.
+   MimmaxErr= minmax(M0FitErr ( max(1,k-100) : k ));
+   RelativeChange(k)=MimmaxErr(2)-MimmaxErr(1);
     %if PDchange(k) < sCriterion;
-    if M0Fit(k) < sCriterion;
+    if (M0FitErr(k) < sCriterion || RelativeChange(k) < sCriterion ) && k>100
         % If stable to within 1 percent, stop.
         
         % We could check the gains, rather than PD, or both
@@ -151,9 +163,19 @@ while tryagain == 1
             identityLine(gca);
             xlabel('Estimated gains'); ylabel(str);
             
-            subplot(1,2,2);
-            plot(PDn,'.'); set(gca,'ylim',[min(PDn(:))*0.9 max(PDn(:))*1.1]);
-            ylabel('Estimated PD');xlabel('voxel');
+            if notDefined('TruePD')
+                subplot(1,2,2); plot(PD,'.');set(gca,'ylim',[min(PD(:))*0.9 max(PD(:))*1.1]);
+                ylabel('Estimated PD');xlabel('voxel');
+            else
+                subplot(1,2,2);
+                scale     = mean(TruePD(:)./PD(:));
+                
+                plot(TruePD(:),PD(:)*scale,'.')
+                identityLine(gca);
+                ylabel('Estimated PD');xlabel('true PD');
+            end
+            
+            
             if  GetPar==1
                 Par = g;
             end
@@ -189,6 +211,7 @@ OutPut.g  = g; % the final coils gain coeficents  (G = pBasis*g)
 OutPut.PDchange = PDchange;  % a vector of the PD change in each step
 OutPut.M0change = M0change;  % a vector of the PD change in each step
 OutPut.LastLoop = k;  % a vector of the PD change in each step
+OutPut.M0FitErr = M0FitErr;  % a vector of the PD change in each step
 
 
 OutPut.NumOfIter = k;  % number of iteration

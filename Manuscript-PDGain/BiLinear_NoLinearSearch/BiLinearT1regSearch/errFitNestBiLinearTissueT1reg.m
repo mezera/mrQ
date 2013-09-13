@@ -1,17 +1,21 @@
-function err = errFitNestBiLinearTissueT1reg(g,M0,pBasis,nPositions,nCoils,R1basis,RegWeight,TissueMask,T)
-% Bilinear estimation subject to tisuue spesipic T1 regularization as well
+function err = errFitNestBiLinearTissueT1reg(g,M0,pBasis,nPositions, ...
+    nCoils,Rmatrix,RegWeight,TissueMask,T)
+% Bilinear estimation subject to tisuue specific T1 regularization
 %
 %  err =
-%   errFitNestBiLinearTissueT1reg(g,M0,pBasis,nPositions,nCoils,R1basis,RegWeight,TissueMask)
+%   errFitNestBiLinearTissueT1reg(g,M0,pBasis,nPositions,nCoils,...
+%                  Rmatrix,RegWeight,TissueMask)
+%
+% See also: pdCoilSearch_T1reg
 %
 % AM/BW(c) VISTASOFT Team, 2013
 
-%estimate coil coefficients across the volume
+%% Estimate coil coefficients across the volume
 G = pBasis*g;
 
-% Estimate the best PD for each position a linear sulotion
-% This makes it a nested bilinear problem
+%% Estimate the best PD for each position a linear solution
 
+% This makes it a nested bilinear problem
 PD = zeros(nPositions,1);
 for ii=1:nPositions
     PD(ii) = G(ii,:)' \ M0(ii,:)';
@@ -36,25 +40,25 @@ end
 % the estimated linear relationship
 % co     = R1basis \ ( 1./PD(:) );
 % PDpred = R1basis*co;
-%T= (unique(TissueMask));
-PDpred=zeros(size(PD));
-for ii=1:length(T); 
+% T = (unique(TissueMask));
+PDpred = zeros(size(PD));
+
+% Allow separate linear relationship for different tissue classes
+for ii=1:length(T);
     if ii>0
         mask=find(TissueMask==T(ii));
-        PDpred(mask)     = R1basis(mask,:)* (R1basis(mask,:) \ ( 1./PD(mask) ));
+        PDpred(mask) = Rmatrix(mask,:)* (Rmatrix(mask,:) \ ( 1./PD(mask) ));
     end
 end
-PDpred     = 1 ./ PDpred;
+PDpred = 1 ./ PDpred;
 
 % Normalize by the first PD value
 G  = G  .* mean(PD(TissueMask>0));
 PDpred = PDpred ./ mean(PD(TissueMask>0));
 PD = PD ./ mean(PD(TissueMask>0));
 
-% get the predicted M0 for all of the coils
+% The predicted M0 for all of the coils
 M0P = G.*repmat( PD,1,nCoils);
-
-
 
 % mrvNewGraphWin; plot(PD(:),PDpred(:),'o')
 % PDpred     = R1basis* (R1basis \ ( 1./PD(:) ));

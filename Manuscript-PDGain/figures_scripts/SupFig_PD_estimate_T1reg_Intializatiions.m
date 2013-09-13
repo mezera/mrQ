@@ -1,12 +1,12 @@
 %%% Sup Figure 1
 %
-% cheak the effect of starting points on PD fit
+% check the effect of starting points on PD fit
 %
 % 
 %
 % AM/BW Vistaosft Team, 2013
 %%  Make sure mrQ is on the path
-addpath(genpath(fullfile(mrqRootPath)));
+% addpath(genpath(fullfile(mrqRootPath)));
 %% Generate example parameters for the coils from the phantom data
 
 nSamples = 3;      % The box is -nSamples:nSamples
@@ -24,8 +24,6 @@ BasisFlag    = 'qr';    % Which matrix decomposition for fitting.
 % such as the box size.
 phantomP = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, ...
     noiseFloor, sampleLocation, printImages, smoothkernel, BasisFlag);
-
-boxSize = repmat(phantomP.rSize,1,nDims);
 
 %% Simulate PD 
 [X,Y, Z] = meshgrid(-nSamples:nSamples,-nSamples:nSamples, -nSamples:nSamples);
@@ -186,9 +184,8 @@ BestReg = find(X_valdationErr(2,:) == min(X_valdationErr(2,:)))
 % mrvNewGraphWin; 
 % plot(PD(:)./mean(PD(:)), NL_T1reg.PD(:)./mean(NL_T1reg.PD(:)),'*')
 
-
-
 %%  reshape and scale the PD fits
+boxSize = repmat(phantomP.rSize,1,nDims);
 
 % PD with T1 reg init: sum of sqr 
 PD_T1reg_In1  = reshape(NL_T1reg_In1.PD, boxSize);
@@ -196,7 +193,6 @@ PD_T1reg_In1  = reshape(NL_T1reg_In1.PD, boxSize);
 scale     = mean(PD(:)./PD_T1reg_In1(:));
 
 PD_T1reg_In1  = PD_T1reg_In1.*scale;
-
 
 % PD with T1 reg  init: random
 PD_T1reg_In2  = reshape(NL_T1reg_In2.PD, boxSize);
@@ -209,19 +205,15 @@ PD_T1reg_In2  = PD_T1reg_In2.*scale;
 PD_T1reg_In2(PD_T1reg_In2<0)=0;
 PD_T1reg_In2(PD_T1reg_In2>2)=2;
 
-
-
 % PD with T1 reg  init: T1 defult
 PD_T1reg_In3  = reshape(NL_T1reg_In3.PD, boxSize);
 %scale     = PD(1,1,1)/PD_T1reg(1,1,1);
 scale     = mean(PD(:)./PD_T1reg_In3(:));
 
-
 PD_T1reg_In3  = PD_T1reg_In3.*scale;
 % PD with out T1 reg
 
-%%  make the figure
-
+%%  Make the figure
 mrvNewGraphWin;
 
 MM = minmax([PD_T1reg_In2 PD PD_T1reg_In1 PD_T1reg_In3]);
@@ -233,7 +225,6 @@ xlabel('Estimated PD'); ylabel('True PD');
 identityLine(gca); xlim([MM(1) MM(2)]); ylim([MM(1) MM(2)]);
 axis image; axis square
 legend('init sum of sqr','init rand','init T1 ','Location','NorthWest')
-
 
 return
 

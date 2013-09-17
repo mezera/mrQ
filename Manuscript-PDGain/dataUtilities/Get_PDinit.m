@@ -1,10 +1,10 @@
 function[ PDinit,g0] =Get_PDinit(T1reg,R1,Guesstype,M0,pBasis)
-%PDinit=Get_PDinit(lambda1,T1,Guesstype)
+%[ PDinit,g0] =Get_PDinit(T1reg,R1,Guesstype,M0,pBasis)
 % estimate a PD from the data
 %  Guesstype=1 or T1reg=0 use the sum of sqr (or M0) as PD
 %  Guesstype=2 randum start
-% Guesstype=3 start or T1reg>0  with the PD T1 relation as describe in the literature.
-%
+% Guesstype=3 start or T1reg>0  with the PD R1 relation as describe in the literature.
+% Guesstype=4 use ridge regration Bilinear fit to start.
 % AM  & BW VISTASOFT Team, 2013
 
 if notDefined('Guesstype')
@@ -23,6 +23,18 @@ if (T1reg>0 || Guesstype==3)% T1 PD linear relations
     
           PDinit=1./(R1*0.42+0.95); %this is the teortical T1 PD relationship see reference at Mezer et. al 2013
 end
+
+if (Guesstype==4)
+    %ridge regration
+   maxLoops=200;
+ sCriterion = 1e-3;  % Stopping criterion
+ lambda=1;
+ BLFit_RidgeReg = pdBiLinearFit(M0, pBasis, ...
+                 lambda, maxLoops, sCriterion, [], 0 );
+PDinit=BLFit_RidgeReg.PD;
+end
+
+
 
 %guess the g0
 

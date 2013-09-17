@@ -25,20 +25,10 @@ BasisFlag    = 'qr';    % Which matrix decomposition for fitting.
 phantomP = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, ...
     noiseFloor, sampleLocation, printImages, smoothkernel, BasisFlag);
 
-boxSize = repmat(phantomP.rSize,1,nDims);
 
 %% Simulate PD 
-[X,Y, Z] = meshgrid(-nSamples:nSamples,-nSamples:nSamples, -nSamples:nSamples);
-R  = sqrt(X.^2 + Y.^2 + Z.^2);
 
-% R is the distance from the center.  We make a rectified sinusoid from the
-% center to the edge.  We set all the NaN values to 1.  We then take the
-% sixth root to squeeze the dynamic range to be reasonable.
-PD = sin(R)./R; 
-PD(isnan(PD) )= 1;
-PD = abs(PD);
-PD = PD .^ (1/6);
-% sqrt(sqrt(sqrt(PD)));
+[PD, R1]=mrQ_simulate_PD('6',phantomP.nVoxels);
 
 %% Simulate coil gain using the poylnomial fits to the phantom data
 % These are typical coil functions
@@ -101,9 +91,93 @@ lambda = [1e4 5e3 1e3 5e2 1e2 5e1 1e1 5e0 1e0 5e-1 1e-1 0];
 % Fit Bilinear loop
 % The bilinear search is very slow. many many iteration are needed
 %
- BLFit_RidgeReg = pdBiLinearFit(MR_Sim.M0S, phantomP.pBasis, ...
-                 1, maxLoops, sCriterion, [], 1 ,GainPolyPar,PD(:));
+%  BLFit_RidgeReg = pdBiLinearFit(MR_Sim.M0S, phantomP.pBasis, ...
+%                  1, maxLoops, sCriterion, [], 1 ,GainPolyPar,PD(:));
 %
-[X_valdationErr,   gEstT, resnorm, FitT, useX, kFold ]=pdX_valdationLoop_RidgeReg( lambda,kFold,MR_Sim.M0SN,phantomP.pBasis,GainPolyPar,maxLoops,sCriterion)
+[X_valdationErr,  BLFit_RidgeReg , FitT, useX, kFold ]=pdX_valdationLoop_RidgeReg( lambda,kFold,MR_Sim.M0SN,phantomP.pBasis,GainPolyPar,maxLoops,sCriterion);
+ mrvNewGraphWin;semilogy(lambda,X_valdationErr(1,:),'*-'); xlabel('lambda');ylabel('X-V error');
+ 
+ % reidge regretion is not X validate
+%%
+Rmatrix(1:phantomP.nVoxels,1) = 1;    
+% Sometimes it is single, when from NIFTI. 
+Rmatrix(:,2) = double(MR_Sim.R1Fit);
+
+% Loop over regularization weights and calculate the X-validation error
+[X_valdationErr,   gEstT, resnorm, FitT, useX, kFold ] = ...
+    pdX_valdationLoop_2(lambda,kFold,MR_Sim.M0SN,phantomP.pBasis,Rmatrix,[],[],[]);
+
+% Find the lambda that best X-validates (minimal RMSE error)
+BestReg = find(X_valdationErr(2,:) == min(X_valdationErr(2,:))) 
+
+% semilogy(lambda,X_valdationErr(2,:),'*-'); xlabel('lambda');ylabel('CV error'); 
+% X_valdationErr(2,:)./min(X_valdationErr(2,:))
+
+% Use the best lambda and fit the full data set
+[NL_T1reg.PD,~,NL_T1reg.G,NL_T1reg.g, NL_T1reg.resnorm,NL_T1reg.exitflag ] = ...
+    pdCoilSearch_T1reg(lambda(BestReg),MR_Sim.M0SN,phantomP.pBasis, ...
+    Rmatrix, gEstT(:,:,1,BestReg));
 
 
+
+
+ %% yet ridge regretion is much more accorate then with out it
+%
+%with regularization
+ BLFit_RidgeReg = pdBiLinearFit(MR_Sim.M0S, phantomP.pBasis, ...
+                  1, maxLoops, sCriterion, [], 1 ,GainPolyPar,PD(:));
+%with out            
+maxLoops=1000;
+ BLFit_NoRidgeReg = pdBiLinearFit(MR_Sim.M0S, phantomP.pBasis, ...
+                  0, maxLoops, sCriterion, [], 1 ,GainPolyPar,PD(:));
+
+              
+       %%       sclae
+       %ridge
+scale     = mean(PD(:)./BLFit_RidgeReg.PD(:));
+ PD_ridgre       =BLFit_RidgeReg.PD(:)*scale;
+ 
+ scale     = mean(PD(:)./BLFit_NoRidgeReg.PD(:));
+         PD_noReg       =BLFit_NoRidgeReg.PD(:)*scale;
+
+scale     = mean(PD(:)./NL_T1reg.PD(:));
+         PD_T1ref       =NL_T1reg.PD(:)*scale;
+ %%
+ mrvNewGraphWin
+        plot(PD(:),PD_ridgre(:),'.')
+       
+        
+        hold on
+                    plot(PD(:),PD_T1ref(:),'.k')
+
+        plot(PD(:),PD_noReg(:),'.r')
+         identityLine(gca);
+axis image; axis square
+legend('PD estimate Ridge','PD estimate with T1 reg','PD estimate without Reg','Location','North')
+
+   %% ridge reg have the best accuraciy with T1 reg 
+   
+% ridge reg
+    CV=(calccod(PD_ridgre(:),PD(:))/100).^2
+    % no reg
+    CV=(calccod(PD_noReg(:),PD(:))/100).^2
+    % T1 reg
+    CV=(calccod(PD_T1ref(:),PD(:))/100).^2
+% T1 reg is also very good. T1 the regulaizer is also noise. that might be why it have a bit more noise then T1 reg.
+% note that the error is bigger when the M0 PD fit is with high unsertenty
+% (low signal) like in the CSF. 
+    %% both no reg and ridge ref have  svery close to it.olotion with bias in space. T1 reg is free of that.
+    boxSize = repmat(phantomP.rSize,1,nDims);
+
+    PD_ridgre=reshape(PD_ridgre,boxSize);
+    PD_noReg=reshape(PD_noReg,boxSize);
+    PD_T1ref=reshape(PD_T1ref,boxSize);
+
+        % with  regularization end up with error in space (in the shape of
+        % PD)
+    showMontage((PD_ridgre-PD)./PD); titile('PD pracent error ridge regretion')
+    
+    % no regularization end up with error in space (like a coil function)
+        showMontage((PD_noReg-PD)./PD);titile('PD pracent error bilinear no regretion')
+% no regularization end up with error in space (like a coil function)
+        showMontage((PD_T1ref-PD)./PD);titile('PD pracent error T1 regretion')

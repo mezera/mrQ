@@ -1,4 +1,4 @@
-function  [X_valdationErr,   gEstT, resnorm, FitT, useX, kFold ]=pdX_valdationLoop_RidgeReg( lambda1,kFold,M0,pBasis,GainPolyPar,maxLoops,sCriterion)
+function  [X_valdationErr,   BLFit_RidgeReg, FitT, useX, kFold ]=pdX_valdationLoop_RidgeReg( lambda1,kFold,M0,pBasis,GainPolyPar,maxLoops,sCriterion)
 % Fit M0 for coil gain and PD with PD with different weight (lambda1) for PD
 % ridge by T1 (linear relations).
 %
@@ -20,8 +20,7 @@ nPolyCoef=size(pBasis,2);
 %% intilaized X-Validation and fits
 
 % separate the data to Kfold fit and X-Validation part
-[ useX, kFold] = getKfooldCVvoxel_full(nVoxels,Ncoils,kFold);
-
+[holdX useX] =getKfooldCVvoxel(nVoxels,kFold);
 % argumante to save the X-Validation results
 X_valdationErrKfold = zeros(2,kFold);
 X_valdationErr  = zeros(2,length(lambda1));
@@ -34,19 +33,17 @@ for ii=1:length(lambda1),
     % Loop over the kFold Cross Validation
     for jj=1:kFold
         %select the position to estimate the function
-        FitMask=zeros(size(M0));FitMask(find(useX~=jj))=1;FitMask=logical(FitMask);
-        
+       
         % Searching on the gain parameters, G.
-         BLFit_RidgeReg(jj,ii) = pdBiLinearFit(double(M0), pBasis, ...
+        mask=logical(holdX(:,jj));
+         BLFit_RidgeReg(jj,ii) = pdBiLinearFit(double(M0(mask,:)), pBasis(mask,:), ...
                  1, maxLoops, sCriterion, [], 0 ,GainPolyPar);
       
-     
+           
         %%  calculate X-Validation error:
-        
-        Xmask=zeros(size(M0));Xmask(find(useX==jj))=1;Xmask=logical(Xmask); % Xmask are the hold position form X-Validation.
-        
+         
                 %Check if the coil coefficent can explain the hold data
-        [FitT(jj,ii).err_X, FitT(jj,ii).err_F] = X_validation_errHoldVoxel_full(gEstT(:,:,jj,ii),M0,pBasis,nVoxels,Ncoils,FitMask,Xmask);
+        [FitT(jj,ii).err_X] = X_validation_errHoldVoxel_Ridge(BLFit_RidgeReg(jj,ii).g ,M0,pBasis,nVoxels,Ncoils,useX(:,jj));
         
         % Two posible error function. we don't find a big different between
         % them

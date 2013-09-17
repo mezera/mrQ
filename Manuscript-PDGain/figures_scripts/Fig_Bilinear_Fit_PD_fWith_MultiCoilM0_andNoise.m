@@ -72,7 +72,7 @@ noiseLevel = 2;   % ?? Units???
 % The bilinear search is very slow. many many iteration are needed
 %
 % BLFit_N0Noise = pdBiLinearFit(MR_Sim.M0S, phantomP.pBasis, ...
-                 [], maxLoops, sCriterion, [], 1 ,GainPolyPar,PD(:));
+            %     [], maxLoops, sCriterion, [], 1 ,GainPolyPar,PD(:));
 % save('/home/avivm/Documents/PD_article/figures/BL_NONoise','BLFit_N0Noise')
 %
 %% With Noise

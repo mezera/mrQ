@@ -179,7 +179,7 @@ BestReg = find(X_valdationErr(2,:) == min(X_valdationErr(2,:)))
 
 % Use the best lambda and fit the full data set
 
-[NL_T1reg_In3.PD,~,NL_T1reg_In3.G,NL_T1reg_In3.g, NL_T1reg_In3.resnorm,NL_T1reg_In3.exitflag ] = ...
+[NL_T1reg_In.PD,~,NL_T1reg_In.G,NL_T1reg_In.g, NL_T1reg_In.resnorm,NL_T1reg_In.exitflag ] = ...
     pdCoilSearch_T1reg(lambda(BestReg),MR_Sim.M0SN,phantomP.pBasis, ...
     Rmatrix, gEstT(:,:,1,BestReg));
 
@@ -187,22 +187,43 @@ BestReg = find(X_valdationErr(2,:) == min(X_valdationErr(2,:)))
 % plot(PD(:)./mean(PD(:)), NL_T1reg.PD(:)./mean(NL_T1reg.PD(:)),'*')
 
 
+%% intialized by the sum ridge 
+ [PDinit, g0]=Get_PDinit(0,[],4,MR_Sim.M0SN,phantomP.pBasis);
+    %  PDinit = sqrt(sum(M0.^2,2));    % Sum of squares
+    % get initial guess
 
+% Loop over regularization weights and calculate the X-validation error
+
+[X_valdationErr,   gEstT, resnorm, FitT, useX, kFold ] = ...
+    pdX_valdationLoop_2(lambda,kFold,MR_Sim.M0SN,phantomP.pBasis,Rmatrix,g0,[],[]);
+
+% Find the lambda that best X-validates (minimal RMSE error)
+BestReg = find(X_valdationErr(2,:) == min(X_valdationErr(2,:))) 
+
+% semilogy(lambda,X_valdationErr(2,:),'*-'); xlabel('lambda');ylabel('CV error'); 
+% X_valdationErr(2,:)./min(X_valdationErr(2,:))
+
+% Use the best lambda and fit the full data set
+[NL_T1reg_In3.PD,~,NL_T1reg_In3.G,NL_T1reg_In3.g, NL_T1reg_In3.resnorm,NL_T1reg_In3.exitflag ] = ...
+    pdCoilSearch_T1reg(lambda(BestReg),MR_Sim.M0SN,phantomP.pBasis, ...
+    Rmatrix, gEstT(:,:,1,BestReg));
 %%  reshape and scale the PD fits
+
+% PD with T1 reg  init: T1 defult
+PD_T1reg_In  = reshape(NL_T1reg_In.PD, boxSize);
+scale     = mean(PD(:)./PD_T1reg_In(:));
+PD_T1reg_In  = PD_T1reg_In.*scale;
+
 
 % PD with T1 reg init: sum of sqr 
 PD_T1reg_In1  = reshape(NL_T1reg_In1.PD, boxSize);
-%scale     = PD(1,1,1)/PD_T1reg(1,1,1);
 scale     = mean(PD(:)./PD_T1reg_In1(:));
-
 PD_T1reg_In1  = PD_T1reg_In1.*scale;
 
 
 % PD with T1 reg  init: random
 PD_T1reg_In2  = reshape(NL_T1reg_In2.PD, boxSize);
-%scale     = PD(1,1,1)/PD_T1reg(1,1,1);
 scale     = mean(PD(:)./PD_T1reg_In2(:));
-
 PD_T1reg_In2  = PD_T1reg_In2.*scale;
 
 %for visualization clip to of to 100% error
@@ -210,15 +231,10 @@ PD_T1reg_In2(PD_T1reg_In2<0)=0;
 PD_T1reg_In2(PD_T1reg_In2>2)=2;
 
 
-
-% PD with T1 reg  init: T1 defult
+% PD with T1 reg init: sum of sqr 
 PD_T1reg_In3  = reshape(NL_T1reg_In3.PD, boxSize);
-%scale     = PD(1,1,1)/PD_T1reg(1,1,1);
 scale     = mean(PD(:)./PD_T1reg_In3(:));
-
-
 PD_T1reg_In3  = PD_T1reg_In3.*scale;
-% PD with out T1 reg
 
 %%  make the figure
 
@@ -229,10 +245,12 @@ hold on
 plot(PD_T1reg_In1(:),PD(:),'o' ,'MarkerSize',10,'MarkerFaceColor','b')
 plot(PD_T1reg_In2(:),PD(:),'or','MarkerSize',10,'MarkerFaceColor','r')
 plot(PD_T1reg_In3(:),PD(:),'ok','MarkerSize',10,'MarkerFaceColor','k')
+plot(PD_T1reg_In(:),PD(:),'ok','MarkerSize',10,'MarkerFaceColor','g')
+
 xlabel('Estimated PD'); ylabel('True PD');
 identityLine(gca); xlim([MM(1) MM(2)]); ylim([MM(1) MM(2)]);
 axis image; axis square
-legend('init sum of sqr','init rand','init T1 ','Location','NorthWest')
+legend('init sum of sqr','init rand','init ridge','init T1 ','Location','NorthWest')
 
 
 return

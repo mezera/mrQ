@@ -5,34 +5,18 @@ function [PD, R1]=mrQ_simulate_PD(PDtype,nVoxels)
 % PDtype type name
 %nVoxels number of voxels
 PD=[]; R1=[];
-eSize = round(nVoxels^.333);
-cPos = round(eSize/2);
 
+eSize = round(nVoxels^.333);
+
+cPos = round(eSize/2);
+nSamples=(eSize-1)/2;
 PDtype = mrvParamFormat(PDtype);
 
 switch PDtype
-    case {'phantom'}
+    case {'phantom' '0'}
         PD = ones(nVoxels,1);
         R1=PD* 1.75;
         R1=R1./1000;
-    case {'singlepoint'}
-        PD = 0.5*ones(nVoxels,1);
-        PD(sub2ind([eSize,eSize,eSize],cPos,cPos,cPos)) = 1;
-        % showMontage(reshape(PD,eSize,eSize,eSize));
-    case {'smallregion'}
-        PD = 0.5*ones(nVoxels,1);
-        if eSize<=3
-            [X,Y,Z]=meshgrid(cPos,cPos-1:cPos+1,cPos);
-        else
-            [X,Y,Z]=meshgrid(cPos-1:cPos+1,cPos-1:cPos+1, cPos-1:cPos+1);
-            
-        end
-        PD(sub2ind([eSize,eSize,eSize],X(:),Y(:),Z(:))) = 1;
-    case {'linearslope'}
-        PD = zeros(eSize,eSize,eSize);
-        for ii=1:eSize
-            PD(:,:,ii) = 0.5*ii/eSize;
-        end
         PD = PD(:);
     case {'dots', '1'}  %pick point
         PD = ones(nVoxels,1);
@@ -102,6 +86,38 @@ switch PDtype
         PD = PD(:);
         R1=R1(:)./1000;
         
+    case {'tissue3', '6'}
+        [X,Y, Z] = meshgrid(-nSamples:nSamples,-nSamples:nSamples, -nSamples:nSamples);
+        R  = sqrt(X.^2 + Y.^2 + Z.^2);
+        
+        % R is the distance from the center.  We make a rectified sinusoid from the
+        % center to the edge.  We set all the NaN values to 1.  We then take the
+        % sixth root to squeeze the dynamic range to be reasonable.
+        PD = sin(R)./R;
+        PD(isnan(PD) )= 1;
+        PD = abs(PD);
+        PD = PD .^ (1/6);
+        
+    case {'singlepoint','7'}
+        PD = 0.5*ones(nVoxels,1);
+        PD(sub2ind([eSize,eSize,eSize],cPos,cPos,cPos)) = 1;
+        % showMontage(reshape(PD,eSize,eSize,eSize));
+    case {'smallregion','8'}
+        PD = 0.5*ones(nVoxels,1);
+        if eSize<=3
+            [X,Y,Z]=meshgrid(cPos,cPos-1:cPos+1,cPos);
+        else
+            [X,Y,Z]=meshgrid(cPos-1:cPos+1,cPos-1:cPos+1, cPos-1:cPos+1);
+            
+        end
+        PD(sub2ind([eSize,eSize,eSize],X(:),Y(:),Z(:))) = 1;
+    case {'linearslope','9'}
+        PD = zeros(eSize,eSize,eSize);
+        for ii=1:eSize
+            PD(:,:,ii) = 0.5*ii/eSize;
+        end
+        
+        
     otherwise
         error('PDtype %d not built',PDtype);
 end
@@ -111,7 +127,6 @@ if (notDefined('R1') || isempty(R1))
     R1 = (2.5./PD) - 2.26;
     R1=R1./1000;
 end
-
 
 
 end

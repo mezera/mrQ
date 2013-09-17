@@ -1,5 +1,5 @@
 function err = errFitRidgeNestBiLinear(g,M0,pBasis,nVoxels,nCoils,W)
-%Error function for bilinear coil gain estimate 
+%Error function for bilinear coil gain estimate for fminsearch
 %
 %  err = errFitRidgeNestBiLinear(g,M0,pBasis,nVoxels,nCoils,,W)
 %
@@ -37,10 +37,10 @@ PD = PD ./ PD(1);
 M0P = G.*repmat( PD,1,nCoils);
 
 %  the regularization term
-reg= W.*sqrt((g).^2);
+reg=sum( W(:).*(g(:).^2));
 %The difference between measured and predicted term
-err = M0 - M0P ;
+SSE = sum((M0(:) - M0P(:)).^2) ;
 % join the two error terms
-err=[err(:)'  reg(:)'];
+err=SSE + reg;
 
 end

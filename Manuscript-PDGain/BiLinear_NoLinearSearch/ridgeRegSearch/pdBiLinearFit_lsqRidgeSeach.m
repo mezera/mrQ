@@ -1,4 +1,4 @@
-function solution = pdBiLinearFit_lsqRidgeSeach(M0,pBasis,g0,D,W,options)
+function solution = pdBiLinearFit_lsqRidgeSeach(M0,pBasis,g0,D,W)
 % solution = pdBiLinearFit_lsqSeach(M0,pBasis,PD)
 %
 % This function running an nonlinear solver for the bilinear M0=GPD
@@ -13,14 +13,14 @@ function solution = pdBiLinearFit_lsqRidgeSeach(M0,pBasis,g0,D,W,options)
 % AM/BW Copyright VISTASOFT Team 2013
 
 %% Parameter initialization
-if notDefined('options')
-    options = optimset('Display','iter',...
-        'MaxFunEvals',Inf,...
-        'MaxIter',Inf,...
-        'TolFun', 1e-6,...
-        'TolX', 1e-10,...
-        'Algorithm','levenberg-marquardt');
-end
+% if notDefined('options')
+%     options = optimset('Display','iter',...
+%         'MaxFunEvals',Inf,...
+%         'MaxIter',Inf,...
+%         'TolFun', 1e-6,...
+%         'TolX', 1e-10,...
+%         'Algorithm','levenberg-marquardt');
+% end
 
 nCoils    = size(M0,2);
 nVoxels= size(M0,1);
@@ -31,11 +31,17 @@ nPolyCoef = size(pBasis,2);
 
 
 if notDefined('g0')
+ 
+    PDinit = sqrt(sum(M0.^2,2));
+    PDinit = PDinit./ mean(PDinit);   % There are options - e.g., we could set PD(1) to 1
+
+
+    
     % get initial guess
     G  = zeros(nVoxels,nCoils);
 g0 = zeros(nPolyCoef,nCoils);
 mask1 = ~isnan(PDinit);   % These are the places we use.
-    for ii=1:Ncoils
+    for ii=1:nCoils
         G(:,ii)  = M0(mask1,ii) ./ PDinit(mask1);         % Raw estimate
         g0(:,ii) = pBasis(mask1,:) \ G(mask1,ii);  % Polynomial approximation
     end
@@ -57,15 +63,21 @@ end
 
 
 %% Solve the problen
-[g, resnorm,dd1,exitflag] = ...
-    lsqnonlin(@(par) errFitRidgeNestBiLinear(par,M0,pBasis,nVoxels,nCoils,D), ...
-             double(g0),[],[],options);
+% [g, resnorm,dd1,exitflag] = ...
+%     lsqnonlin(@(par) errFitRidgeNestBiLinear(par,M0,pBasis,nVoxels,nCoils,D), ...
+%              double(g0),[],[],options);
 
+[g, fval,exitflag] = ...
+    fminsearch(@(par) errFitRidgeNestBiLinear(par,M0,pBasis,nVoxels,nCoils,D), ...
+             double(g0));
+         
+         
+         
 [PD, G] = pdEstimate(M0, pBasis, g);
 solution.g = g;
 solution.PD= PD;
 solution.G = G;
-solution.resnorm  = resnorm;
+solution.fval  = fval;
 solution.exitflag = exitflag;
 
 end

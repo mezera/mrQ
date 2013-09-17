@@ -43,7 +43,9 @@ if notDefined('PD')
     % This is the PD that will be returned if we won't have multi coil
     % information
     PD = sqrt(sum(M0_v.^2,2));
+   % PD = rand(size(M0_v,1),1);   
     PD = PD./ mean(PD);   % There are options - e.g., we could set PD(1) to 1
+
 end
 
 if notDefined('plotFlag'), plotFlag = 0; end

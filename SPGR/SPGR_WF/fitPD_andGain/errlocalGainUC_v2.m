@@ -1,4 +1,4 @@
-function [err]=errlocalGainUC_v2(x,box,Poly,coefdat,use,coils)
+function [err]=errlocalGainUC_v2(x,box,Poly,coefdat,Ncoils)
 %
 %[err]=errlocalGainUC_v2(x,box,Poly,coefdat,use,coils)
 %
@@ -58,7 +58,7 @@ Val = box./Gain;
 
 %%
 %%%the error in fit
-err1=( abs(Val - repmat(mean(Val,2),1,coils)) )./repmat(mean(Val,2),1,coils);
+err1=( abs(Val - repmat(mean(Val,2),1,Ncoils)) )./repmat(mean(Val,2),1,Ncoils);
 %err2=std(err1,[],1);
 
 

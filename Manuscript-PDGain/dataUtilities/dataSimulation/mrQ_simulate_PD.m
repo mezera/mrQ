@@ -45,7 +45,7 @@ switch PDtype
         PD = ones(nVoxels,1);
         PD(1:ceil(nVoxels/10):nVoxels) = 10;
     case {'highfreq', '2'}
-        x = linspace(0,pi,nVoxels*10);
+        x = linspace(0,pi*10,nVoxels);
         PD = sin(x);
     case {'lowfreq', '3'}
         x = linspace(0,pi,nVoxels);

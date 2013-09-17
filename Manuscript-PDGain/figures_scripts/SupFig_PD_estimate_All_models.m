@@ -79,7 +79,7 @@ G = phantomP.pBasis*GainPolyPar;
 % There are several PD spatial types.
 % Type help mrQ_simulate_PD
 [PD, R1] = mrQ_simulate_PD('2',phantomP.nVoxels);
-
+ %showMontage(PD)
 
 %% Simulate MRI SPGR signal with noise
 

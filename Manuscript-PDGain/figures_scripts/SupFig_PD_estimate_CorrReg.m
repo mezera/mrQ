@@ -41,29 +41,12 @@ PD = PD .^ (1/6);
 % These are typical coil functions
 
 % Select a set of coils 
-% Arbitrary choice: coils = [1 3 5 9]; 
-% We can sort coils by minimalcorrelation between the coils to find the best set.
-
-% We use this algorithm to
 nUseCoils = 4;                         % How many coils to use
-c = nchoosek(1:16,nUseCoils);          % All the potential combinations of nCoils
-Cor = ones(nUseCoils,size(c,1))*100;   % Initiate the Cor to max
-for kk=1:size(c,1)             % loop over coils combinations
-    
-    % Correlations between the the measured M0 for each of the coils in
-    % this combination.
-    A = (corrcoef(phantomP.M0_v(:,c(kk,:)))); 
-    
-    % Sum the abs correlation after correcting for number of coils and the
-    % identity correlations
-    Cor(nUseCoils,kk) = sum(sum(abs(triu(A) - eye(nUseCoils,nUseCoils))));
-    
-end
+MaxcoilNum=16;                     %last coil to consider
 
-% Find the minimum correlation (min abs corr give us the set with corr that
-% are closer to zero).  Choose those coils.
-[v, minCor] = min(Cor(nUseCoils,:)); 
-coils       = c(minCor,:);
+% We use this algorithm to select the coils
+coils=mrQ_select_coilsMinCorrelation(nUseCoils,MaxcoilNum,phantomP.M0_v);
+
 
 % Get the poylnomial coeficents for those coils
 GainPolyPar = phantomP.params(:,coils);

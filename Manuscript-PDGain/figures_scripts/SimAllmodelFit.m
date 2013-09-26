@@ -1,3 +1,6 @@
+function [ Err_cor,   Err_ridge, Err_T1reg ,Err_Noreg] =SimAllmodelFit(noiseLevel,sampleLocation,PDmodel) ;   
+% the function simulate the data and estimate the PD with different
+% regularization method. and calculate the goodness of estimation.
 %% Supplementary Figure
 %
 % Compare PD estimation using different types of regression constraints
@@ -28,7 +31,7 @@ nCoils   = 32;     % A whole bunch of coils
 nDims    = 3;      % XYZ
 pOrder   = 2;      % Second order is good for up to 5 samples
 noiseFloor = 500;  % This is the smallest level we consider
-sampleLocation = 3;% Which box
+%sampleLocation = 3;% Which box
 printImages  = false;   % No printing now
 smoothkernel = [];      % Fit to the unsmoothed M0 data
 BasisFlag    = 'qr';    % Which matrix decomposition for fitting.
@@ -41,8 +44,7 @@ phantomP = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, ...
 
 %% Simulate coil gain using the poylnomial fits to the phantom data
 
-
-nUseCoils = 4;                         % How many coils to use
+ nUseCoils = 4;                         % How many coils to use
 MaxcoilNum=16;                     %last coil to consider
 % These are typical coil functions
 % We can sort coils by minimalcorrelation between the coils to find the best set.
@@ -51,8 +53,6 @@ MaxcoilNum=16;                     %last coil to consider
 % are closer to zero).  Choose those coils.
 
 coils=mrQ_select_coilsMinCorrelation(nUseCoils,MaxcoilNum,phantomP.M0_v);
-
-
 
 % Get the poylnomial coeficents for those coils
 GainPolyPar = phantomP.params(:,coils);
@@ -65,15 +65,15 @@ G = phantomP.pBasis*GainPolyPar;
 
 % There are several PD spatial types.
 % Type help mrQ_simulate_PD
-[PD, R1] = mrQ_simulate_PD('2',phantomP.nVoxels);
+[PD, R1] = mrQ_simulate_PD(PDmodel,phantomP.nVoxels);
  %showMontage(PD)
 
 %% Simulate MRI SPGR signal with noise
 
-noiseLevel = 2;   % ?? Units???
+%noiseLevel = 2;   % ?? Units???
 
 % Simulate the M0 and T1 fits of multi SPGR images.
-[MR_Sim] = simSPGRs(G,PD(:),[],R1(:),[],[],noiseLevel,true);
+[MR_Sim] = simSPGRs(G,PD(:),[],R1(:),[],[],noiseLevel,printImages);
 
 % MR_Sim is a structure with multiple fields that include the simulation
 % inputs MR sigunal inputs and the calculations from fitting the signal
@@ -82,9 +82,9 @@ noiseLevel = 2;   % ?? Units???
 %% Initiate fit params
 
 % The nonlinsqr fit with ridge fits
-[PDinit, g0]=Get_PDinit(0,[],4,MR_Sim.M0SN,phantomP.pBasis);
+[PDinit, g0]=Get_PDinit(0,[],1,MR_Sim.M0SN,phantomP.pBasis);
 
-options = optimset('Display','iter',...
+options = optimset('Display','off',...
     'MaxFunEvals',Inf,...
     'MaxIter',Inf,...
     'TolFun', 1e-6,...
@@ -106,28 +106,22 @@ XvalidationMask = logical(MR_Sim.M0SN);
 
 scale     = mean(PD(:)./PD_cor(:));
 PD_cor    = PD_cor(:)*scale;
-PD_cor    = reshape(PD_cor,boxSize);
-CV_cor    = (calccod(PD_cor(:),PD(:))/100).^2
-
-% For visualization clip to of to 100% error
-PD_cor(PD_cor<0)=0;
-PD_cor(PD_cor>2)=2;
+%PD_cor    = reshape(PD_cor,boxSize);
+Err_cor(1)    = (calccod(PD_cor(:),PD(:)));  %R^2
+Err_cor(2)    = 100*mean(abs(PD(:)-PD_cor(:))./(PD(:))); % mean abs err
 
 %% Ridge regularization
 
 maxLoops   = 200;
 sCriterion = 1e-3; 
 BLFit_RidgeReg = pdBiLinearFit(MR_Sim.M0S, phantomP.pBasis, ...
-    1, maxLoops, sCriterion, [], 1 ,GainPolyPar,PD(:));
+    1, maxLoops, sCriterion, [], 0 ,GainPolyPar,PD(:));
 
 scale      = mean(PD(:)./BLFit_RidgeReg.PD(:));
 PD_ridge   = BLFit_RidgeReg.PD(:)*scale;
-PD_ridge   = reshape(PD_ridge,boxSize);
-CV_ridge   = (calccod(PD_ridge(:),PD(:))/100).^2
-
-%for visualization clip to of to 100% error
-PD_ridge(PD_ridge<0) = 0;
-PD_ridge(PD_ridge>2) = 2;
+%PD_ridge  = reshape(PD_ridge,boxSize);
+Err_ridge(1)    = (calccod(PD_ridge(:),PD(:))); %R^2
+Err_ridge(2)    =  100*mean(abs(PD(:)-PD_ridge(:))./(PD(:))); % mean abs err
 
 %% R1 regularization
 kFold   = 2; % X-validate on half the data
@@ -142,59 +136,27 @@ Rmatrix(:,2) = double(MR_Sim.R1Fit);
     pdX_valdationLoop_2(lambda,kFold,MR_Sim.M0SN,phantomP.pBasis,Rmatrix,g0,[],[]);
 
 % Find the lambda that best X-validates (minimal RMSE error)
-BestReg = find(X_valdationErr(2,:) == min(X_valdationErr(2,:)))
+BestReg = find(X_valdationErr(2,:) == min(X_valdationErr(2,:)));
 
 % Use the best lambda and fit the full data set
 [NL_T1reg.PD,~,NL_T1reg.G,NL_T1reg.g, NL_T1reg.resnorm,NL_T1reg.exitflag ] = ...
     pdCoilSearch_T1reg(lambda(BestReg),MR_Sim.M0SN,phantomP.pBasis, ...
-    Rmatrix, gEstT(:,:,1,BestReg));
+    Rmatrix, gEstT(:,:,1,BestReg),[],options);
 
 scale     = mean(PD(:)./NL_T1reg.PD(:));
 PD_T1reg  = NL_T1reg.PD(:)*scale;
-PD_T1reg  = reshape(PD_T1reg,boxSize);
-CV_T1reg  = (calccod(PD_T1reg(:),PD(:))/100).^2
-
-%for visualization clip to of to 100% error
-PD_T1reg(PD_T1reg<0)=0;
-PD_T1reg(PD_T1reg>2)=2;
+%PD_T1reg  = reshape(PD_T1reg,boxSize);
+Err_T1reg(1)    = (calccod(PD_T1reg(:),PD(:))); %R^2
+Err_T1reg(2)    =  100*mean(abs(PD(:)-PD_T1reg(:))./(PD(:))); % mean abs err
 
 %% no regularization
-NL_NoReg  = pdBiLinearFit_lsqSeach(MR_Sim.M0SN,phantomP.pBasis,PDinit);
+NL_NoReg  = pdBiLinearFit_lsqSeach(MR_Sim.M0SN,phantomP.pBasis,PDinit,options);
 scale     = mean(PD(:)./NL_NoReg.PD(:));
 PD_Noreg  = NL_NoReg.PD(:)*scale;
 PD_Noreg  = reshape(PD_Noreg,boxSize);
-CV_Noreg  = (calccod(PD_Noreg(:),PD(:))/100).^2
 
-%for visualization clip to of to 100% error
-PD_Noreg(PD_Noreg<0) = 0;
-PD_Noreg(PD_Noreg>2) = 2;
-%% Plot
-
-%PD_cor; PD_ridge;  PD_T1reg; PD_Noreg;
-mrvNewGraphWin
-hold on
-plot(PD(:),PD_Noreg(:),'.')
-plot(PD(:),PD_cor(:),'.g')
-plot(PD(:),PD_ridge(:),'.r')
-plot(PD(:),PD_T1reg(:),'.k')
-
-identityLine(gca);
-axis image; axis square
-
-legend( ['PD estimate without Reg R2 = ' num2str(CV_Noreg)]...
-    ,['PD estimate corr Reg R2 = ' num2str(CV_cor)]...
-    ,['PD estimate Ridge R2 = ' num2str(CV_ridge)],...
-    ['PD estimate with T1 reg R2 = ' num2str(CV_T1reg)],...
-    'Location','North')
-%%
-
-showMontage((PD_Noreg-PD)./PD);title('PD percent error  no regression')
-
-showMontage((PD_cor-PD)./PD); title('PD percent error corr')
-
-showMontage((PD_ridge-PD)./PD); title('PD percent error ridge regression')
-
-showMontage((PD_T1reg-PD)./PD);title('PD percent error T1 regression')
+Err_Noreg(1)    = (calccod(PD_Noreg(:),PD(:))); %R^2
+Err_Noreg(2)    =  100*mean(abs(PD(:)-PD_Noreg(:))./(PD(:))); % mean abs err
 
 %% Notes
 

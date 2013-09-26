@@ -30,11 +30,8 @@ phantomP = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, ...
 boxSize = repmat(phantomP.rSize,1,nDims);
 
 %% simulate PD
-[X,Y, Z] = meshgrid(-nSamples:nSamples,-nSamples:nSamples, -nSamples:nSamples);
-R  = sqrt(X.^2 + Y.^2 + + Z.^2);
-PD = sin(R)./R;PD(isnan(PD))=1;
-PD = abs(PD);
-PD = sqrt(sqrt(sqrt(PD)));
+[PD, R1] = mrQ_simulate_PD('6',phantomP.nVoxels);
+
 
 %% Simulate coil gain 
 % We use the poylnomial fits to the phantom data a typical coil function

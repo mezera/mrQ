@@ -32,17 +32,9 @@ phantomP = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, ...
 boxSize = repmat(phantomP.rSize,1,nDims);
 
 %% Simulate PD 
-[X,Y, Z] = meshgrid(-nSamples:nSamples,-nSamples:nSamples, -nSamples:nSamples);
-R  = sqrt(X.^2 + Y.^2 + Z.^2);
+[PD, R1] = mrQ_simulate_PD('6',phantomP.nVoxels);
 
-% R is the distance from the center.  We make a rectified sinusoid from the
-% center to the edge.  We set all the NaN values to 1.  We then take the
-% sixth root to squeeze the dynamic range to be reasonable.
-PD = sin(R)./R; 
-PD(isnan(PD) )= 1;
-PD = abs(PD);
-PD = PD .^ (1/6);
-% sqrt(sqrt(sqrt(PD)));
+
 
 %% Simulate coil gain using the poylnomial fits to the phantom data
 % These are typical coil functions

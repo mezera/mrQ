@@ -2,9 +2,9 @@ function [PD, R1]=mrQ_simulate_PD(PDtype,nVoxels)
 % Simulate different volume patterns of PD and R1
 %
 %    mrQ_simulate_PD(PDtype,nVoxels)
-% 
-% Inputs:  
-%  PDtype  - Type of PD structure in the simulation 
+%
+% Inputs:
+%  PDtype  - Type of PD structure in the simulation
 %    0 - Uniform
 %    1 - Dot arrays
 %    2 - High freq
@@ -40,18 +40,20 @@ switch PDtype
         R1 = PD* 1.75;
         R1 = R1./1000;
         PD = PD(:);
-    case {'dots', '1'}  
+    case {'dots', '1'}
         % BROKEN
-        PD = ones(nVoxels,1);
-        PD(1:ceil(nVoxels/10):nVoxels) = 10;
+        PD = ones(nVoxels,1).*0.5;
+        PD(1:ceil(nVoxels/10):nVoxels) = 1;
+        
     case {'highfreq', '2'}
         x = linspace(0,pi*10,nVoxels);
-        PD = sin(x);
+        
+        PD = abs(sin(x))+0.1;
     case {'lowfreq', '3'}
         x = linspace(0,pi,nVoxels);
-        PD = sin(x);
-        disp('Low frequency')
-    case {'tissue1', '4'} 
+        PD = sin(x) +0.1;
+        
+    case {'tissue1', '4'}
         % Tissue properties simulated for gray, white and CSF
         PD = zeros(eSize,eSize,eSize);
         % mask = zeros(eSize,eSize,eSize);
@@ -81,7 +83,7 @@ switch PDtype
         
         PD = PD(:);
         R1 = R1(:)./1000;    % Convert units to milliseconds
-    case {'tissue2', '5'} 
+    case {'tissue2', '5'}
         % Tissue with slight PD slope and deviation in T1-PD relationship
         PD = zeros(eSize,eSize,eSize);
         % mask = zeros(eSize,eSize,eSize);
@@ -148,12 +150,13 @@ switch PDtype
         PD = zeros(eSize,eSize,eSize);
         for ii=1:eSize
             PD(:,:,ii) = 0.5*ii/eSize;
-        end   
+        end
         
     otherwise
         error('PDtype %d not built',PDtype);
 end
-
+PD=PD+1e-6*rand(size(PD)); % we will add a tinny diviation so the PD won't be ever zero.
+PD(:)=(PD(:)./max(PD(:))); % PD should be btween 1:0;
 % Convert to a volume
 PD = reshape(PD,eSize,eSize,eSize);
 

@@ -135,8 +135,9 @@ OutPutSim.flipAngles=flipAngles;
 
 
 %% plot
+if plotFlag
 fprintf('The simulation SNR: %0.4f\n',SNR);
-
+end
 if plotFlag
     mrvNewGraphWin
     subplot(1,2,1)

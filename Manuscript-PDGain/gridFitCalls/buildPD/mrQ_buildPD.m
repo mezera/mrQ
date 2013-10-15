@@ -75,23 +75,24 @@ for ii=1:length(jobindexs);
 end
 
 
-%%
-BoxMaxReg=zeros(length(opt.wh),2);
-for ii=1:length(opt.wh)
-    
-    
-    if GoodBoxs(ii)==1;
-        X_valdationErr=BoxX_valdationErr(:,:,ii);
-        for jj=1:2
-            [v, ind]=sort(   X_valdationErr(jj,:)./min(X_valdationErr(jj,:)));
-            
-            BoxMaxReg(ii,jj)=min(ind( find(v<1.05)));
-        end
-    end
-end
+% such loop alow to take the max regularization with and not the optimal
+%  for ii=1:length(opt.wh) 
+% if GoodBoxs(ii)==1;
+%          X_valdationErr=BoxX_valdationErr(:,:,ii);
+%          for jj=1:2
+%              [v, ind]=sort(   X_valdationErr(jj,:)./min(X_valdationErr(jj,:)));
+%                %           BoxMaxReg(ii,jj)=ind(1);
+% % close up to 5% to the best X-validataion error but bigest in
+% % regularization wieght
+%              BoxMaxReg(ii,jj)=min(ind( find(v<1.05)));
+%          end
+%      end
+%  end
+%  figure;hist(BoxMaxReg(find(GoodBoxs==1),2),100);
+
 BoxesToUse=find(GoodBoxs)';
 
-tmpfile=fullfile(opt.outDir,'Boxtmp');
+%tmpfile=fullfile(opt.outDir,'Boxtmp');
 %save(tmpfile,'BoxesToUse','CoilGains')
 %% get the location and PD information to each box we will use
 

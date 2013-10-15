@@ -65,7 +65,7 @@ G = phantomP.pBasis*GainPolyPar;
 
 % There are several PD spatial types.
 % Type help mrQ_simulate_PD
-[PD, R1] = mrQ_simulate_PD('2',phantomP.nVoxels);
+[PD, R1] = mrQ_simulate_PD('4',phantomP.nVoxels);
  %showMontage(PD)
 
 %% Simulate MRI SPGR signal with noise
@@ -82,7 +82,7 @@ noiseLevel = 2;   % ?? Units???
 %% Initiate fit params
 
 % The nonlinsqr fit with ridge fits
-[PDinit, g0]=Get_PDinit(0,[],4,MR_Sim.M0SN,phantomP.pBasis);
+[PDinit, g0]=Get_PDinit(0,[],6,MR_Sim.M0SN,phantomP.pBasis);
 
 options = optimset('Display','iter',...
     'MaxFunEvals',Inf,...
@@ -118,7 +118,7 @@ PD_cor(PD_cor>2)=2;
 maxLoops   = 200;
 sCriterion = 1e-3; 
 BLFit_RidgeReg = pdBiLinearFit(MR_Sim.M0S, phantomP.pBasis, ...
-    1, maxLoops, sCriterion, [], 1 ,GainPolyPar,PD(:));
+    1, maxLoops, sCriterion, [], 0 ,GainPolyPar,PD(:));
 
 scale      = mean(PD(:)./BLFit_RidgeReg.PD(:));
 PD_ridge   = BLFit_RidgeReg.PD(:)*scale;
@@ -185,7 +185,7 @@ legend( ['PD estimate without Reg R2 = ' num2str(CV_Noreg)]...
     ,['PD estimate corr Reg R2 = ' num2str(CV_cor)]...
     ,['PD estimate Ridge R2 = ' num2str(CV_ridge)],...
     ['PD estimate with T1 reg R2 = ' num2str(CV_T1reg)],...
-    'Location','North')
+    'Location','EastOutside')
 %%
 
 showMontage((PD_Noreg-PD)./PD);title('PD percent error  no regression')

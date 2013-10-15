@@ -39,30 +39,19 @@ boxSize = repmat(phantomP.rSize,1,nDims);
 %% Simulate coil gain using the poylnomial fits to the phantom data
 % These are typical coil functions
 
-% Select a set of coils 
-% Arbitrary choice: coils = [1 3 5 9]; 
-% We can sort coils by minimalcorrelation between the coils to find the best set.
 
-% We use this algorithm to
 nUseCoils = 4;                         % How many coils to use
-c = nchoosek(1:16,nUseCoils);          % All the potential combinations of nCoils
-Cor = ones(nUseCoils,size(c,1))*100;   % Initiate the Cor to max
-for kk=1:size(c,1)             % loop over coils combinations
-    
-    % Correlations between the the measured M0 for each of the coils in
-    % this combination.
-    A = (corrcoef(phantomP.M0_v(:,c(kk,:)))); 
-    
-    % Sum the abs correlation after correcting for number of coils and the
-    % identity correlations
-    Cor(nUseCoils,kk) = sum(sum(abs(triu(A) - eye(nUseCoils,nUseCoils))));
-    
-end
-
+MaxcoilNum=16;                     %last coil to consider
+% These are typical coil functions
+% We can sort coils by minimalcorrelation between the coils to find the best set.
+% We use this algorithm to select the coils
 % Find the minimum correlation (min abs corr give us the set with corr that
 % are closer to zero).  Choose those coils.
-[v, minCor] = min(Cor(nUseCoils,:)); 
-coils       = c(minCor,:);
+
+coils=mrQ_select_coilsMinCorrelation(nUseCoils,MaxcoilNum,phantomP.M0_v);
+
+
+
 
 % Get the poylnomial coeficents for those coils
 GainPolyPar = phantomP.params(:,coils);
@@ -81,12 +70,17 @@ noiseLevel = 2;   % ?? Units???
 % MR_Sim is a structure with multiple fields that include the simulation
 % inputs MR sigunal inputs and the calculations from fitting the signal
 % equation. 
-
+[PDinit, g0]=Get_PDinit(0,[],4,MR_Sim.M0SN,phantomP.pBasis);
 %% Solve the bilinear  problem with no regularization
 
 % NL is a new structure with the coil coefficients (g), PD and coil image
 % (G) of the volume.
 NL   = pdBiLinearFit_lsqSeach(MR_Sim.M0SN,phantomP.pBasis);
+
+
+% No simulated noise
+NL_noNoise = pdBiLinearFit_lsqSeach(MR_Sim.M0S,phantomP.pBasis);
+
 
 %% Solve again, but add a T1 (1/R1) regularization term
 
@@ -135,9 +129,14 @@ BestReg = find(X_valdationErr(2,:) == min(X_valdationErr(2,:)))
 [NL_T1reg.PD,~,NL_T1reg.G,NL_T1reg.g, NL_T1reg.resnorm,NL_T1reg.exitflag ] = ...
     pdCoilSearch_T1reg(lambda(BestReg),MR_Sim.M0SN,phantomP.pBasis, ...
     Rmatrix, gEstT(:,:,1,BestReg));
-
-% mrvNewGraphWin; 
-% plot(PD(:)./mean(PD(:)), NL_T1reg.PD(:)./mean(NL_T1reg.PD(:)),'*')
+%%
+ mrvNewGraphWin; 
+  semilogy(lambda,X_valdationErr(2,:),'ko-', 'MarkerSize',10); xlabel('wieght','FontSize',16);ylabel(' Cross Validation RMSE','FontSize',16); 
+axis image; axis square
+xlim([-4e2 11e3])
+ylim([min(X_valdationErr(2,:))*0.9 max(X_valdationErr(2,:))*1.1])
+grid on
+set(gca,'FontSize',16)
 
 %%  reshape and scale the PD fits
 
@@ -154,6 +153,11 @@ PD_Noreg  = reshape(NL.PD, boxSize);
 scale     = mean(PD(:)./PD_Noreg(:));
 PD_Noreg  = PD_Noreg.*scale;
 
+%5
+PD_NoregNoNoise  = reshape(NL_noNoise.PD, boxSize);
+%scale     = PD(1,1,1)/PD_Noreg(1,1,1);
+scale     = mean(PD(:)./PD_NoregNoNoise(:));
+PD_NoregNoNoise  = PD_NoregNoNoise.*scale;
 %%  make the figure
 
 mrvNewGraphWin;
@@ -168,7 +172,34 @@ identityLine(gca); xlim([MM(1) MM(2)]); ylim([MM(1) MM(2)]);
 axis image; axis square
 legend('PD estimate without T1 reg','PD estimate with T1 reg','Location','NorthWest')
 
+%%
+mrvNewGraphWin
+plot(PD_Noreg(:),PD(:),'ko' ,'MarkerSize',10,'MarkerFaceColor','k')
+xlabel('Estimated PD'); ylabel('True PD');
+identityLine(gca);
+axis image; axis square
+set(gca,'FontSize',16)
 
+
+
+
+%%
+mrvNewGraphWin
+plot(PD_T1reg(:),PD(:),'ko' ,'MarkerSize',10,'MarkerFaceColor','k')
+xlabel('Estimated PD','FontSize',16); ylabel('True PD','FontSize',16);
+identityLine(gca); 
+axis image; axis square
+set(gca,'FontSize',16)
+
+%%
+mrvNewGraphWin
+plot(PD_NoregNoNoise(:),PD(:),'ko' ,'MarkerSize',10,'MarkerFaceColor','k')
+xlabel('Estimated PD','FontSize',16); ylabel('True PD','FontSize',16);
+identityLine(gca); 
+axis image; axis square
+set(gca,'FontSize',16)
+
+%%
 
 CV1=(calccod(PD_Noreg(:),PD(:))/100).^2
 

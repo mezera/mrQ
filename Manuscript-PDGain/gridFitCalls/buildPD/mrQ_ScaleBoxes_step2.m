@@ -1,10 +1,11 @@
 function [Boxes, scaleFactor]=mrQ_ScaleBoxes_step2(Boxes,BoxesToUse,opt)
+%
+%[Boxes, scaleFactor]=mrQ_ScaleBoxes_step2(Boxes,BoxesToUse,opt)
+%
+% this function join the boxes
 
-%mrQ_ScaleBoxes(Boxes,BoxesToUse)
-                kk=0;
+kk=0;
 
-%LinScaleMat=zeros(32*length(Boxes), length(Boxes));
-%LinScaleMat=zeros(length(Boxes), length(Boxes));
 scaleFactor=zeros(length(Boxes), length(Boxes));
 donemask=ones(length(Boxes), length(Boxes));
 donemask(BoxesToUse,BoxesToUse)=0;
@@ -13,9 +14,10 @@ donemask(BoxesToUse,BoxesToUse)=0;
 BM=readFileNifti(opt.BMfile);
 BM=BM.data;
 Boxes(1).loc=[];
+%%
 for ii=BoxesToUse %loop over boxes
-   % tic
-   
+    % tic
+    
     donemask(ii,ii)=1;
     % what are the candidate boxes to be overlap with ii box
     wh=find(donemask(ii,:)==0);
@@ -24,11 +26,6 @@ for ii=BoxesToUse %loop over boxes
     
     %evaluate the box ii location in image space if this was not done before
     if isempty(Boxes(ii).loc)
-           if isempty(Boxes(ii).loc)
-        mask=zeros(size(BM));
-        mask(XX(1):XX(2),YY(1):YY(2),ZZ(1):ZZ(2))=1;
-        Boxes(ii).loc=find(mask);
-    end
         mask=zeros(size(BM));
         mask(XX(1):XX(2),YY(1):YY(2),ZZ(1):ZZ(2))=1;
         Boxes(ii).loc=find(mask);
@@ -51,7 +48,7 @@ for ii=BoxesToUse %loop over boxes
         if     length( overlap_jj)./length( overlap_ii)>0.1
             Mij=median(Boxes(ii).PD(overlap_ii));
             Mji=median(Boxes(jj).PD(overlap_jj));
-
+            
             % the scale correction between the to boxes along the overlap region  boxII= boxJJ*Ratio
             Ratio=median(Boxes(ii).PD(overlap_ii)./ Boxes(jj).PD(overlap_jj));
             
@@ -60,15 +57,15 @@ for ii=BoxesToUse %loop over boxes
             %err is the median of the sqr error between the two box in the overlap
             %region after the scale correction
             %err=median((Boxes(jj).PD(overlap_jj)*Ratio -Boxes(ii).PD(overlap_ii) ./ Boxes(ii).PD(overlap_ii)  ).^2 );
-             %           err=median((Boxes(jj).PD(overlap_jj)*Ratio -Boxes(ii).PD(overlap_ii)).^2 ./ Boxes(ii).PD(overlap_ii)   );
-err= median(abs(Boxes(jj).PD(overlap_jj)*Ratio -Boxes(ii).PD(overlap_ii)) ./ Boxes(ii).PD(overlap_ii)  );
-%                    err=median((Boxes(jj).PD(overlap_jj)*Ratio -Boxes(ii).PD(overlap_ii)   ).^2 );
-%err=median(abs(Boxes(jj).PD(overlap_jj)*Ratio -Boxes(ii).PD(overlap_ii) ./ Boxes(ii).PD(overlap_ii)  ));
-            if err<0.01 && Ratio>0
-               
-%                 if Ratio<0.1 || Ratio>3
-%                                     keyboard;
-%                 end
+            %           err=median((Boxes(jj).PD(overlap_jj)*Ratio -Boxes(ii).PD(overlap_ii)).^2 ./ Boxes(ii).PD(overlap_ii)   );
+            err= median(abs(Boxes(jj).PD(overlap_jj)*Ratio -Boxes(ii).PD(overlap_ii)) ./ Boxes(ii).PD(overlap_ii)  );
+            %                    err=median((Boxes(jj).PD(overlap_jj)*Ratio -Boxes(ii).PD(overlap_ii)   ).^2 );
+            %err=median(abs(Boxes(jj).PD(overlap_jj)*Ratio -Boxes(ii).PD(overlap_ii) ./ Boxes(ii).PD(overlap_ii)  ));
+            if err<0.01 && Ratio>0 
+                
+                %                 if Ratio<0.1 || Ratio>3
+                %                                     keyboard;
+                %                 end
                 % keep the scale Factor between the two box
                 
                 scaleFactor(ii,jj)=1./Ratio;
@@ -80,7 +77,7 @@ err= median(abs(Boxes(jj).PD(overlap_jj)*Ratio -Boxes(ii).PD(overlap_ii)) ./ Box
                 
                 %LinScaleMat(ii,ii)=Mij+LinScaleMat(ii,ii);
                 %LinScaleMat(ii,jj)=-Mji;
-            
+                
             end
             
             

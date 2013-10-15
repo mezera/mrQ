@@ -74,5 +74,6 @@ ylabel('MTV  32ch' ,'FontSize',16);
 xlabel('MTV  8ch' ,'FontSize',16);
 set(gca,'FontSize',16)
 title( [' R^2= ' num2str(CV)])
+grid on
 
 %% END

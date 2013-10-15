@@ -149,11 +149,12 @@ switch PDtype
         % Linear slope of the PD
         PD = zeros(eSize,eSize,eSize);
         for ii=1:eSize
-            PD(:,:,ii) = 0.5*ii/eSize;
+            PD(:,:,ii) = ii/eSize+0.5;
+            PD=PD+0.05*rand(size(PD)); % let make the trend strong but not perfect 
         end
         
     otherwise
-        error('PDtype %d not built',PDtype);
+        error('PDtype %s not built',PDtype);
 end
 PD=PD+1e-6*rand(size(PD)); % we will add a tinny diviation so the PD won't be ever zero.
 PD(:)=(PD(:)./max(PD(:))); % PD should be btween 1:0;

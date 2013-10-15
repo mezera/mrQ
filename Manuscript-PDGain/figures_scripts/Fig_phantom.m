@@ -54,12 +54,13 @@ end
 % Show the fit
 mrvNewGraphWin;
 hold on
-plot(Volume(2:10,1),PE(2:10,1) ,'-k*');
-plot(Volume(2:10,2),PE(2:10,2) ,'-ko');
-plot(Volume(2:10,3),PE(2:10,3) ,'-ks');
+plot(Volume(2:10,1),PE(2:10,1) ,'-k*', 'MarkerSize',10);
+plot(Volume(2:10,2),PE(2:10,2) ,'-ko', 'MarkerSize',10);
+plot(Volume(2:10,3),PE(2:10,3) ,'-ks', 'MarkerSize',10);
 legend('1st order' , '2nd order', '3rd order','Location','NorthWest')
-xlabel(' Volume mm^3');ylabel('percent error');
-set(gca,'xscale','log','yscale','linear')
+xlabel(' Volume mm^3','FontSize',16);ylabel('percent error','FontSize',16);
+set(gca,'xscale','log','yscale','linear','FontSize',16)
+axis image; axis square
 
 % So, we are using 3rd order polynmials with nSamples = 7, which is 1.4 cm
 % on a side.  Goldilocks.

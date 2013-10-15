@@ -31,36 +31,22 @@ phantomP = pdPolyPhantomOrder(nSamples, nCoils, nDims, pOrder, ...
 
 % This function simulates different types of PD and R1 volumes.
 % 6 is a good selection
-[PD, R1] = mrQ_simulate_PD('7',phantomP.nVoxels);
+[PD, R1] = mrQ_simulate_PD('6',phantomP.nVoxels);
 
 %% Simulate coil gain using the poylnomial fits to the phantom data
 
-% These are typical coil functions
 
-% Select a set of coils
-% Arbitrary choice: coils = [1 3 5 9];
-% We can sort coils by minimalcorrelation between the coils to find the best set.
-
-% We use this algorithm to
 nUseCoils = 4;                         % How many coils to use
-c = nchoosek(1:16,nUseCoils);          % All the potential combinations of nCoils
-Cor = ones(nUseCoils,size(c,1))*100;   % Initiate the Cor to max
-for kk=1:size(c,1)             % loop over coils combinations
-    
-    % Correlations between the the measured M0 for each of the coils in
-    % this combination.
-    A = (corrcoef(phantomP.M0_v(:,c(kk,:))));
-    
-    % Sum the abs correlation after correcting for number of coils and the
-    % identity correlations
-    Cor(nUseCoils,kk) = sum(sum(abs(triu(A) - eye(nUseCoils,nUseCoils))));
-    
-end
-
+MaxcoilNum=16;                     %last coil to consider
+% These are typical coil functions
+% We can sort coils by minimalcorrelation between the coils to find the best set.
+% We use this algorithm to select the coils
 % Find the minimum correlation (min abs corr give us the set with corr that
 % are closer to zero).  Choose those coils.
-[v, minCor] = min(Cor(nUseCoils,:));
-coils       = c(minCor,:);
+
+coils=mrQ_select_coilsMinCorrelation(nUseCoils,MaxcoilNum,phantomP.M0_v);
+
+
 
 % Get the poylnomial coeficents for those coils
 GainPolyPar = phantomP.params(:,coils);
@@ -68,6 +54,7 @@ GainPolyPar = phantomP.params(:,coils);
 % Create the coil gains over voxels by multiplying the polynomial
 % coeficents and the polynomial basis.
 G = phantomP.pBasis*GainPolyPar;
+
 
 %% Simulate MRI SPGR signal with noise
 
@@ -80,6 +67,50 @@ noiseLevel = 2;   % ?? Units???
 % inputs MR sigunal inputs and the calculations from fitting the signal
 % equation.
 
+%% Initiate fit params
+
+% The nonlinsqr fit with ridge fits
+[PDinit, g0]=Get_PDinit(0,[],1,MR_Sim.M0SN,phantomP.pBasis);
+
+options = optimset('Display','off',...
+    'MaxFunEvals',Inf,...
+    'MaxIter',200,...
+    'TolFun', 1e-6,...
+    'TolX', 1e-10,...
+    'Algorithm','levenberg-marquardt');
+boxSize = repmat(phantomP.rSize,1,nDims);
+
+%%
+
+maxLoops   = 200;
+sCriterion = 1e-3; 
+BLFit_RidgeReg = pdBiLinearFit(MR_Sim.M0SN, phantomP.pBasis, ...
+    1, maxLoops, sCriterion, [], 0 ,GainPolyPar,PD(:));
+
+scale      = mean(PD(:)./BLFit_RidgeReg.PD(:));
+PD_ridge   = BLFit_RidgeReg.PD(:)*scale;
+PD_ridge  = reshape(PD_ridge,boxSize);
+
+figure;plot(PD(:),PD_ridge(:),'*');identityLine(gca);axis image; axis square
+
+%%
+fit_method_lsq=1;
+BLFit_RidgeFit = pdBiLinearFit_lsqRidgeSeach(MR_Sim.M0SN,phantomP.pBasis,g0,[],1e14,fit_method_lsq,options);
+scale      = mean(PD(:)./BLFit_RidgeFit.PD(:));
+PD_ridgeS   = BLFit_RidgeFit.PD(:)*scale;
+PD_ridgeS  = reshape(PD_ridgeS,boxSize);
+figure;plot(PD(:),PD_ridgeS(:),'*');identityLine(gca);axis image; axis square
+
+%%
+kFold   = 2; % X-validate on half the data
+
+% Possible weights to test.  We will choose the one that cross-validates
+% best.
+lambda = [1e20 1e16 1e14 1e10 1e8  1e4  1e0  0];
+
+% Set the fiiting loop parmeters
+
+[X_valdationErr,   gEstT, resnorm, FitT, useX, kFold ]=pdX_valdationLoop_Ridge_lsq( lambda,kFold,MR_Sim.M0SN,phantomP.pBasis,g0,[],options)
 
 %%
 kFold   = 2; % X-validate on half the data
@@ -102,6 +133,11 @@ sCriterion = 1e-3;  % Stopping criterion
 mrvNewGraphWin;semilogy(lambda,X_valdationErr(1,:),'*-'); xlabel('lambda');ylabel('X-V error');
 
 % reidge regretion is not X validate
+%%
+
+
+
+
 %%
 Rmatrix(1:phantomP.nVoxels,1) = 1;
 % Sometimes it is single, when from NIFTI.

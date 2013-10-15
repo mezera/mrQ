@@ -114,7 +114,7 @@ Err_cor(2)    = 100*mean(abs(PD(:)-PD_cor(:))./(PD(:))); % mean abs err
 
 maxLoops   = 200;
 sCriterion = 1e-3; 
-BLFit_RidgeReg = pdBiLinearFit(MR_Sim.M0S, phantomP.pBasis, ...
+BLFit_RidgeReg = pdBiLinearFit(MR_Sim.M0SN, phantomP.pBasis, ...
     1, maxLoops, sCriterion, [], 0 ,GainPolyPar,PD(:));
 
 scale      = mean(PD(:)./BLFit_RidgeReg.PD(:));

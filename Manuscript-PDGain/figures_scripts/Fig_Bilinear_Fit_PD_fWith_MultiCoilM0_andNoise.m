@@ -102,9 +102,10 @@ title('Simulated PD');
 %% Slice of PD estimate in zero noise case 
 
 PD_NoNoise  = reshape(NL_noNoise.PD, boxSize);
-scale       = PD(1,1,1)/PD_NoNoise(1,1,1);
+scale     = mean(PD(:)./PD_NoNoise(:));
+%scale       = PD(1,1,1)/PD_NoNoise(1,1,1);
 PD_NoNoise  = PD_NoNoise.*scale;
-
+%%
 mrvNewGraphWin
 imagesc(PD_NoNoise(:,:,slice));
 colormap(gray); axis image; axis off
@@ -113,9 +114,10 @@ title('PD estimate with no noise');
 %% Slice of PD estimation with noise form M0
 
 PD_Noise = reshape(NL_Noise.PD,boxSize);
-scale    = PD(1,1,1)/PD_Noise(1,1,1);
+scale     = mean(PD(:)./PD_Noise(:));
+%scale    = PD(1,1,1)/PD_Noise(1,1,1);
 PD_Noise = PD_Noise.*scale;
-
+%%
 mrvNewGraphWin
 imagesc(PD_Noise(:,:,slice));
 colormap(gray); axis image; axis off

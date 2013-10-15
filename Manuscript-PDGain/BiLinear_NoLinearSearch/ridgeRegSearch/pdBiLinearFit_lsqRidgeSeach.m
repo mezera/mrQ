@@ -1,4 +1,4 @@
-function solution = pdBiLinearFit_lsqRidgeSeach(M0,pBasis,g0,D,W)
+function solution = pdBiLinearFit_lsqRidgeSeach(M0,pBasis,g0,D,W,Fit_LSQ,options)
 % solution = pdBiLinearFit_lsqSeach(M0,pBasis,PD)
 %
 % This function running an nonlinear solver for the bilinear M0=GPD
@@ -13,14 +13,19 @@ function solution = pdBiLinearFit_lsqRidgeSeach(M0,pBasis,g0,D,W)
 % AM/BW Copyright VISTASOFT Team 2013
 
 %% Parameter initialization
-% if notDefined('options')
-%     options = optimset('Display','iter',...
-%         'MaxFunEvals',Inf,...
-%         'MaxIter',Inf,...
-%         'TolFun', 1e-6,...
-%         'TolX', 1e-10,...
-%         'Algorithm','levenberg-marquardt');
-% end
+if notDefined('Fit_LSQ')
+    
+Fit_LSQ=1;
+end
+
+if notDefined('options')
+    options = optimset('Display','iter',...
+        'MaxFunEvals',Inf,...
+        'MaxIter',Inf,...
+        'TolFun', 1e-6,...
+        'TolX', 1e-10,...
+        'Algorithm','levenberg-marquardt');
+end
 
 nCoils    = size(M0,2);
 nVoxels= size(M0,1);
@@ -63,21 +68,26 @@ end
 
 
 %% Solve the problen
-% [g, resnorm,dd1,exitflag] = ...
-%     lsqnonlin(@(par) errFitRidgeNestBiLinear(par,M0,pBasis,nVoxels,nCoils,D), ...
-%              double(g0),[],[],options);
 
-[g, fval,exitflag] = ...
-    fminsearch(@(par) errFitRidgeNestBiLinear(par,M0,pBasis,nVoxels,nCoils,D), ...
-             double(g0));
-         
+if Fit_LSQ==1
+[g, resnorm,dd1,exitflag] = ...
+    lsqnonlin(@(par) errFitRidgeNestBiLinear_lsq(par,M0,pBasis,nVoxels,nCoils,D), ...
+             double(g0),[],[],options);
+solution.resnorm  = resnorm;
+
+else
+% [g, fval,exitflag] = ...
+%     fminsearch(@(par) errFitRidgeNestBiLinear(par,M0,pBasis,nVoxels,nCoils,D), ...
+%              double(g0));
+solution.fval  = fval;
+
+end 
          
          
 [PD, G] = pdEstimate(M0, pBasis, g);
 solution.g = g;
 solution.PD= PD;
 solution.G = G;
-solution.fval  = fval;
 solution.exitflag = exitflag;
 
 end

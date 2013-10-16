@@ -1,6 +1,6 @@
-function mrQ_run(mrQfileName,clobber)
-%mrQ_run(RawDir,arrangeRawFlag,SEIR_seriesNumbers,SPGR_seriesNumbers,refIm,sub,freesurfer,channels,useNiftiFlag,alignFlag,complexFlag,useAbs,mmPerVox,interp,skip,coilWeights,clobber)
-% mrQ_run(RawDir,arrangeRawFlag,SEIR_seriesNumbers,SPGR_seriesNumbers,refIm,sub,freesurfer,channels,useNiftiFlag,alignFlag,complexFlag,useAbs,mmPerVox,interp,skip,coilWeights,clobber)
+function mrQ_runPhantom(mrQfileName,clobber)
+%mrQ_runPhantom(RawDir,arrangeRawFlag,SEIR_seriesNumbers,SPGR_seriesNumbers,refIm,sub,freesurfer,channels,useNiftiFlag,alignFlag,complexFlag,useAbs,mmPerVox,interp,skip,coilWeights,clobber)
+% mrQ_runPhantom(RawDir,arrangeRawFlag,SEIR_seriesNumbers,SPGR_seriesNumbers,refIm,sub,freesurfer,channels,useNiftiFlag,alignFlag,complexFlag,useAbs,mmPerVox,interp,skip,coilWeights,clobber)
 %
 % # a batch call to run all the mrQ fits in one click
 % # the batch  run over mrQ functions to claculate the maps (T1,PD TV WF
@@ -209,7 +209,8 @@ end
 if     mrQ.SPGR_init_done==0
     
     %keep track of the variable we use  for detail see inside the function
-    [~, ~, ~,~,~, mrQ]=mrQ_initSPGR(mrQ.SPGR,mrQ.refIm,mrQ.mmPerVox,mrQ.interp,mrQ.skip,[],mrQ);
+    [~, ~, ~,~,~, mrQ] = mrQ_initSPGR_pantom(mrQ.SPGR,mrQ);
+    
     mrQ.SPGR_init_done=1;
     
     save(mrQ.name,'mrQ');
@@ -244,7 +245,8 @@ if  (mrQ.coilWeights==1 && mrQ.coilNum(1)>8  && mrQ.SPGR_coilWeight_done==0)
     
     fprintf('\n Determining optimal coil weighting...\n');
     % Should this return the new structure with the weighting applied?
-    [mrQ.AligndSPGR]=mrQ_multicoilWeighting(mrQ.spgr_initDir,mrQ.SPGR_niiFile,mrQ.SPGR_niiFile_FA,mrQ);
+ mrQ_multicoilWeighting_phantoms(mrQ.spgr_initDir,mrQ.SPGR_niiFile,mrQ.SPGR_niiFile_FA,mrQ.permution)
+
     mrQ.SPGR_coilWeight_done=1;
     fprintf('\n SPGR  coil weighting - done!               \n');
     
@@ -263,7 +265,7 @@ end
 
 %vclover is implamented inside (we canadd rthis to the inputs
 if (mrQ.SPGR_T1fit_done==0);
-    [mrQ.AnalysisInfo]=mrQfit_T1M0_ver2(mrQ);
+    [mrQ.AnalysisInfo]=mrQfit_T1M0_Phantoms(mrQ);
     mrQ.SPGR_T1fit_done=1;
     
     save(mrQ.name,'mrQ');
@@ -293,26 +295,17 @@ end
 
 %% prefer to PD fit 1. get a segmentation (need freesurfer output) 2. get CSF; 3.make a M0 fies for the coils
 
-%. Segmentaion and CSF
+%1. segmentaion
 if isfield(mrQ,'segmentaion');
 else
     mrQ.segmentaion=0;
 end
 
 if mrQ.segmentaion==0;
-   
-   
-       % run Free surfare
-     if (mrQ.runfreesurfer==1)
+    if (mrQ.runfreesurfer==1)
+        
         mrQ=mrQ_Complitfreesurfer(mrQ);
-         
         mrQ.segmentaion=1;
-        % use an uploaded freesurafre nii.zg
-     elseif isfield(mrQ,'freesurfer');
-         [mrQ.AnalysisInfo]=mrQ_CSF(mrQ.spgr_initDir,mrQ.freesurfer,[],mrQ.AnalysisInfo);
-
-              mrQ.segmentaion=1;
-
     else
         % Segment the T1w by FSL (step 1) and get the tissue mask (CSF WM GM) (step 2)
         mrQ=mrQ_segmentT1w2tissue(mrQ);
@@ -321,7 +314,7 @@ if mrQ.segmentaion==0;
     end
     save(mrQ.name,'mrQ');
 end
-%%
+
 %3. coils MO
 if isfield(mrQ,'calM0_done');
 else

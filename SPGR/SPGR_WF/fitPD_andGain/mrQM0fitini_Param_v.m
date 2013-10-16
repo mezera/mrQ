@@ -3,20 +3,20 @@ function [x0,inDat,bm,szB,skip coils_list SDD]= mrQM0fitini_Param_v(opt,fb,M,coi
 %function [x0,inDat,bm,szB,skip coils_list SDD]= mrQM0fitini_Param_v(opt,fb,M,coils,strongbiasLevel)
 %
 % INPUTS:
-%      opt - this is optmization structure that was passed from
-%      fb - ocation of the box in grid space. this is location of the box (this is not x,y,z location in image space but
-%            grid of boxes we made by mashgrid in  mrQ_fitPD_multicoil
-%       M - the multi coils (4D) M0 image
-%       coils - howmany coils in the mesurament
-%       strongbiasLevel - a flag for steep coil gain like in the case of 32
-%       chanels
+% opt - this is optmization structure that was passed from
+% fb - ocation of the box in grid space. this is location of the box (this is not x,y,z location in image space but
+% grid of boxes we made by mashgrid in mrQ_fitPD_multicoil
+% M - the multi coils (4D) M0 image
+% coils - howmany coils in the mesurament
+% strongbiasLevel - a flag for steep coil gain like in the case of 32
+% chanels
 %
 % OUTPUTS:
-% x0     - intial guess for the parameters to fit
-% inDat  -the data to fit
-% bm     - brain mask for this region (box)
-% szB    - size opf the box
-%skip    - if this data need to be skip or not (1 yes)
+% x0 - intial guess for the parameters to fit
+% inDat -the data to fit
+% bm - brain mask for this region (box)
+% szB - size opf the box
+%skip - if this data need to be skip or not (1 yes)
 %coils_list - the coil list we took from the M0
 %SDD - variabilty within the data estimation (not in use)
 
@@ -27,7 +27,7 @@ if(exist(fileFS,'file'))
     mask = readFileNifti(fileFS);
     mask=double(mask.data);
 else
-    disp(['error , can not find thoutcoilse file: '   fileFS]);
+    disp(['error , can not find thoutcoilse file: ' fileFS]);
     error
 end;
 % get the kind of the problem
@@ -62,13 +62,13 @@ mask1=mask(Xx(1):Xx(2),Yy(1):Yy(2),Zz(1):Zz(2));
 bm=opt.brainMask(Xx(1):Xx(2),Yy(1):Yy(2),Zz(1):Zz(2));
 szB=size(bm);
 
-%not in use but 32chancel might havve bliund spot that make every thing harder 
+%not in use but 32chancel might havve bliund spot that make every thing harder
 %Bedge=length(find(bm1))./length(find(bm));
 %Tres=squeeze(max(max(max((M.data(:,:,:,:))))))./60; %the is blind spots and low signal that we like to mask out in each coil
 
 %get the M0 data in the box space
 % use the data or a sqrt version of it (the sqrt is easyer to fit but we might loss
-% details). 
+% details).
 if opt.sqrtF==1
     box(:,:,:,:)=sqrt(double(M.data(Xx(1):Xx(2),Yy(1):Yy(2),Zz(1):Zz(2),:)));
 else
@@ -86,11 +86,11 @@ for i=1:coils;
     tmp1=M.data(:,:,:,i);
     Tres(i)=prctile(tmp1(opt.brainMask),20);
     rate(i)=mean(tmp(bm));
-    if find(tmp(bm)<Tres(i)  &  tmp(bm)>0 & strongbiasLevel==1 )
+    if find(tmp(bm)<Tres(i) & tmp(bm)>0 & strongbiasLevel==1 )
         
-        %   if find(tmp(bm1)<Tres(i)  &  tmp(bm1)>0 & strongbiasLevel==1 & Bedge==1)
-        if  (length(find(tmp(bm)<Tres(i)  &  tmp(bm)>0 ))./length(find(bm))>0.02 )
-            %         if (length(find(tmp(bm1)<Tres(i)  &  tmp(bm1)>0 ))./length(find(bm1))>0.02 )
+        % if find(tmp(bm1)<Tres(i) & tmp(bm1)>0 & strongbiasLevel==1 & Bedge==1)
+        if (length(find(tmp(bm)<Tres(i) & tmp(bm)>0 ))./length(find(bm))>0.02 )
+            % if (length(find(tmp(bm1)<Tres(i) & tmp(bm1)>0 ))./length(find(bm1))>0.02 )
             
             rate(i)=0;
         end;
@@ -126,7 +126,7 @@ for i=1:outcoils,
 end;
 
 
-%cheack that we still have voxel to work with 
+%cheack that we still have voxel to work with
 if (length(find(bm))<200 | outcoils==0) ;
     x0=0;known=0;inDat=0;bm=0;szB=0;skip=1;
     return
@@ -150,11 +150,11 @@ for i=1:outcoils,
     
 % the calculate gain
     G=opt.Poly*params1';
-  %in 3D 
+  %in 3D
     G=reshape(G,size(bm));
     % the cacluate pd
     tmp=box(:,:,:,In(i))./G;
-    %estimation of variabilty of the estimation 
+    %estimation of variabilty of the estimation
    
     stdC(i)=std(tmp(bm));
    
@@ -163,42 +163,41 @@ for i=1:outcoils,
         %this is bad initial values better fit with out it
                 posible(i)=0;
     end
-%    the intial estimation
+% the intial estimation
     x0(i,:)=params1;
 end;
 
-% let check if the free surfarer can help us fit a better bias 
+% let check if the free surfarer can help us fit a better bias
 %each tissue in the box
 ti(1)=length(find(mask1==1));
 ti(2)=length(find(mask1==2));
 ti(3)=length(find(mask1==3));
 
 most=(find(ti==max(ti))); %the tissue we have most in the box
-%if (ti(most(1))./length(find(bm))>0.03  && (max(ti)>40)); %is tissue mask is exsisted we will intiate the parameters with it
-    if (ti(most(1))./length(find(bm))>0.7  && (max(ti)>400)); %is tissue mask is exsisted we will intiate the parameters with it
-
-%    go over the coils
+if (ti(most(1))./length(find(bm))>0.03 && (max(ti)>40)); %is tissue mask is exsisted we will intiate the parameters with it
+    
+% go over the coils
     for i=1:outcoils,
         %fit poylnomyals
         [params1,gains,rs] = fit3dpolynomialmodel(box(:,:,:,In(i)),mask1==most(1),opt.degrees);
         % the calculate gain
         G=opt.Poly*params1';
-          %in 3D 
+          %in 3D
         G=reshape(G,size(bm));
         
         ff(:,:,:,i)=box(:,:,:,In(i))./G;
         if find(G(bm)<=0), %this is bad initial values better try to fit again with all the voxel
-            %    maskt=bm & logical(box(:,:,:,In(i)));
+            % maskt=bm & logical(box(:,:,:,In(i)));
             [params1,gains,rs] = fit3dpolynomialmodel(box(:,:,:,In(i)),bm,opt.degrees);
             G=opt.Poly*params1';
             G=reshape(G,size(bm));
             ff(:,:,:,i)=box(:,:,:,In(i))./G;
-            if find(G(bm)<=0),       
+            if find(G(bm)<=0),
                 %this is bad initial values better fit with out it
                 posible(i)=0;
             end
         end
-        %    the intial estimation
+        % the intial estimation
         x0(i,:)=params1;
         
     end
@@ -207,13 +206,13 @@ most=(find(ti==max(ti))); %the tissue we have most in the box
 end
 
 
-%make the box brain mask as in the same organization as the output data 
+%make the box brain mask as in the same organization as the output data
 bm=bm(:);
 bm=repmat(bm,[1 outcoils]);
 
 
 
-%% more check of the coils M0 data 
+%% more check of the coils M0 data
 %%
 
 %this is the trechhold for coralation between coils
@@ -228,11 +227,11 @@ else
     cut=0.95;
 end
 
-%1. cheack for M0 coil coralation in the box 
-%  if the input are too corralate we don't won't them this is not adding
+%1. cheack for M0 coil coralation in the box
+% if the input are too corralate we don't won't them this is not adding
 % information but may add biases.
 
-%the coraltion 
+%the coraltion
 coefdat=tril(corrcoef(inDat),-1);
 %loop to find to higly coralated and exclude one of them
 if find(coefdat>cut);
@@ -250,7 +249,7 @@ if find(coefdat>cut);
     
     while find(C1.*C2)
         tt1=[C1(find(C1.*C2)) C2(find(C1.*C2))];
-        tt=sort(unique(tt1),'descend');  tt=tt(tt>0) ;
+        tt=sort(unique(tt1),'descend'); tt=tt(tt>0) ;
         if length(tt)>0
             clear count
             for i=1:length(tt)
@@ -297,7 +296,7 @@ for i=1:outcoils;
 end
 
 %clean the the coil we exclude for the ourput parameters
-% any 
+% any
 if find(posible)
     bm=bm(:,find(posible));
     x0=x0(find(posible),:);
@@ -308,133 +307,3 @@ else
     skip=1;
 end
 
-%% old code
-
-
-
-
-%posible
-%sizSDD=std(inDat,[])
-
-
-% BM=bm(:,1);
-%     for i=1:outcoils,
-%         tmp=box(:,:,:,In(i));
-% tmp=tmp./mean(tmp(mask1==most(1)));
-% tmp(~BM)=0;
-%     box1(:,:,:,i)=tmp;
-%     end
-%
-%          for i=1:outcoils,
-%     showMontage(ff(:,:,:,i));caxis([0.95 1.05]); colormap hot;
-%         end
-%
-% posible=logical(posible);
-% bm=bm(:,posible);
-% x0=x0(posible,:);
-% inDat=inDat(:,posible);
-
-
-
-
-
-%can be a way to sort coil signal and std fit
-%[vv Inn] sort(v(1:outcoils )./ stdC,'descend')
-
-
-%inDat=double(sqrt(box(:,:,:,In(1:numIn))));
-%inNan=NaN(boxS(1),boxS(2),boxS(3),numIn);
-
-%lets clip outlayers
-
-
-
-
-%     Gain = reshape(Poly*params1',size(mask1));
-%     PD=sqrt(box(:,:,:,In(i)))./Gain;
-%     PD(dat<(M.*0.2))=0;
-%   PD(PD>0)=0;
-%   PD(PD<2)=2;
-
-%   [params2,gains,rs] = fit3dpolynomialmodel(sqrt(box(:,:,:,In(i))),maskt,opt.degrees);
-%               G1=opt.Poly*params2';
-%
-%             G1=reshape(G1,size(bm));
-%             ff1(:,:,:,i)=sqrt(box(:,:,:,In(i)))./G1;
-
-
-
-
-
-% mask1_=mask1;
-% box_=box;
-% bm_=bm;
-% ff_=ff;
-% stdC_=stdC;
-% Poly_=opt.Poly;
-% degrees_=opt.degrees
-%
-%
-% opt.degrees=3;
-% bm=bm2;
-% boxS=size(bm);
-% [opt.Poly,str] = constructpolynomialmatrix3d(boxS,find(ones(boxS)),opt.degrees);
-% mask1=mask12;
-% box=box2;clear ff stdC tmp G
-%
-%
-%
-% opt.degrees=3;
-% bm=bm1;
-% boxS=size(bm);
-% [opt.Poly,str] = constructpolynomialmatrix3d(boxS,find(ones(boxS)),opt.degrees);
-% %mask1=mask_;
-% box=box1;clear ff stdC tmp G
-%
-%
-% for i=1:outcoils,
-%     % maskt=bm & logical(box(:,:,:,In(i)));
-%     [params1,gains,rs] = fit3dpolynomialmodel(box(:,:,:,In(i)),bm,opt.degrees);
-%      %   [params1,gains,rs] = fit3dpolynomialmodel(box(:,:,:,In(i)),bm,2);
-%     G=opt.Poly*params1';
-%     %   G=Poly*params1';
-%     G=reshape(G,size(bm));
-%     tmp=box(:,:,:,In(i))./G;
-%    stdC(i)=std(tmp(bm));
-%    %     stdC1(i)=std(tmp(bm));
-%     ff(:,:,:,i)=tmp;
-%     if find(G(bm)<=0), %this is bad initial values better stat with out it
-%         %params1(1:10)=0;
-%         %                              params1(10)=mean(inDat(:,i));
-%         posible(i)=0;
-%     end
-%     %x0(i,:)=params1;
-% end;
-%
-%
-% ti(1)=length(find(mask1==1));
-% ti(2)=length(find(mask1==2));
-% ti(3)=length(find(mask1==3));
-% most=(find(ti==max(ti)));
-% if (ti(most(1))./length(find(bm))>0.03  && (max(ti)>40)); %is tissue mask is exsisted we will intiate the parameters with it
-%
-%     for i=1:outcoils,
-%         [params1,gains,rs] = fit3dpolynomialmodel(box(:,:,:,In(i)),mask1==most(1),opt.degrees);
-%
-%         G=opt.Poly*params1';
-%
-%         G=reshape(G,size(bm));
-%         ff(:,:,:,i)=box(:,:,:,In(i))./G;
-%         if find(G(bm)<=0), %this is bad initial values better try to fit again with all the voxel
-%             %    maskt=bm & logical(box(:,:,:,In(i)));
-%             [params1,gains,rs] = fit3dpolynomialmodel(box(:,:,:,In(i)),bm,opt.degrees);
-%             G=opt.Poly*params1';
-%             G=reshape(G,size(bm));
-%             ff(:,:,:,i)=box(:,:,:,In(i))./G;
-%             if find(G(bm)<=0), %this is bad initial values better stat with out it
-%                 %params1(1:10)=0;
-%                 %params1(10)=mean(inDat(:,i));
-%                 posible(i)=0;
-%             end
-%         end
-%         x0(i,:)=params1;

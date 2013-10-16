@@ -1,4 +1,4 @@
-function [AnalysisInfo]=mrQ_CSF(outDir,freesurfer,T1file)
+function [AnalysisInfo]=mrQ_CSF(outDir,freesurfer,T1file,AnalysisInfo)
 %
 % Create a CSF ROI from the freesurfer segmentaiton
 % 

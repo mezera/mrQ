@@ -101,7 +101,7 @@ else
     d     = dicomLoadAllSeries(loadPath);
     xform = d(1).imToScanXform; % We don't seem to use this anywhere.
     
-    
+
     %to do i think that the siemens and the other nifti need to be used
     %with the genral nifti case inputdata_seir
     if isfield(mrQ,'siemens');
@@ -158,6 +158,12 @@ else
     end
     
 end
+
+% seriesDescription maybe missing so we will add it. otherwise part of code
+% will brack
+    for ii=1:length(d)
+    if isempty(d(ii).seriesDescription); d(ii).seriesDescription='SEIR';end
+    end
 %% Align series in d and deal with complex data
 
 % Align & ~Complex

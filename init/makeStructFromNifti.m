@@ -32,8 +32,8 @@ function [s coilNum] = makeStructFromNifti(niftiFile,multiChannels,struc,permuti
 if ~exist('struc','var')
     struc = [];
 end
-if exist('permution','var') && isempty(permution)
-    permution = 1;
+if ~exist('permution','var') || isempty(permution)
+    permution = 0;
 end
 DD = niftiRead(niftiFile);
 

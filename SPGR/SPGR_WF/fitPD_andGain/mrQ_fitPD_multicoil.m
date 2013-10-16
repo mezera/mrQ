@@ -1,4 +1,4 @@
-function [opt]=mrQ_fitPD_multicoil(outDir,SunGrid,M0cfile,degrees,sqrtF,subName,proclass,clobber)
+function [opt]=mrQ_fitPD_multicoil(outDir,SunGrid,M0cfile,degrees,sqrtF,subName,proclus,clobber)
 %
 % mrQ_fitPD_multicoil(outDir,SunGrid,M0cfile,degrees,sqrtF)
 % # Create the PD from the boxes
@@ -165,9 +165,9 @@ else
 end
 
 opt{1}.numIn = 8; %number of coil we will use to fit (best 8);
-%[opt{1}.Poly,opt{1}.str] = constructpolynomialmatrix3d(boxS,find(ones(boxS)),degrees);
-%opt{1}.lb = ones(opt{1}.numIn,size(opt{1}.Poly,2)).*-inf;
-%opt{1}.ub = ones(opt{1}.numIn,size(opt{1}.Poly,2)).*inf;
+% [opt{1}.Poly,opt{1}.str] = constructpolynomialmatrix3d(boxS,find(ones(boxS)),degrees);
+% opt{1}.lb = ones(opt{1}.numIn,size(opt{1}.Poly,2)).*-inf;
+% opt{1}.ub = ones(opt{1}.numIn,size(opt{1}.Poly,2)).*inf;
 
 
 
@@ -243,7 +243,7 @@ for j=1:length(M0cfile)
         if (~exist(dirname,'dir')),
             mkdir(dirname);
             eval(['!rm -f ~/sgeoutput/*' sgename '*'])
-            if proclass==1
+            if proclus==1
                 sgerun2('FitM0_sanGrid_v2(opt,jumpindex,jobindex);',sgename ,1,1:ceil(length(opt{1}.wh)/jumpindex),[],[],8000); 
             else
                 sgerun('FitM0_sanGrid_v2(opt,jumpindex,jobindex);',sgename,1,1:ceil(length(opt{1}.wh)/jumpindex),[],[],8000);
@@ -272,7 +272,7 @@ for j=1:length(M0cfile)
                 
                 if length(find(reval)) > 0
                     eval(['!rm -f ~/sgeoutput/*' sgename '*'])
-                    if proclass==1
+                    if proclus==1
                         for kk=1:length(reval)
                         sgerun2('FitM0_sanGrid_v2(opt,jumpindex,jobindex);',[sgename num2str(kk)],1,reval(kk),[],[],3000);
                         %sgerun2('FitM0_sanGrid_v2(opt,jumpindex,jobindex);',[sgename 'redo'],1,reval,[],[],8000);
@@ -291,7 +291,7 @@ for j=1:length(M0cfile)
                 cd (t);
                 eval(['!rm -f ~/sgeoutput/*' sgename '*'])
                 mkdir(dirname);
-                if proclass==1
+                if proclus==1
                     sgerun2('FitM0_sanGrid_v2(opt,jumpindex,jobindex);',sgename,1,1:ceil(length(opt{1}.wh)/jumpindex),[],[],8000);
                 else
                     sgerun('FitM0_sanGrid_v2(opt,jumpindex,jobindex);',sgename,1,1:ceil(length(opt{1}.wh)/jumpindex),[],[],8000);

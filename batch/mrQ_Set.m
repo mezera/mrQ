@@ -121,6 +121,8 @@ switch(param)
         mrQ.SPGR_PDfit_done=varargin;
     case{ 'spgr_pdbuild_done'}
         mrQ.SPGR_PDBuild_done=varargin;
+    case{ 'freesurfer'}
+        mrQ.freesurfer=varargin;
         
     otherwise
         

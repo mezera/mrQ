@@ -245,7 +245,7 @@ if  (mrQ.coilWeights==1 && mrQ.coilNum(1)>8  && mrQ.SPGR_coilWeight_done==0)
     fprintf('\n Determining optimal coil weighting...\n');
     % Should this return the new structure with the weighting applied?
     [mrQ.AligndSPGR]=mrQ_multicoilWeighting(mrQ.spgr_initDir,mrQ.SPGR_niiFile,mrQ.SPGR_niiFile_FA,mrQ);
-    mrQ.SPGR_coilWeight=1;
+    mrQ.SPGR_coilWeight_done=1;
     fprintf('\n SPGR  coil weighting - done!               \n');
     
 else
@@ -300,10 +300,15 @@ else
 end
 
 if mrQ.segmentaion==0;
-    if (mrQ.runfreesurfer==1)
-        
+    
+    % run Free surfare 
+     if (mrQ.runfreesurfer==1)
         mrQ=mrQ_Complitfreesurfer(mrQ);
+         
         mrQ.segmentaion=1;
+        % use an uploaded  freesurafre nii.zg
+     elseif isfield(mrQ,'freesurfer');
+         [mrQ.AnalysisInfo]=mrQ_CSF(mrQ.spgr_initDir,mrQ.freesurfer,mrQ.AnalysisInfo);
     else
         % Segment the T1w by FSL (step 1) and get the tissue mask (CSF WM GM) (step 2)
         mrQ=mrQ_segmentT1w2tissue(mrQ);

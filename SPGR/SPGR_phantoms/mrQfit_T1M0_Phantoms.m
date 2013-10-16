@@ -1,6 +1,7 @@
 function [AnalysisInfo]=mrQfit_T1M0_Phantoms(mrQ,clobber)
 %
-%   mrQfit_T1M0_ver2(dataDir,lsqfit,SEIRepi_Dir,outDir,complexFlag,sub)
+%   [AnalysisInfo]=mrQfit_T1M0_Phantoms(mrQ,clobber)
+%
 %
 % SPGR data with a range of flip angles are re-sampled and the HLF is
 % estimated.
@@ -63,38 +64,25 @@ function [AnalysisInfo]=mrQfit_T1M0_Phantoms(mrQ,clobber)
 % rewrite by AM. June 16 2011
 % rewrite by AM. July 29 2011 %fit for the B1 fitting to be based on local
 % regression
+ %rewrite by AM. Oct 29 2013 %adjust for phantoms
+% regression
 
-%#ok<*FNDSB>
-%#ok<*ASGLU>
-%#ok<*NODEF>
-%#ok<*NASGU>
 %% I. Check INPUTS and set defaults
-if ~isfield(mrQ,'dataDir');
-    mrQ.dataDir = pwd;
-end
-    dataDir=mrQ.dataDir;
 
+if ~isfield(mrQ,'spgr_initDir');
+    mrQ.spgr_initDir = pwd;
+end
+dataDir = mrQ.spgr_initDir;
 
 if ~isfield(mrQ,'lsqfit');
     mrQ.lsqfit = 1;
 end
 lsqfit= mrQ.lsqfit;
 
-if ~isfield(mrQ,'SEIRepi_Dir') && ~isfield(mrQ,'T1SEIRval')
-
-    error('can not fit SEIR epi to spgr the SEIRepi_Dir path is missing')
-end
-
-if  isfield(mrQ,'T1SEIRval')
-SEIRepi_Dir=mrQ.T1SEIRval;
-end
-
-
 if ~isfield(mrQ,'outDir');
-    mrQ.outDir = dataDir;
+    mrQ.outDir = mrQ.spgr_initDir;
 end
-outDir=mrQ.outDir;
-
+outDir = mrQ.outDir;
  
 if ~isfield(mrQ,'complexFlag');
     mrQ.complexFlag = 0;
@@ -166,7 +154,7 @@ AnalysisInfo.outDir             = outDir;
 AnalysisInfo.dataDir            = dataDir;
 AnalysisInfo.complexFlag        = complexFlag;
 AnalysisInfo.lsqfit             = lsqfit;
-AnalysisInfo.SEIRepi_Dir        = SEIRepi_Dir;
+%AnalysisInfo.SEIRepi_Dir        = SEIRepi_Dir;
 AnalysisInfo.T1MOfitdata        = date;
 AnalysisInfo.sub                =sub;
 save(infofile,'AnalysisInfo');
@@ -237,7 +225,6 @@ else
     flipAngles0 = [s(:).flipAngle];
     [tt,M01]    = relaxFitT1(cat(4,s(:).imData),flipAngles0,tr,B1);
     
-    
     if  exist(BMfile,'file')
     
     else
@@ -299,6 +286,16 @@ end;
 %% VII. FIT B1
 %  Required Inputs: SEIRepi_T1  AlignFile
 % we will Align the SPGR and the SEIR by linear Warp using ANTS softwere
+if ~isfield(mrQ,'SEIRepi_Dir') && ~isfield(mrQ,'T1SEIRval')
+
+    error('can not fit SEIR epi to spgr the SEIRepi_Dir path is missing')
+end
+
+if  isfield(mrQ,'T1SEIRval')
+SEIRepi_Dir=mrQ.T1SEIRval;
+end
+
+
 
 B1file=fullfile(outDir,['B1_Map.nii.gz']);
 AlignFile=fullfile(outDir,['SEIRepiSPGRAlign_best_RB.mat']);

@@ -257,7 +257,24 @@ if process
     % using the dicoms
     if notDefined('s')
     s = dicomLoadAllSeries(dicomDir);
+  
+    % seriesDescription maybe missing so we will add it. otherwise part of code
+    % will brack
+    for ii=1:length(s)
+        if isempty(s(ii).seriesDescription); s(ii).seriesDescription='SPGR';end
+    end
     
+    
+      % seriesDescription maybe missing so we will add it. otherwise part of code
+    % will brack
+    for ii=1:length(s)
+        if isempty(s(ii).sequenceName); s(ii).sequenceName='3DGRASS';end
+    end
+        % mtOffset maybe missing so we will add it. otherwise part of code
+    % will brack
+      for ii=1:length(s)
+        if isempty(s(ii).mtOffset); s(ii).mtOffset=0;end
+    end
     
      % Check which volumes match SPGR sequence name: '3DGRASS' or 'EFGRE3D'
         spgrInds(1:length(s)) = 0;

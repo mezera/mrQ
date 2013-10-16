@@ -1,4 +1,4 @@
-function mrQ_compare2Mpas(T1wfile1_LR,T1wfile2_HR,outPutDir,otherFile2)
+function mrQ_compare2Mpas(T1wfile1_LR,T1wfile2_HR,outPutDir,morefiles2_HR,InsavefileN)
 %
 %function mrQ_compare2Mpas(file1,file2,otherFiles1,otherFile2)
 % this function will register two T1 wighter file (or any other two) of the
@@ -38,26 +38,9 @@ warpParmFile= fullfile(outPutDir,'T1w2_to_T1w1ManParam');
 save(warpParmFile,'ttr','md','sd')
 
 close all
-warpFile= fullfile(outPutDir,'WarpMan_T1w2_to_T1w1.nii.gz');
 
-p=pwd; cd '~avivm/matlab/vistasoft/trunk/kendrick/kendrick/alignvolumedata/private'
+if notDefined('InsavefileN');InsavefileN=[];end
+if notDefined('morefiles2_HR');morefiles2_HR=[];end
 
-
-ok=reslicevolume(0,ttr,'cubic',3,[],1,0,double(im2.data),double(im2.pixdim),size(im2.data),double(im1.data),double(im1.pixdim),[size(im1.data) 1]);
-
-dtiWriteNiftiWrapper(single(ok),im1.qto_xyz,warpFile);
-
-for d=1:length(morefiles2_HR)
-
-    im2=readFileNifti(morefiles2_HR{d});
-     file=dir(morefiles2_HR{d});
-savefileN=fullfile(outPutDir,['WarpMan_' file.name]);
-    ok=reslicevolume(0,ttr,'cubic',3,[],1,0,double(im2.data),double(im2.pixdim),size(im2.data),double(im1.data),double(im1.pixdim),[size(im1.data) 1]);
-dtiWriteNiftiWrapper(single(ok),im1.qto_xyz,savefileN);
-clear ok 
-
-end
-
-cd (p)
-
+mrQ_knkREgisterIm(T1wfile1_LR,T1wfile2_HR,warpParmFile,outPutDir,morefiles2_HR,InsavefileN)
     

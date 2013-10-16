@@ -54,7 +54,7 @@ if setDefault
     mrQ.SEIR_done=0;
     mrQ.complexFlag=0;
     % for comlex data that we not use for now.
-    
+    mrQ.alignFlag=1;
     mrQ.useAbs=0;
     % for comlex data that we like to use as magnitude data use 1
     % A cell array with the SEIR series numbers
@@ -69,7 +69,7 @@ if setDefault
     
     % SPGR alignmen
     mrQ.coilWeights=1;
-    mrQ.alignFlag=1;
+    
     % this to align the SEIR data.we like that unless  if phantom dead or
     % maybe complex (zero)
     mrQ.interp=[];

@@ -1,4 +1,4 @@
-function [s2,mmPerVox,xform] = mrQ_multicoilWeighting_phantoms(datDir,niiFile,flipAngles)
+function [s2] = mrQ_multicoilWeighting_phantoms(datDir,niiFile,flipAngles,permution)
 % 
 % [s2,mmPerVox,xform] = mrQ_multicoilWeighting(datDir,niiFile,flipAngles)
 % 
@@ -93,7 +93,7 @@ for j=1:numel(flipAngles)
     
     % Get the data from the nifti into a struct- (s1) Now the data will be
     % in a structure with separate entries for each channel (-1 flag).
-    s1 = makeStructFromNifti(niiFile{j},-1,[]);
+    s1 = makeStructFromNifti(niiFile{j},-1,[],permution);
     
     
     % The number of channels in the coil (It comes up +1 why?)

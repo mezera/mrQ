@@ -1,4 +1,4 @@
-function mrQ_run_NM(mrQfileName,clobber)
+function mrQ_run(mrQfileName,clobber)
 %mrQ_run(RawDir,arrangeRawFlag,SEIR_seriesNumbers,SPGR_seriesNumbers,refIm,sub,freesurfer,channels,useNiftiFlag,alignFlag,complexFlag,useAbs,mmPerVox,interp,skip,coilWeights,clobber)
 % mrQ_run(RawDir,arrangeRawFlag,SEIR_seriesNumbers,SPGR_seriesNumbers,refIm,sub,freesurfer,channels,useNiftiFlag,alignFlag,complexFlag,useAbs,mmPerVox,interp,skip,coilWeights,clobber)
 %
@@ -300,19 +300,15 @@ else
 end
 
 if mrQ.segmentaion==0;
-   
-   
-       % run Free surfare 
+    
+    % run Free surfare 
      if (mrQ.runfreesurfer==1)
         mrQ=mrQ_Complitfreesurfer(mrQ);
          
         mrQ.segmentaion=1;
         % use an uploaded  freesurafre nii.zg
      elseif isfield(mrQ,'freesurfer');
-         [mrQ.AnalysisInfo]=mrQ_CSF(mrQ.spgr_initDir,mrQ.freesurfer,[],mrQ.AnalysisInfo);
-
-              mrQ.segmentaion=1;
-
+         [mrQ.AnalysisInfo]=mrQ_CSF(mrQ.spgr_initDir,mrQ.freesurfer,mrQ.AnalysisInfo);
     else
         % Segment the T1w by FSL (step 1) and get the tissue mask (CSF WM GM) (step 2)
         mrQ=mrQ_segmentT1w2tissue(mrQ);
@@ -341,9 +337,9 @@ else
     
 end
 
+%
 
-%%  !!
-
+%% fit PD
 
 if isfield(mrQ,'SPGR_PDfit_done');
 else
@@ -353,18 +349,32 @@ end
 
 if mrQ.SPGR_PDfit_done==0;
     fprintf('\n calculate PD from the M0 of all the coil               \n');
- %functions
-    mrQ.PolyDeg=3;
-    %send the a call for the grid to fit PD
-    [mrQ.opt]=mrQ_fitPD_multicoil(mrQ.spgr_initDir,1,[],mrQ.PolyDeg,[],mrQ.sub,mrQ.proclus);
     
-    %check for GE before you move on
+   
+    %send the a call for the grid to fit  PD
+%  [mrQ.opt]=mrQ_fitPD_multicoil(mrQ.spgr_initDir,1,[],mrQ.PolyDeg,[],mrQ.sub,mrQ.proclass);
+ if isfield(mrQ,'opt_logname');
+else
+[mrQ.opt_logname]=mrQ_PD_multicoil_RgXv_GridCall(mrQ.spgr_initDir,mrQ.SunGrid,mrQ.proclus,mrQ.sub,mrQ.PolyDeg);
+save(mrQ.name,'mrQ');
+mrQ_fitM0boxesCall(mrQ.opt_logname,mrQ.SunGrid,mrQ.proclus);
+
+
+ end
+ 
+    if mrQ.SunGrid==1;
+        %check for SGE is done  before you move on (while loop)
+        mrQ.SPGR_PDfit_done=mrQ_Gridcheack(mrQ.opt_logname,mrQ.SunGrid,mrQ.proclus);
+    else
         mrQ.SPGR_PDfit_done=1;
+    end
+    
     save(mrQ.name,'mrQ');
 else
-    fprintf('\n load the claculted PD from the coils M0 \n');
+    fprintf('\n load the claculted PD from the coils  M0               \n');
     
 end
+
 
 
 % bild the grid PD fits
@@ -376,26 +386,24 @@ end
 
 if (mrQ.SPGR_PDBuild_done==0 && mrQ.SPGR_PDfit_done==1)
     fprintf('build the WF map   form PD fit            ');
-  [mrQ.PDcombineInfo]=mrQ_BuildCoilsfitsPD(mrQ.spgr_initDir,mrQ.proclus);
-    mrQ.SPGR_PDfit=1;
+    
+    
+    mrQ.opt=mrQ_buildPD(mrQ.opt_logname);
+    
+    %[mrQ.PDcombineInfo]=mrQ_BuildCoilsfitsPD(mrQ.spgr_initDir,mrQ.proclass);
+    mrQ.SPGR_PDBuild_done=1;
     save(mrQ.name,'mrQ');
 else
-    fprintf('load the WF map ');
+    fprintf('load the WF map               ');
     
 end
-%%  !!
-
-
-
-
-
 
 % calculate VIP TV and SIR
 
 if (mrQ.SPGR_PDBuild_done==1)
     fprintf('\n calculate VIP TV SIR form T1 and WF maps               \n');
     
-    [mrQ.AnalysisInfo] = mrQ_VIP_n(mrQ.spgr_initDir);
+    [mrQ.AnalysisInfo] = mrQ_VIP(mrQ.spgr_initDir);
     save(mrQ.name,'mrQ');
 end
 
@@ -435,6 +443,8 @@ eval(cmd);
 cmd =(['! mv ' mrQ.spgr_initDir '/SIR_map.nii.gz ' mapDir '/.']) ;
 eval(cmd);
 
+cmd =(['! mv ' mrQ.spgr_initDir '/cT1SIR_map.nii.gz ' mapDir '/.']) ;
+eval(cmd);
 
 
 mrQ.mapsDir=mapDir;
@@ -442,6 +452,7 @@ mrQ.maps.T1path=fullfile(mapDir,'T1_map_lsq.nii.gz');
 mrQ.maps.WFpath=fullfile(mapDir,'WF_map.nii.gz');
 mrQ.maps.TVpath=fullfile(mapDir,'TV_map.nii.gz');
 mrQ.maps.SIRpath=fullfile(mapDir,'SIR_map.nii.gz');
+mrQ.maps.cT1SIRpath=fullfile(mapDir,'cT1SIR_map.nii.gz');
 
 %done
 mrQ.AnalysisDone=1;

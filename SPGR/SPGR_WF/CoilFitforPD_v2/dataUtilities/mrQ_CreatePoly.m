@@ -15,7 +15,7 @@ function [pBasis, pTerms, nSamples] = ...
 %          dimensions.   This matrix does NOT include the constant
 % spatialSamples:       Spatial samples
 % pTerms:  String defining the polynomial terms
-%                  with 0.1 time biger for higer orders.
+%
 % Currently implemented for 2nd order, 1D, 2D and 3D
 %
 % Example:

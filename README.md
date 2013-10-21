@@ -73,7 +73,7 @@ GE scanner’s should change the scanner default by editing the a_gzrf0 cv: a_gz
 Use fat suppression. Fat suppression should be ??special-spectral?? to avoid any slice selective imperfections. This is the default with GE scanners when slices are less than 4mm thick.
 
 Data organization
-
+==
 Follow these guidelines when organizing your data:
 
 Data should be in a single directory - “DATA”.
@@ -87,7 +87,7 @@ See http://purl.stanford.edu/qh816pc3429 for an example of directory organizatio
 
 
 Running mrQ 
-
+==
 To run mrQ a mrQ structure needs to be created, set and executed.
 For example see ‘runScript’ in  http://purl.stanford.edu/qh816pc3429
 
@@ -111,13 +111,13 @@ mrQ=mrQ_Set(mrQ,'sub','Examp')
 mrQ_run(mrQ.name).
 
 Versions
-
+==
 Version 1 (v.1) is the code to replicate that was used in Nature medicine mezer at. el. 2013 article: https://github.com/mezera/mrQ/tree/v1.0
 
 We recommend you use the most recent, up to date of mrQ. The most active area of development is in the way the coil sensitivities are calculated. After V.1, later versions do not rely on Freesurfer any longer. An article describing those changes is in preparation. 
 
 Parallel computing
-
+==
 mrQ takes advantage of parallel computing in three steps within analysis.
 To calculate transmit inhomogeneity for each voxel.
 To calculate T1 and M0 to each voxel
@@ -131,7 +131,7 @@ mrQ=mrQ_Set(mrQ,’proclus’,0);
 If parallel computing not available to you please contact us. We are currently working on a general version of the code that does not rely on parallel computations. 
 
 mrQ analysis overview
-
+==
  mrQ will use the mrQ structure you create and save it to the subject’s directory.
  New directories will be created, including directories for data and quantitative fits.
  Images will be register to each other.
@@ -144,7 +144,7 @@ Biophysical model will be applay to calculate VIP and SIR maps.
 
 
 Scanner dicoms types
-
+==
 The mrQ software was built around GE dicoms. It is possible that different vendors have different conventions in saving dicom information (e.g., header information, data ordering).
 
 We are currently working on making the code compatible with different vendor’s dicom conventions. Please let us know if you experience any issues with reading dicoms when using the software. 

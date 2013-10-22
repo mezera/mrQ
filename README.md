@@ -29,7 +29,7 @@ For more information please contact
 - <a href=#versions>Versions</a>
 - <a href=#parallel-computing>Parallel computing</a>
 - <a href=#mrq-analysis-overview>mrQ analysis overview</a>
-- <a href=#scanner-dicom-types>Scanner dicoms types</a>
+- <a href=#scanner-dicom-types>Scanner dicom types</a>
 
 
 

@@ -127,7 +127,7 @@ mrQ takes advantage of parallel computing in three steps within analysis.
 
 mrQ is written to take advantage of the Sun grid parallel computing engine. Each user will need to change the specific calls to the grid according to the parallel computing environment available. One can turn off all those parallel jobs by editing the following setting when creating the mrQ structure:
 
-    mrQ=mrQ_Set(mrQ,sungrid’,0);
+    mrQ=mrQ_Set(mrQ,'sungrid’,0);
     mrQ=mrQ_Set(mrQ,’proclus’,0);
 
 If parallel computing is not available to you please contact us, as we are currently working on a general version of the code that does not rely on parallel computations. 

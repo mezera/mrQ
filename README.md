@@ -35,19 +35,19 @@ CONTENTS
 
 Software Requirements
 ==
-3rd Party software 
-MATLAB  http://www.mathworks.com/products/matlab/ 
-ANTS : http://stnava.github.io/ANTs/ 
-FSL  http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/ 
+Required 3rd party software 
+- MATLAB  http://www.mathworks.com/products/matlab/ 
+- ANTS : http://stnava.github.io/ANTs/ 
+- FSL  http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/ 
 and/or
-FreeSrurfer http://surfer.nmr.mgh.harvard.edu/ 
-Parallel computing environment (e.g., Sun Grid_Engine [Not required, but it will make a big difference for running time]).
+- FreeSrurfer http://surfer.nmr.mgh.harvard.edu/ 
+- Parallel computing environment (e.g., Sun Grid_Engine [Not required, but it will make a big difference for running time]).
 Matlab code
 mrQ makes use of other distributed matlab repositories:
-mrQ - https://github.com/mezera/mrQ
-Vistasoft  - https://github.com/vistalab/vistasoft
-KNKUtils (from Kendrick Kay) - https://github.com/kendrickkay/knkutils
-Joëlle Barral matlab code. A modified version of this code is part of the mrQ code. The original code can be found at: http://www-mrsrl.stanford.edu/~jbarral/t1map.html
+- mrQ - https://github.com/mezera/mrQ
+- Vistasoft  - https://github.com/vistalab/vistasoft
+- KNKUtils (from Kendrick Kay) - https://github.com/kendrickkay/knkutils
+- Joëlle Barral's matlab code. A modified version of this code is part of the mrQ code. The original code can be found at: http://www-mrsrl.stanford.edu/~jbarral/t1map.html
 
 MR Scanning 
 ==

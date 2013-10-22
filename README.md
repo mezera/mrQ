@@ -1,5 +1,4 @@
-mrQ manual
-===
+#mrQ manual#
 mrQ is a software package designed to calculate MR parameters (T1 and PD) using spoiled gradient echo scans (SPGR, FLASH). mrQ allows the evaluation of macromolecule tissue fraction (MTV) and the volume of interaction proton (VIP) as well as the surface interaction ratio (SIR). 
 
 The software and the tissue parameters are describe in the following article
@@ -16,8 +15,8 @@ For more information please contact
 
 
 
-CONTENTS
-====
+##Contents##
+
 
 - <a href=#software-requirements>Software Requirements</a>
     - <a href=#required-3rd-party-software>3rd Party software</a>
@@ -26,7 +25,7 @@ CONTENTS
     - <a href=#spoiled-gradient-echo-scans-spgrflash>Spoiled gradient echo scans (SPGR,FLASH)</a>
     - <a href=#epi-spin-echo-inversion-recovery-scan-b1-mapping>EPI Spin echo inversion recovery scan (B1 mapping)</a>
 - <a href=#data-organization>Data organization</a>
-- <a href=#running-mrq->Running mrQ</a>
+- <a href=#running-mrq>Running mrQ</a>
 - <a href=#versions>Versions</a>
 - <a href=#parallel-computing>Parallel computing</a>
 - <a href=#mrq-analysis-overview>mrQ analysis overview</a>
@@ -34,8 +33,7 @@ CONTENTS
 
 
 
-Software Requirements
-==
+##Software Requirements##
 ####Required 3rd party software ####
 - MATLAB  http://www.mathworks.com/products/matlab/ 
 - ANTS : http://stnava.github.io/ANTs/ 
@@ -44,15 +42,14 @@ and/or
 - FreeSrurfer http://surfer.nmr.mgh.harvard.edu/ 
 - Parallel computing environment (e.g., Sun Grid_Engine [Not required, but it will make a big difference for running time]).
 
-####Matlab code ####
+####Matlab code####
 mrQ makes use of other distributed matlab repositories:
 - mrQ - https://github.com/mezera/mrQ
 - Vistasoft  - https://github.com/vistalab/vistasoft
 - KNKUtils (from Kendrick Kay) - https://github.com/kendrickkay/knkutils
 - Joëlle Barral's matlab code. A modified version of this code is part of the mrQ code. The original code can be found at: http://www-mrsrl.stanford.edu/~jbarral/t1map.html
 
-MR Scanning 
-==
+##MR Scanning##
 ####Spoiled gradient echo scans (SPGR,FLASH)####
 
 1. 2-4 SPGR (not fast SPGR) scans with multiple flip angles recommended (e.g, 4, 10, 20, 30).  
@@ -74,8 +71,7 @@ A modified version of this code is integrated within the mrQ software.
 GE scanner’s should change the scanner default by editing the a_gzrf0 cv: a_gzrf0=0
 3. Use fat suppression. Fat suppression should be special-spectral to avoid any slice-selective imperfections. Note: This is the default with GE scanners when slices are less than 4mm thick.
 
-Data organization
-==
+##Data organization##
 ####Follow these guidelines when organizing your data:####
 
 - Data should be in a single directory - “DATA”.
@@ -88,8 +84,7 @@ Data organization
 See http://purl.stanford.edu/qh816pc3429 for an example of directory organization.
 
 
-Running mrQ 
-==
+##Running mrQ##
 ####To run mrQ a mrQ structure needs to be created, set and executed.####
 For an example of this structure see ‘runScript’ at http://purl.stanford.edu/qh816pc3429
 
@@ -112,14 +107,12 @@ For a given data set where SEIR scans are organized into 4 folders named  '0005'
     % run
     mrQ_run(mrQ.name) 
 
-Versions
-==
+##Versions##
 Version 1 (v.1) is the code to replicate that was used in Nature medicine mezer at. el. 2013 article: https://github.com/mezera/mrQ/tree/v1.0
 
 We recommend you use the most recent, up to date version of mrQ. The most active area of development is in the way the coil sensitivities are calculated. Later versions (>V.1) do not rely on Freesurfer any longer. An article describing those changes is in preparation. 
 
-Parallel computing
-==
+##Parallel computing##
 mrQ takes advantage of parallel computing in three steps within analysis.
 1. To calculate transmit inhomogeneity for each voxel.
 2. To calculate T1 and M0 to each voxel
@@ -132,8 +125,7 @@ mrQ is written to take advantage of the Sun grid parallel computing engine. Each
 
 If parallel computing is not available to you please contact us, as we are currently working on a general version of the code that does not rely on parallel computations. 
 
-mrQ analysis overview
-==
+##mrQ analysis overview##
 - mrQ will use the mrQ structure you create and save it to the subject’s directory.
 - New directories will be created, including directories for data and quantitative fits.
 - Images will be register to each other.
@@ -143,8 +135,7 @@ mrQ analysis overview
 - PD and coil gain will be fit from the M0 image.
 - Biophysical model will be applied to calculate VIP and SIR maps.
 
-Scanner dicom types
-==
+##Scanner dicom types##
 The mrQ software was built around GE dicoms. It is possible that different vendors have different conventions in saving dicom information (e.g., header information, data ordering).
 
 We are currently working on making the code compatible with different vendor’s dicom conventions. Please let us know if you experience any issues with reading dicoms when using the software. 

@@ -57,31 +57,31 @@ Spoiled gradient echo scans (SPGR,FLASH)
 2. All scans should have a single TR (note that a higher TR will increase the SNR).
 3. Minimal TE (<=2ms)
 4. Save the multi-coil information. To do this on GE scanners, change the scanner default by editing the saveinter cv: saveinter=1.
-Scan with the same prescan parameters for all SPGR scans. To do this scan the highest SNR image first (flip angle = 10). For the next scan choose manual pre-scan and perform the scan without changing the pre-scan parameters.
+5. Scan with the same prescan parameters for all SPGR scans. To do this scan the highest SNR image first (flip angle = 10). For the next scan choose manual pre-scan and perform the scan without changing the pre-scan parameters.
 
 EPI Spin echo inversion recovery scan (B1 mapping)
 
-Low resolution T1 maps are used to correct for the B1 bias. We will scan data to fit unbiased T1 and correct the bias in the SPGR scans.
+Low resolution T1 maps are used to correct for the B1 bias. We will acquire data to fit unbiased T1 maps and correct the bias in the SPGR scans.
 
 The T1 fit is based on Juelle Buarlle’s article: http://onlinelibrary.wiley.com/doi/10.1002/mrm.22497/abstract
 http://www-mrsrl.stanford.edu/~jbarral/t1map.html 
-Modified code is integrated within the mrQ software. 
+A modified version of this code is integrated within the mrQ software. 
 
-Scan four SEIR - epi readout scans with four different inversion times (50, 400, 1200, 2400).
-Each scan needs to be acquired with slab inversion on
+1. Scan four SEIR - epi readout scans with four different inversion times (50, 400, 1200, 2400).
+2. Each scan needs to be acquired with slab inversion on
 GE scanner’s should change the scanner default by editing the a_gzrf0 cv: a_gzrf0=0
-Use fat suppression. Fat suppression should be ??special-spectral?? to avoid any slice selective imperfections. This is the default with GE scanners when slices are less than 4mm thick.
+3. Use fat suppression. Fat suppression should be special-spectral to avoid any slice-selective imperfections. Note: This is the default with GE scanners when slices are less than 4mm thick.
 
 Data organization
 ==
 Follow these guidelines when organizing your data:
 
-Data should be in a single directory - “DATA”.
-Within DATA a dicoms directory is needed.
-Within the dicoms directory each scan should be in a separate directory.
-All SEIR dicoms need to be in the dicom directory.  
-For each SPGR scan at list one dicom is needed so that the header can be read in by mrQ. 
-All SPGR files need to be in nifti format within the DATA directory.
+- Data should be in a single directory - “DATA”.
+- Within the DATA directory a dicoms directory is needed.
+- Within the dicoms directory each scan should be in a separate directory.
+- All SEIR dicoms need to be in the dicom directory.  
+- A single dicom is needed for each scan in that scan's directory so that the header can be read by mrQ. 
+- All SPGR files need to be in nifti format within the DATA directory.
 
 See http://purl.stanford.edu/qh816pc3429 for an example of directory organization.
 
@@ -89,12 +89,12 @@ See http://purl.stanford.edu/qh816pc3429 for an example of directory organizatio
 Running mrQ 
 ==
 To run mrQ a mrQ structure needs to be created, set and executed.
-For example see ‘runScript’ in  http://purl.stanford.edu/qh816pc3429
+For an example of this structure see ‘runScript’ at http://purl.stanford.edu/qh816pc3429
 
-Create a structure
-mrQ=mrQ_Create(path)
-Set mrQ field 
-mrQ=mrQ_Set(mrQ,field name,field value)
+1. Create a structure
+- mrQ=mrQ_Create(path)
+2. Set mrQ field 
+- mrQ=mrQ_Set(mrQ,field name,field value)
 
 For a given data set where SEIR scans are organized into 4 folders named  '0005' '0006' '0007' '0008' and SPGR scans are organized into 4 folders named '0009' '0010' '0011' '0012' the following can serve as an example script: 
 
@@ -114,36 +114,34 @@ Versions
 ==
 Version 1 (v.1) is the code to replicate that was used in Nature medicine mezer at. el. 2013 article: https://github.com/mezera/mrQ/tree/v1.0
 
-We recommend you use the most recent, up to date of mrQ. The most active area of development is in the way the coil sensitivities are calculated. After V.1, later versions do not rely on Freesurfer any longer. An article describing those changes is in preparation. 
+We recommend you use the most recent, up to date version of mrQ. The most active area of development is in the way the coil sensitivities are calculated. Later versions (>V.1) do not rely on Freesurfer any longer. An article describing those changes is in preparation. 
 
 Parallel computing
 ==
 mrQ takes advantage of parallel computing in three steps within analysis.
-To calculate transmit inhomogeneity for each voxel.
-To calculate T1 and M0 to each voxel
-To calculate the coil gain for different bloc in image space.
+1. To calculate transmit inhomogeneity for each voxel.
+2. To calculate T1 and M0 to each voxel
+3. To calculate the coil gain for different bloc in image space.
 
 mrQ is written to take advantage of the Sun grid parallel computing engine. Each user will need to change the specific calls to the grid according to the parallel computing environment available. One can turn off all those parallel jobs by editing the following setting when creating the mrQ structure:
 
-mrQ=mrQ_Set(mrQ,sungrid’,0);
-mrQ=mrQ_Set(mrQ,’proclus’,0);
+- mrQ=mrQ_Set(mrQ,sungrid’,0);
+- mrQ=mrQ_Set(mrQ,’proclus’,0);
 
-If parallel computing not available to you please contact us. We are currently working on a general version of the code that does not rely on parallel computations. 
+If parallel computing is not available to you please contact us, as we are currently working on a general version of the code that does not rely on parallel computations. 
 
 mrQ analysis overview
 ==
- mrQ will use the mrQ structure you create and save it to the subject’s directory.
- New directories will be created, including directories for data and quantitative fits.
- Images will be register to each other.
- SEIR-EPI T1 will be computed (low resultion) 
-SPGR T1, M0, B1 maps, and a synthetic T1-weighted image, will be computed.
-T1-weighted and quantitative T1 images will be combined to segment the brain tissue. 
-PD and coil gain will be fit from the M0 image.
-Biophysical model will be applay to calculate VIP and SIR maps.
+- mrQ will use the mrQ structure you create and save it to the subject’s directory.
+- New directories will be created, including directories for data and quantitative fits.
+- Images will be register to each other.
+- SEIR-EPI T1 will be computed (low resultion) 
+- SPGR T1, M0, B1 maps, and a synthetic T1-weighted image, will be computed.
+- T1-weighted and quantitative T1 images will be combined to segment the brain tissue. 
+- PD and coil gain will be fit from the M0 image.
+- Biophysical model will be applied to calculate VIP and SIR maps.
 
-
-
-Scanner dicoms types
+Scanner dicom types
 ==
 The mrQ software was built around GE dicoms. It is possible that different vendors have different conventions in saving dicom information (e.g., header information, data ordering).
 

@@ -4,11 +4,11 @@ mrQ is a software package designed to calculate MR parameters (T1 and PD) using 
 
 The software and the tissue parameters are describe in the following article
 
-Mezer A, Yeatman JD, Stikov N, Kay K, Cho NJ, Dougherty R, Perry LM, Parvizi J, Hua L, Butts-Pauly K, Wandell BA. Measuring within the voxel: brain macromolecular tissue volume in individual subjects. Nature Medicine, 2013 (in-press).
+>Mezer A, Yeatman JD, Stikov N, Kay K, Cho NJ, Dougherty R, Perry LM, Parvizi J, Hua L, Butts-Pauly K, Wandell BA. Measuring within the voxel: brain macromolecular tissue volume in individual subjects. Nature Medicine, 2013 (in-press).
 
 and the following patent application
 
-Improved methods for detecting abnormalities in soft tissue using magnetic resonance imaging (MRI),USSN 61/437,587
+>Improved methods for detecting abnormalities in soft tissue using magnetic resonance imaging (MRI),USSN 61/437,587
 
 For more information please contact
 
@@ -35,7 +35,7 @@ CONTENTS
 
 Software Requirements
 ==
-Required 3rd party software 
+####Required 3rd party software ####
 - MATLAB  http://www.mathworks.com/products/matlab/ 
 - ANTS : http://stnava.github.io/ANTs/ 
 - FSL  http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/ 
@@ -51,7 +51,7 @@ mrQ makes use of other distributed matlab repositories:
 
 MR Scanning 
 ==
-Spoiled gradient echo scans (SPGR,FLASH)
+####Spoiled gradient echo scans (SPGR,FLASH)####
 
 1. 2-4 SPGR (not fast SPGR) scans with multiple flip angles recommended (e.g, 4, 10, 20, 30).  
 2. All scans should have a single TR (note that a higher TR will increase the SNR).
@@ -59,7 +59,7 @@ Spoiled gradient echo scans (SPGR,FLASH)
 4. Save the multi-coil information. To do this on GE scanners, change the scanner default by editing the saveinter cv: saveinter=1.
 5. Scan with the same prescan parameters for all SPGR scans. To do this scan the highest SNR image first (flip angle = 10). For the next scan choose manual pre-scan and perform the scan without changing the pre-scan parameters.
 
-EPI Spin echo inversion recovery scan (B1 mapping)
+####EPI Spin echo inversion recovery scan (B1 mapping)####
 
 Low resolution T1 maps are used to correct for the B1 bias. We will acquire data to fit unbiased T1 maps and correct the bias in the SPGR scans.
 
@@ -74,7 +74,7 @@ GE scanner’s should change the scanner default by editing the a_gzrf0 cv: a_gz
 
 Data organization
 ==
-Follow these guidelines when organizing your data:
+####Follow these guidelines when organizing your data:####
 
 - Data should be in a single directory - “DATA”.
 - Within the DATA directory a dicoms directory is needed.
@@ -88,27 +88,27 @@ See http://purl.stanford.edu/qh816pc3429 for an example of directory organizatio
 
 Running mrQ 
 ==
-To run mrQ a mrQ structure needs to be created, set and executed.
+####To run mrQ a mrQ structure needs to be created, set and executed.####
 For an example of this structure see ‘runScript’ at http://purl.stanford.edu/qh816pc3429
 
 1. Create a structure
-- mrQ=mrQ_Create(path)
+    - mrQ=mrQ_Create(path)
 2. Set mrQ field 
-- mrQ=mrQ_Set(mrQ,field name,field value)
+    - mrQ=mrQ_Set(mrQ,field name,field value)
 
 For a given data set where SEIR scans are organized into 4 folders named  '0005' '0006' '0007' '0008' and SPGR scans are organized into 4 folders named '0009' '0010' '0011' '0012' the following can serve as an example script: 
 
-% define the SEIR scans by the session’s 4 characters
-mrQ=mrQ_Set(mrQ,'SEIR',{'0005' '0006' '0007' '0008'})
+    % define the SEIR scans by the session’s 4 characters 
+    mrQ=mrQ_Set(mrQ,'SEIR',{'0005' '0006' '0007' '0008'})
+    
+    % define the SPGR scans by the session 4 characters
+    mrQ=mrQ_Set(mrQ,'SPGR',{'0009' '0010' '0011' '0012'})
 
-% define the SPGR scans by the session 4 characters
-mrQ=mrQ_Set(mrQ,'SPGR',{'0009' '0010' '0011' '0012'})
+    % make a subject name
+    mrQ=mrQ_Set(mrQ,'sub','Examp')
 
-% make a subject name
-mrQ=mrQ_Set(mrQ,'sub','Examp')
-
-% run:
-mrQ_run(mrQ.name).
+    % run
+    mrQ_run(mrQ.name) 
 
 Versions
 ==
@@ -125,8 +125,8 @@ mrQ takes advantage of parallel computing in three steps within analysis.
 
 mrQ is written to take advantage of the Sun grid parallel computing engine. Each user will need to change the specific calls to the grid according to the parallel computing environment available. One can turn off all those parallel jobs by editing the following setting when creating the mrQ structure:
 
-- mrQ=mrQ_Set(mrQ,sungrid’,0);
-- mrQ=mrQ_Set(mrQ,’proclus’,0);
+    mrQ=mrQ_Set(mrQ,sungrid’,0);
+    mrQ=mrQ_Set(mrQ,’proclus’,0);
 
 If parallel computing is not available to you please contact us, as we are currently working on a general version of the code that does not rely on parallel computations. 
 

@@ -20,13 +20,13 @@ CONTENTS
 ====
 
 - <a href=#software-requirements>Software Requirements</a>
-- <a href=#required-3rd-party-software>3rd Party software</a>
-- <a href=#matlab-code>Matlab code</a>
+    - <a href=#required-3rd-party-software>3rd Party software</a>
+    - <a href=#matlab-code>Matlab code</a>
 - <a href=#mr-scanning->MR Scanning</a>
-- <a href=#spoiled-gradient-echo-scans-spgrflash>Spoiled gradient echo scans (SPGR,FLASH)</a>
-- <a href=#epi-spin-echo-inversion-recovery-scan-b1-mapping>EPI Spin echo inversion recovery scan (B1 mapping)</a>
+    - <a href=#spoiled-gradient-echo-scans-spgrflash>Spoiled gradient echo scans (SPGR,FLASH)</a>
+    - <a href=#epi-spin-echo-inversion-recovery-scan-b1-mapping>EPI Spin echo inversion recovery scan (B1 mapping)</a>
 - <a href=#data-organization>Data organization</a>
-- <a href=#running-mrq>Running mrQ</a>
+- <a href=#running-mrq->Running mrQ</a>
 - <a href=#versions>Versions</a>
 - <a href=#parallel-computing>Parallel computing</a>
 - <a href=#mrq-analysis-overview>mrQ analysis overview</a>
@@ -43,6 +43,7 @@ Software Requirements
 and/or
 - FreeSrurfer http://surfer.nmr.mgh.harvard.edu/ 
 - Parallel computing environment (e.g., Sun Grid_Engine [Not required, but it will make a big difference for running time]).
+
 ####Matlab code ####
 mrQ makes use of other distributed matlab repositories:
 - mrQ - https://github.com/mezera/mrQ

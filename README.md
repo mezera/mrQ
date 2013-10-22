@@ -24,30 +24,34 @@ For more information please contact
 - <a href=#mr-scanning->MR Scanning</a>
     - <a href=#spoiled-gradient-echo-scans-spgrflash>Spoiled gradient echo scans (SPGR,FLASH)</a>
     - <a href=#epi-spin-echo-inversion-recovery-scan-b1-mapping>EPI Spin echo inversion recovery scan (B1 mapping)</a>
+- <a href=#scanner-dicom-types>Scanner dicom types</a>
 - <a href=#data-organization>Data organization</a>
 - <a href=#running-mrq>Running mrQ</a>
 - <a href=#versions>Versions</a>
 - <a href=#parallel-computing>Parallel computing</a>
 - <a href=#mrq-analysis-overview>mrQ analysis overview</a>
-- <a href=#scanner-dicom-types>Scanner dicom types</a>
 
 
 
 ##Software Requirements##
 ####Required 3rd party software ####
-- MATLAB  http://www.mathworks.com/products/matlab/ 
-- ANTS : http://stnava.github.io/ANTs/ 
-- FSL  http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/ 
-and/or
+- MATLAB - http://www.mathworks.com/products/matlab/ 
+- ANTS - http://stnava.github.io/ANTs/ 
+- FSL - http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/ 
 - FreeSrurfer http://surfer.nmr.mgh.harvard.edu/ 
-- Parallel computing environment (e.g., Sun Grid_Engine [Not required, but it will make a big difference for running time]).
+    - *Later versions (>V.1) do not rely on Freesurfer any longer*
+- Parallel computing environment (e.g., Sun Grid Engine) 
+    - *Not required, but it will make a big difference for running time.*
 
 ####Matlab code####
-mrQ makes use of other distributed matlab repositories:
-- mrQ - https://github.com/mezera/mrQ
-- Vistasoft  - https://github.com/vistalab/vistasoft
-- KNKUtils (from Kendrick Kay) - https://github.com/kendrickkay/knkutils
-- Joëlle Barral's matlab code. A modified version of this code is part of the mrQ code. The original code can be found at: http://www-mrsrl.stanford.edu/~jbarral/t1map.html
+mrQ requires the following openly distributed code repositories:
+
+1. mrQ - https://github.com/mezera/mrQ
+2. Vistasoft  - https://github.com/vistalab/vistasoft
+3. KNKUtils (from Kendrick Kay) - https://github.com/kendrickkay/knkutils
+4. Joëlle Barral's matlab code.  
+    - A modified version of this code is distributed within mrQ. 
+    - *The original code can be found at: http://www-mrsrl.stanford.edu/~jbarral/t1map.html*
 
 ##MR Scanning##
 ####Spoiled gradient echo scans (SPGR,FLASH)####
@@ -70,6 +74,11 @@ A modified version of this code is integrated within the mrQ software.
 2. Each scan needs to be acquired with slab inversion on
 GE scanner’s should change the scanner default by editing the a_gzrf0 cv: a_gzrf0=0
 3. Use fat suppression. Fat suppression should be special-spectral to avoid any slice-selective imperfections. Note: This is the default with GE scanners when slices are less than 4mm thick.
+
+##Scanner dicom types##
+The mrQ software was built around GE dicoms. It is possible that different vendors have different conventions in saving dicom information (e.g., header information, data ordering).
+
+We are currently working on making the code compatible with different vendor’s dicom conventions. Please let us know if you experience any issues with reading dicoms when using the software. 
 
 ##Data organization##
 ####Follow these guidelines when organizing your data:####
@@ -135,8 +144,4 @@ If parallel computing is not available to you please contact us, as we are curre
 - PD and coil gain will be fit from the M0 image.
 - Biophysical model will be applied to calculate VIP and SIR maps.
 
-##Scanner dicom types##
-The mrQ software was built around GE dicoms. It is possible that different vendors have different conventions in saving dicom information (e.g., header information, data ordering).
-
-We are currently working on making the code compatible with different vendor’s dicom conventions. Please let us know if you experience any issues with reading dicoms when using the software. 
 

@@ -73,7 +73,7 @@ A modified version of this code is integrated within the mrQ software.
 1. Scan four SEIR - epi readout scans with four different inversion times (50, 400, 1200, 2400).
 2. Each scan needs to be acquired with slab inversion on
 GE scanner’s should change the scanner default by editing the a_gzrf0 cv: a_gzrf0=0
-3. Use fat suppression. Fat suppression should be special-spectral to avoid any slice-selective imperfections. Note: This is the default with GE scanners when slices are less than 4mm thick.
+3. Use fat suppression. Fat suppression should be spatial-spectral to avoid any slice-selective imperfections. Note: This is the default with GE scanners when slices are less than 4mm thick.
 
 ##Scanner dicom types##
 The mrQ software was built around GE dicoms. It is possible that different vendors have different conventions in saving dicom information (e.g., header information, data ordering).

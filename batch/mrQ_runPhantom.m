@@ -295,25 +295,7 @@ end
 
 %% prefer to PD fit 1. get a segmentation (need freesurfer output) 2. get CSF; 3.make a M0 fies for the coils
 
-%1. segmentaion
-if isfield(mrQ,'segmentaion');
-else
-    mrQ.segmentaion=0;
-end
 
-if mrQ.segmentaion==0;
-    if (mrQ.runfreesurfer==1)
-        
-        mrQ=mrQ_Complitfreesurfer(mrQ);
-        mrQ.segmentaion=1;
-    else
-        % Segment the T1w by FSL (step 1) and get the tissue mask (CSF WM GM) (step 2)
-        mrQ=mrQ_segmentT1w2tissue(mrQ);
-        mrQ.segmentaion=1;
-        
-    end
-    save(mrQ.name,'mrQ');
-end
 
 %3. coils MO
 if isfield(mrQ,'calM0_done');

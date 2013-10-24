@@ -131,6 +131,9 @@ disp(['Loading aligned data from ' outFile '...']);
 load(outFile);
 load(outFile1);
 
+if notDefined('s2')
+    s2=s;
+end
 %% III. Get field strength
 
 fieldStrength = s(1).fieldStrength;

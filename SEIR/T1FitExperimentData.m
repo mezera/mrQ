@@ -144,8 +144,15 @@ end
 mask=(sum(mask,4));
 mask=logical(mask==mesures);
 %let fit also around the mask so we won't have holes (that can help registration to the SPGR)
+D3=size(mask,3);
+if D3>1
 mask1=logical(smooth3(mask));%,'box',[5 5 5]
- 
+else
+    mask1=mask;
+end
+   
+
+    
  for i=1:size(mask1,3)
  mask1(:,:,i)=imfill(mask1(:,:,i),'holes');
  end;

@@ -1,4 +1,4 @@
-function  [Gain1]=mrQ_smmothL_GainPhantoms(T1,M0,outDir,xform,mrQ,Gainfile,SPGRResidfile);
+function  [Gain1]=mrQ_smmothL_GainPhantoms(T1,M0,outDir,xform,mrQ,Gainfile,SPGRResidfile,mask);
 
 %
 %
@@ -35,8 +35,15 @@ end
 %3.voxel with big fit residual for B1 or SEIR T1 are also out
 
 %load the B1 fit
-             tisuuemask =readFileNifti(mrQ.tissuemask);
 
+if notDefined('mask')
+    
+       mask = mrQ.hoginiues_mask;   
+             
+end
+
+ tisuuemask =readFileNifti(mask);
+ 
 tisuuemask=double(tisuuemask.data);
 tisuuemask_forcoils=zeros(size(tisuuemask));
              tisuuemask_forcoils(tisuuemask==1)=1;
@@ -116,7 +123,7 @@ CC1=convn(tt,f1,'same');
 
 %the voxel that we will use
 tisuuemask1=C1>max(CC1(:)).*area;
-tisuuemask1=tisuuemask1 & tisuuemask;
+%tisuuemask1=tisuuemask1 & tisuuemask;
 %where there are gain estimation (x,y,z location)
 [x y z]=ind2sub(size(tisuuemask),find(tisuuemask2));
 
@@ -153,7 +160,7 @@ CC1=convn(tt,f1,'same');
 
 %the voxel that we will use
 tisuuemask1=C1>max(CC1(:)).*area;
-tisuuemask1=tisuuemask1 & tisuuemask;
+%tisuuemask1=tisuuemask1 & tisuuemask;
 
 %where there are B1 estimation (x,y,z location)
 [x y z]=ind2sub(size(tisuuemask),find(tisuuemask2));
@@ -183,17 +190,16 @@ Imsz1=size(tmp1);
 B1match = reshape(Poly1*params(:),Imsz1);
 
 %find where the B1 value are missing
-mask=logical(tmp1>0);
+mask1=logical(tmp1>0);
 
 %fill the holls
-tmp1(~mask)=B1match(~mask);
+tmp1(~mask1)=B1match(~mask1);
 
 
 %%% last check
 %we might get  scaling effect when the smoothing is not perefect , scale it
 %back so the mean of the smooth map and the original is the same
-Cal=median(Gain(tisuuemask)./tmp1(tisuuemask));
-tmp1=tmp1.*Cal;
+
 
 
 

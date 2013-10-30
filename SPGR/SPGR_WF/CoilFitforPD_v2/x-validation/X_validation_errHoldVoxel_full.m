@@ -1,4 +1,10 @@
-function [err_X, err_F] = X_validation_errHoldVoxel_full(g,M0,pBasis,nPositions,nCoils,Fmask,Xmask)
+function [err_X, err_F] = X_validation_errHoldVoxel_full(g,M0,pBasis,nPositions,nCoils,Fmask,Xmask,PDtrue)
+
+
+% TruePD is not needed. the only resoen it is an input is debuging.
+if notDefined('TruePD') 
+      TruePD=[];
+end
 
 %estimate coil coefficients across the volume
 G = pBasis*g;

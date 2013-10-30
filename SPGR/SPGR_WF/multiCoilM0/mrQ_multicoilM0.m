@@ -42,7 +42,9 @@ load(outFile);
 % Read the flip angles and TR from the actual data
 flipAngles = [s(:).flipAngle];
 TR         = [s(:).TR];
-
+for ii=1:length(flipAngles)
+SZraw(:,:,:,ii)=size(s(ii).imData);
+end
 
 % Load the T1 and scale the T1 values
 if (~exist('T1file','var') || isempty(T1file)),
@@ -89,9 +91,9 @@ for j=1:length(flip_Angles)
     [s11,xform1 s1] = relaxAlignAll_multichanels(s1(channels+1), refIM, mmPerVox, true, 1,s1(1:channels));
     
     
-    szref = size(s(kk).imData);
+    szref = SZraw(:,:,:,kk)';
     szdat = size(s11(1).imData);
-    
+    clear refIM s11
     % Dimension checks 
     if szref(1)>szdat(1);   for k=1:length(s1); s1(k).imData(szdat(1):szref(1),:,:)=0;end;   end
     if szref(2)>szdat(2);   for k=1:length(s1); s1(k).imData(:,szdat(2):szref(2),:)=0;end;   end
@@ -101,6 +103,7 @@ for j=1:length(flip_Angles)
     fa  = flipAngles(kk).*B1;
     fa  = fa./180.*pi;
     tr  = TR(kk);
+    
     M0c = zeros(szref(1),szref(2),szref(3),channels);
     
     

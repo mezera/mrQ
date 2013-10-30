@@ -18,7 +18,7 @@ function [AnalysisInfo]=mrQfit_T1M0_Phantoms(mrQ,clobber)
 %                            The epi SEIR directory should contain the
 %                            out-put from fit mrQ_fitSEIR_T1 (see above)
 %       coilWeights         - if a coill Weighting data exsist we will use it . in tje other case we
-%                              will use the coil Weighting as given from the magnets 
+%                              will use the coil Weighting as given from the magnets
 %
 %      runfreesurfer        - if a freesurfer is needed we will make a call
 %                           for that after we crate a sysntetic T1-Weighted image
@@ -46,8 +46,8 @@ function [AnalysisInfo]=mrQfit_T1M0_Phantoms(mrQ,clobber)
 %                           mrQ_PD and mrQ_HLF.
 %                           maps like T1 M0 B1, etc. are written to the
 %                           output directory ('outDir').
-%                     
-%       
+%
+%
 %
 %
 % WEB RESOURCES
@@ -64,7 +64,7 @@ function [AnalysisInfo]=mrQfit_T1M0_Phantoms(mrQ,clobber)
 % rewrite by AM. June 16 2011
 % rewrite by AM. July 29 2011 %fit for the B1 fitting to be based on local
 % regression
- %rewrite by AM. Oct 29 2013 %adjust for phantoms
+%rewrite by AM. Oct 29 2013 %adjust for phantoms
 % regression
 
 %% I. Check INPUTS and set defaults
@@ -83,7 +83,7 @@ if ~isfield(mrQ,'outDir');
     mrQ.outDir = mrQ.spgr_initDir;
 end
 outDir = mrQ.outDir;
- 
+
 if ~isfield(mrQ,'complexFlag');
     mrQ.complexFlag = 0;
 end
@@ -97,12 +97,12 @@ end
 sub=mrQ.sub;
 
 if ~isfield(mrQ,'coilWeights');
-mrQ.coilWeights=1;
+    mrQ.coilWeights=1;
 end
 coilWeights=mrQ.coilWeights;
 
 if ~isfield(mrQ,'name');
-mrQ.name=fullfile(outDir,'mrQParams');
+    mrQ.name=fullfile(outDir,'mrQParams');
 end
 
 save(mrQ.name,'mrQ')
@@ -118,14 +118,14 @@ end
 %% II. Load aligned data
 
 if coilWeights==1
-outFile  = fullfile(dataDir,'dat_aligned.mat'); %without coilWeights data 
-outFile1 = fullfile(dataDir,'dat_alignedBest.mat');%with coilWeights data 
+    outFile  = fullfile(dataDir,'dat_aligned.mat'); %without coilWeights data
+    outFile1 = fullfile(dataDir,'dat_alignedBest.mat');%with coilWeights data
 else
-  outFile  = fullfile(dataDir,'dat_aligned.mat'); %in this case the is no  coilWeights data
-  outFile1 = fullfile(dataDir,'dat_aligned.mat');
+    outFile  = fullfile(dataDir,'dat_aligned.mat'); %in this case the is no  coilWeights data
+    outFile1 = fullfile(dataDir,'dat_aligned.mat');
 end
-    
-    
+
+
 disp(['Loading aligned data from ' outFile '...']);
 
 load(outFile);
@@ -144,7 +144,7 @@ if  (fieldStrength~=(1.5) && fieldStrength~=(3) && fieldStrength~=(0.5))
 end
 
 
-%% IV. Setup and save AnalysisInfo file. 
+%% IV. Setup and save AnalysisInfo file.
 % a structure that keep records of the T1 fit
 infofile=fullfile(outDir,'AnalysisInfo.mat');
 if (exist(infofile,'file'))
@@ -185,11 +185,11 @@ t1file=fullfile(outDir,['T1_LFitB.nii.gz']);
 M0file=fullfile(outDir,['M0_LFitB.nii.gz']);
 
 
- if  exist(BMfile,'file')
+if  exist(BMfile,'file')
     brainMask = readFileNifti(BMfile);
     brainMask=logical(brainMask.data);
     HM=brainMask;
- end
+end
 
 
 % Read in existing T1, M0 and the brain mask (if they exist)
@@ -229,47 +229,47 @@ else
     [tt,M01]    = relaxFitT1(cat(4,s(:).imData),flipAngles0,tr,B1);
     
     if  exist(BMfile,'file')
-    
+        
     else
-    
-    % Create the brain mask
-    [brainMask,checkSlices] = mrAnatExtractBrain(M01, mmPerVox, 0.5);
-    
-    % Replace all nan values in the brain mask with zeros.
-    for dd=1:length(s)
-        brainMask(isnan(s(dd).imData))=0;
-    end;
-    %findind the first and the last slice of the brain
-    [~, ~, z]=ind2sub(size(brainMask),find(brainMask));
-    
-    % Create the head mask the head mask make the registration with the
-    % SEIR imags better using ANts softwere
-    
-    % we find the voxel that have signal geater then 2std below the
-    % mean brain signal
-    cutV=mean(s(1).imData(brainMask)) -2*std(s(1).imData(brainMask));
-    %noise estraction - we will need to genralize this somehow espesialy
-    
-    % selecting the relevant slices (this is not beutiful)
-    HM=B1;
-    HM(s(1).imData<cutV)=0;
-    HM(:,:,1:min(z)+3)=0;
-    HM(:,:,max(z)+3:end)=0;
-    for dd=1:length(s)
-        HM(isnan(s(dd).imData))=0;
-    end;
-    
-    % feeling the holes in the mask.
-    for i=1:size(HM,3)
-        HM(:,:,i)=imfill(HM(:,:,i),'holes');
-    end;
-    HM=logical(HM);
-    
-    % Save the masks,T1 and M0 (PD) data
-    dtiWriteNiftiWrapper(single(HM), xform, HMfile);
-    dtiWriteNiftiWrapper(single(brainMask), xform, BMfile);
+        
+        % Create the brain mask
+        [brainMask,checkSlices] = mrAnatExtractBrain(M01, mmPerVox, 0.5);
+        
+        % Replace all nan values in the brain mask with zeros.
+        for dd=1:length(s)
+            brainMask(isnan(s(dd).imData))=0;
+        end;
+        %findind the first and the last slice of the brain
+        [~, ~, z]=ind2sub(size(brainMask),find(brainMask));
+        
+        % Create the head mask the head mask make the registration with the
+        % SEIR imags better using ANts softwere
+        
+        % we find the voxel that have signal geater then 2std below the
+        % mean brain signal
+        cutV=mean(s(1).imData(brainMask)) -2*std(s(1).imData(brainMask));
+        %noise estraction - we will need to genralize this somehow espesialy
+        
+        % selecting the relevant slices (this is not beutiful)
+        HM=B1;
+        HM(s(1).imData<cutV)=0;
+        HM(:,:,1:min(z)+3)=0;
+        HM(:,:,max(z)+3:end)=0;
+        for dd=1:length(s)
+            HM(isnan(s(dd).imData))=0;
+        end;
+        
+        % feeling the holes in the mask.
+        for i=1:size(HM,3)
+            HM(:,:,i)=imfill(HM(:,:,i),'holes');
+        end;
+        HM=logical(HM);
+        
+        % Save the masks,T1 and M0 (PD) data
+        dtiWriteNiftiWrapper(single(HM), xform, HMfile);
+        dtiWriteNiftiWrapper(single(brainMask), xform, BMfile);
     end
-
+    
     tt(~HM) = 0;
     M01(~HM) = 0;
     t1(~brainMask) = 0;
@@ -280,7 +280,7 @@ else
     dtiWriteNiftiWrapper(single(t1), xform, t1file);
     dtiWriteNiftiWrapper(single(M0), xform, M0file);
     dtiWriteNiftiWrapper(single(tt), xform, t1fileHM);
-      dtiWriteNiftiWrapper(single(M01), xform, M0fileHM);
+    dtiWriteNiftiWrapper(single(M01), xform, M0fileHM);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     
@@ -289,15 +289,17 @@ end;
 %% VII. FIT B1
 %  Required Inputs: SEIRepi_T1  AlignFile
 % we will Align the SPGR and the SEIR by linear Warp using ANTS softwere
-if ~isfield(mrQ,'SEIRepi_Dir') && ~isfield(mrQ,'T1SEIRval')
-
+if ~isfield(mrQ,'SEIRepi_Dir') && ~isfield(mrQ,'T1SEIRval') && ~isfield(mrQ,'T1SEIRmap')
+    
     error('can not fit SEIR epi to spgr the SEIRepi_Dir path is missing')
 end
 
 if  isfield(mrQ,'T1SEIRval')
-SEIRepi_Dir=mrQ.T1SEIRval;
+    SEIRepi_Dir=mrQ.T1SEIRval;
 end
-
+if  isfield(mrQ,'T1SEIRmap')
+    SEIRepi_Dir=mrQ.T1SEIRmap;
+end
 
 
 B1file=fullfile(outDir,['B1_Map.nii.gz']);
@@ -310,150 +312,164 @@ if exist(B1file,'file') && ~clobber
     
 else
     %%
-    if isfield(mrQ,'T1SEIRval');
+    if isfield(mrQ,'T1SEIRval') ||  isfield(mrQ,'T1SEIRmap');
+        % in case we will load a T1 value for the phantom 
         
- Res{1}.im=double(brainMask)*(mrQ.T1SEIRval);
- Res{1}.name = 'target_(GS)';
- Res{2}.im=t1;
-  Res{2}.name = 't1 align';
+        if  isfield(mrQ,'T1SEIRmap')
+            T1seg=readFileNifti(mrQ.T1SEIRmap);T1seg=double(T1seg.data);
+            Res{1}.im=T1seg;
+        tisuuemask_forSGEB1=logical(T1seg);
+        clear T1seg
+        tisuuemask=brainMask;
+        mrQ.hoginiues_mask=fullfile(outDir,['Hoginiues_mask.nii.gz']);
+        dtiWriteNiftiWrapper(single(tisuuemask_forSGEB1), xform, mrQ.hoginiues_mask);
+             
+        elseif sfield(mrQ,'T1SEIRval') 
+        Res{1}.im=double(brainMask)*(mrQ.T1SEIRval);
+                tisuuemask =readFileNifti(mrQ.tissuemask);
+        tisuuemask=double(tisuuemask.data);
+         tisuuemask_forSGEB1=zeros(size(tisuuemask));
+        tisuuemask_forSGEB1(tisuuemask==1)=1;
+        tisuuemask_forSGEB1=logical(tisuuemask_forSGEB1);
+       
+        mrQ.hoginiues_mask=fullfile(outDir,['Hoginiues_mask.nii.gz']);
+        dtiWriteNiftiWrapper(single(tisuuemask_forSGEB1), xform, mrQ.hoginiues_mask);
 
- for i=1:size(s2,2)
-  Res{i+2}.im=double(s2(i).imData);
-  Res{i+2}.name = ['FA' num2str(s(i).flipAngle)];
- end
- 
- flipAngles = [s2(:).flipAngle];
- tr = [s2(:).TR];
- SunGrid = 1;
- 
- intM0= double(mean(M0(brainMask)));
- 
-             tisuuemask =readFileNifti(mrQ.tissuemask);
-                 tisuuemask=double(tisuuemask.data);
-tisuuemask_forSGEB1=zeros(size(tisuuemask));
-             tisuuemask_forSGEB1(tisuuemask==1)=1;
-tisuuemask_forSGEB1=logical(tisuuemask_forSGEB1);
- [B1 resNorm dd] = mrQ_fitB1_LSQ(Res, tisuuemask_forSGEB1, tr,flipAngles, outDir, intM0, xform, SunGrid, 1, [sub 'B1fit']);
- 
- B1epiResidfile=fullfile(outDir,['ResidB1fit_full_best.nii.gz']);
- B1file_r=fullfile(outDir,'B1_lsq_last.nii.gz');
- dtiWriteNiftiWrapper(single(B1), xform, B1file_r);
- dtiWriteNiftiWrapper(single(resNorm), xform, B1epiResidfile);
- 
- [B1,AnalysisInfo]=mrQ_smmothL_B1Phantoms(B1file_r,outDir,B1file,xform,[],AnalysisInfo,t1fileHM,B1epiResidfile,logical(tisuuemask));
- 
-    else
-    
-    if complexFlag ==0
-        SET1file=[SEIRepi_Dir '/fitT1_GS/T1FitNLSPR_SEIR_Dat_T1.nii.gz'];
-    elseif complexFlag ==1
-        SET1file=[SEIRepi_Dir '/fitT1_GS/T1FitNLS_SEIR_Dat_T1.nii.gz'];
+        end
+        Res{1}.name = 'target_(GS)';
+        Res{2}.im=t1;
+        Res{2}.name = 't1 align';
         
-    end;
-    if exist(SET1file,'file')
-    else
-        [file_se path_se]= uigetfile(pwd,'Select the T1 SEIR map');
-        SET1file=[path_se file_se];
-    end
-        
-     
-    
-    SET1Fitfile=[SEIRepi_Dir '/fitT1_GS/T1FitNLSPR_SEIR_Dat.mat'];
-    SET1=readFileNifti(SET1file);
-    SE_Xform=SET1.qto_xyz;
-    pixdim=SET1.pixdim;
-    clear SET1
-    
-    
-    B1epifile=fullfile(outDir,['B1epi_RB_full_best.nii.gz']);
-    B1epiResidfile=fullfile(outDir,['ResidB1epi_NLW_full_best.nii.gz']);
-    
-    % If the fit in SEIR space has already been computed we load it
-    if exist(B1epifile,'file') && ~clobber
-        
-    else
-        
-        % Load the SEIR_to SPGR Aligned "best" file - or create it
-        if exist(AlignFile,'file') && ~clobber
-            load (AlignFile)
-        else
-            flipAngles = [s2(:).flipAngle];
-            [AnalysisInfo,Res]=mrQ_NLANTS_warp_SPGR2EPI_RB(AnalysisInfo,SET1file,t1fileHM,flipAngles,outDir,AlignFile);
-            
+        for i=1:size(s2,2)
+            Res{i+2}.im=double(s2(i).imData);
+            Res{i+2}.name = ['FA' num2str(s(i).flipAngle)];
         end
         
-        
-        %%% FIT B1 by lsq fit compare T1 SEIR(Res{1}.im) to the multi flip
-        % angle Res{3:end}.im % USE sge make the fit faster
-        
-        intM0= double(mean(M0(brainMask)));
         flipAngles = [s2(:).flipAngle];
         tr = [s2(:).TR];
+        SunGrid = 1;
         
-        if(~all(tr == tr(1))), error('TR''s do not match!'); end
-        tr = tr(1);
+        intM0= double(mean(M0(tisuuemask_forSGEB1)));
         
-        % Load or Create the tissuemask from all non-zero points
-        tisuuemaskFile=fullfile(outDir,['maskepiF.nii.gz']);
+
+       
+        [B1 resNorm dd] = mrQ_fitB1_LSQ(Res, tisuuemask_forSGEB1, tr,flipAngles, outDir, intM0, xform, SunGrid, 1, [sub 'B1fit']);
         
-        if exist(tisuuemaskFile,'file') && ~clobber
-            tisuuemask_=readFileNifti(tisuuemaskFile);
-            tisuuemask_=logical(tisuuemask_.data);
+        B1epiResidfile=fullfile(outDir,['ResidB1fit_full_best.nii.gz']);
+        B1file_r=fullfile(outDir,'B1_lsq_last.nii.gz');
+        dtiWriteNiftiWrapper(single(B1), xform, B1file_r);
+        dtiWriteNiftiWrapper(single(resNorm), xform, B1epiResidfile);
+        
+        [B1,AnalysisInfo]=mrQ_smmothL_B1Phantoms(B1file_r,outDir,B1file,xform,[],AnalysisInfo,t1fileHM,B1epiResidfile,logical(tisuuemask));
+        
+    else
+        
+        if complexFlag ==0
+            SET1file=[SEIRepi_Dir '/fitT1_GS/T1FitNLSPR_SEIR_Dat_T1.nii.gz'];
+        elseif complexFlag ==1
+            SET1file=[SEIRepi_Dir '/fitT1_GS/T1FitNLS_SEIR_Dat_T1.nii.gz'];
+            
+        end;
+        if exist(SET1file,'file')
+        else
+            [file_se path_se]= uigetfile(pwd,'Select the T1 SEIR map');
+            SET1file=[path_se file_se];
+        end
+        
+        
+        
+        SET1Fitfile=[SEIRepi_Dir '/fitT1_GS/T1FitNLSPR_SEIR_Dat.mat'];
+        SET1=readFileNifti(SET1file);
+        SE_Xform=SET1.qto_xyz;
+        pixdim=SET1.pixdim;
+        clear SET1
+        
+        
+        B1epifile=fullfile(outDir,['B1epi_RB_full_best.nii.gz']);
+        B1epiResidfile=fullfile(outDir,['ResidB1epi_NLW_full_best.nii.gz']);
+        
+        % If the fit in SEIR space has already been computed we load it
+        if exist(B1epifile,'file') && ~clobber
             
         else
             
-            tisuuemask_ =zeros(size(Res{1}.im));
+            % Load the SEIR_to SPGR Aligned "best" file - or create it
+            if exist(AlignFile,'file') && ~clobber
+                load (AlignFile)
+            else
+                flipAngles = [s2(:).flipAngle];
+                [AnalysisInfo,Res]=mrQ_NLANTS_warp_SPGR2EPI_RB(AnalysisInfo,SET1file,t1fileHM,flipAngles,outDir,AlignFile);
+                
+            end
             
-            % Binarize the mask
-            tisuuemask_(find(Res{1}.im>10 & Res{3}.im>0))=1;
             
-            % Create a logical array from the tissue mask to index the
-            % non-zero locations
-            tisuuemask_=logical(tisuuemask_);
+            %%% FIT B1 by lsq fit compare T1 SEIR(Res{1}.im) to the multi flip
+            % angle Res{3:end}.im % USE sge make the fit faster
             
-            % Save the tissue mask
-            dtiWriteNiftiWrapper(single(tisuuemask_), SE_Xform, tisuuemaskFile);
+            intM0= double(mean(M0(brainMask)));
+            flipAngles = [s2(:).flipAngle];
+            tr = [s2(:).TR];
             
-        end;
-        
-        if clobber && (exist([outDir '/tmpSG'],'dir'))
-            % in the case we start over and there are old  fits we will
-            % deleat them
-            eval(['! rm -r ' outDir '/tmpSG']);
+            if(~all(tr == tr(1))), error('TR''s do not match!'); end
+            tr = tr(1);
+            
+            % Load or Create the tissuemask from all non-zero points
+            tisuuemaskFile=fullfile(outDir,['maskepiF.nii.gz']);
+            
+            if exist(tisuuemaskFile,'file') && ~clobber
+                tisuuemask_=readFileNifti(tisuuemaskFile);
+                tisuuemask_=logical(tisuuemask_.data);
+                
+            else
+                
+                tisuuemask_ =zeros(size(Res{1}.im));
+                
+                % Binarize the mask
+                tisuuemask_(find(Res{1}.im>10 & Res{3}.im>0))=1;
+                
+                % Create a logical array from the tissue mask to index the
+                % non-zero locations
+                tisuuemask_=logical(tisuuemask_);
+                
+                % Save the tissue mask
+                dtiWriteNiftiWrapper(single(tisuuemask_), SE_Xform, tisuuemaskFile);
+                
+            end;
+            
+            if clobber && (exist([outDir '/tmpSG'],'dir'))
+                % in the case we start over and there are old  fits we will
+                % deleat them
+                eval(['! rm -r ' outDir '/tmpSG']);
+            end
+            
+            % USE sge make the B1 fit faster
+            SunGrid = 1;
+            
+            % This is lsq fit that uses the grid but you can make it not use
+            % SGE: see help inside mrQ_fitB1_LSQ
+            [B1 resNorm dd] = mrQ_fitB1_LSQ(Res, tisuuemask_, tr,flipAngles, outDir, intM0, SE_Xform, SunGrid, 1, [sub 'B1fit'],mrQ.proclus);
+            dtiWriteNiftiWrapper(single(B1), SE_Xform, B1epifile);
+            dtiWriteNiftiWrapper(single(resNorm), SE_Xform, B1epiResidfile);
+            
         end
         
-        % USE sge make the B1 fit faster
-        SunGrid = 1;
+        %%% Move B1 from epi space to SPGR smooth and upsample
         
-        % This is lsq fit that uses the grid but you can make it not use
-        % SGE: see help inside mrQ_fitB1_LSQ
-        [B1 resNorm dd] = mrQ_fitB1_LSQ(Res, tisuuemask_, tr,flipAngles, outDir, intM0, SE_Xform, SunGrid, 1, [sub 'B1fit'],mrQ.proclass);
-        dtiWriteNiftiWrapper(single(B1), SE_Xform, B1epifile);
-        dtiWriteNiftiWrapper(single(resNorm), SE_Xform, B1epiResidfile);
         
-    end
-    
-    %%% Move B1 from epi space to SPGR smooth and upsample
-    
-    
-    %we smoth the SEIR B1 map by local and then feel the gap by global
-    %regrigions and then register back the smooth B1 to the SPGR space by Ants
-    %softwere
-    [B1,AnalysisInfo]=mrQ_smmothL_B1(B1epifile,AlignFile,outDir,B1file,xform,[],AnalysisInfo,t1fileHM,SET1Fitfile,B1epiResidfile);
-    
-    
-    % Create the synthetic T1 weighted images and save them to disk
-   AnalysisInfo.T1wSynthesis=mrQ_T1wSynthesis(dataDir,B1file,outDir);
-       save(infofile,'AnalysisInfo');
-
-
-
-if runfreesurfer==1
-    subjID=['freesufer_' AnalysisInfo.sub];
-    [AnalysisInfo.freeSufer_subdir]=mrQ_Callfs_autosegment(subjID, AnalysisInfo.T1wSynthesis);
-     save(infofile,'AnalysisInfo');
-end
-
+        %we smoth the SEIR B1 map by local and then feel the gap by global
+        %regrigions and then register back the smooth B1 to the SPGR space by Ants
+        %softwere
+        [B1,AnalysisInfo]=mrQ_smmothL_B1(B1epifile,AlignFile,outDir,B1file,xform,[],AnalysisInfo,t1fileHM,SET1Fitfile,B1epiResidfile);
+        
+        
+        % Create the synthetic T1 weighted images and save them to disk
+        AnalysisInfo.T1wSynthesis=mrQ_T1wSynthesis(dataDir,B1file,outDir);
+        save(infofile,'AnalysisInfo');
+        
+        
+        
+   
+        
     end
 end
 %% VIII. LSQ or LINEAR fit of M0 and T1:
@@ -499,7 +515,7 @@ if lsqfit==1,
         Gain=double(HeadMask);
         SunGrid=1;
         % LSQ fit of M0 and T1: Use the sun-grid to excelerate this fit
-        [T1,M0] = mrQ_fitT1PD_LSQ(s2,HeadMask,tr,flipAngles,M0,t1,Gain,B1,outDir,xform,SunGrid,[],sub,mrQ.proclass);
+        [T1,M0] = mrQ_fitT1PD_LSQ(s2,HeadMask,tr,flipAngles,M0,t1,Gain,B1,outDir,xform,SunGrid,[],sub,mrQ.proclus);
         
         
         %
@@ -567,9 +583,9 @@ else
 end;
 
 Gainfile= fullfile(outDir,['GainFit.nii.gz']);
-[Gain1]=mrQ_smmothL_GainPhantoms(T1,M0,outDir,xform,mrQ,Gainfile); 
+[Gain1]=mrQ_smmothL_GainPhantoms(T1,M0,outDir,xform,mrQ,Gainfile,[],mrQ.hoginiues_mask);
 
-mrQ_FitCoilPolyFit(mrQ,AnalysisInfo)
+%mrQ_FitCoilPolyFit(mrQ,AnalysisInfo)
 
-     save(infofile,'AnalysisInfo');
+%save(infofile,'AnalysisInfo');
 

@@ -126,8 +126,8 @@ lsqfit = mrQ.lsq;
 if ~isfield(mrQ,'SunGrid');
     mrQ.SunGrid = 1;
 end
- SunGrid = mrQ.SunGrid;
- 
+SunGrid = mrQ.SunGrid;
+
 save(mrQ.name,'mrQ')
 
 % Clobber flag. Overwrite existing fit if it already exists and redo the T1
@@ -402,7 +402,7 @@ else
         else
             flipAngles = [s2(:).flipAngle];
             
-            if ~isfield(mrQ,'AligndSPGR'); % if the Align image was not crated we will make them know 
+            if ~isfield(mrQ,'AligndSPGR'); % if the Align image was not crated we will make them know
                 for j=1:length(s2)
                     ref   = fullfile(outDir,['Align' num2str(flipAngles(j)) 'deg']);
                     dtiWriteNiftiWrapper(single(s2(j).imData), xform,ref);
@@ -457,7 +457,7 @@ else
         end
         
         % USE sge make the B1 fit faster
-       
+        
         
         % This is lsq fit that uses the grid but you can make it not use
         % SGE: see help inside mrQ_fitB1_LSQ
@@ -533,11 +533,10 @@ if lsqfit==1,
         tr = [s(:).TR];
         
         Gain=double(HeadMask);
-       
+        
         % LSQ fit of M0 and T1: Use the sun-grid to excelerate this fit
         [T1,M0] = mrQ_fitT1PD_LSQ(s2,HeadMask,tr,flipAngles,M0,t1,Gain,B1,outDir,xform,SunGrid,[],sub,mrQ.proclus);
-        
-        
+         
         %
         
         % Save the T1 and M0 data
@@ -545,60 +544,50 @@ if lsqfit==1,
         dtiWriteNiftiWrapper(single(M0), xform, M0lsqfile);
         
         AnalysisInfo.T1lsqfile=T1lsqfile;
-        
-        
+           
     end
-    
     
     %%% LINEAR FITTING (lsqfit ~=1) Linear fit is used to calculate T1 and M0
     %%% (Linear fitting can bias the fit but it's very fast)
     
+end
+disp([' linear fits of T1 and PD !!!'] );
+T1LFfile= fullfile(outDir,['T1_map_lin.nii.gz']);
+M0LFfile= fullfile(outDir,['M0_map_lin.nii.gz']);
+%
+
+if (exist( T1LFfile,'file') && exist( M0LFfile,'file')  && ~clobber),
+    
+    disp(['loading exsisting T1 and M0 linear fit'])
+    T1=readFileNifti(T1LFfile);
+    M0=readFileNifti(M0LFfile);
+    T1=double(T1.data);
+    M0=double(M0.data);
+    
 else
-    disp([' linear fits of T1 and PD !!!'] );
-    T1LFfile= fullfile(outDir,['T1_map_lin.nii.gz']);
-    M0LFfile= fullfile(outDir,['M0_map_lin.nii.gz']);
-    %
     
-    if (exist( T1LFfile,'file') && exist( M0LFfile,'file')  && ~clobber),
-        
-        disp(['loading exsisting T1 and M0 linear fit'])
-        T1=readFileNifti(T1LFfile);
-        M0=readFileNifti(M0LFfile);
-        T1=double(T1.data);
-        M0=double(M0.data);
-        
-    else
-        
-        
-        disp('Performing linear fit of T1 and M0...');
-        flipAngles = [s2(:).flipAngle];
-        tr = [s(:).TR];
-        
-        % Check that all TRs are the same across all the scans in S
-        if(~all(tr == tr(1))), error('TR''s do not match!'); end
-        tr = tr(1);
-        
-        % Compute a linear fit of the the T1 estimate for all voxels.
-        % M0: PD = M0 * G * exp(-TE / T2*).
-        [T1,M0] = relaxFitT1(cat(4,s(:).imData),flipAngles,tr,B1);
-        
-        % Zero-out the values that fall outside of the brain mask
-        T1(~HeadMask) = 0;
-        M0(~HeadMask) = 0;
-        
-        
-        % Save the T1 and PD data
-        dtiWriteNiftiWrapper(single(T1), xform,T1LFfile);
-        dtiWriteNiftiWrapper(single(M0), xform, M0LFfile);
-        
-        
-        AnalysisInfo.T1LFfile=T1LFfile;
-        
-    end;
+    disp('Performing linear fit of T1 and M0...');
+    flipAngles = [s2(:).flipAngle];
+    tr = [s(:).TR];
+    
+    % Check that all TRs are the same across all the scans in S
+    if(~all(tr == tr(1))), error('TR''s do not match!'); end
+    tr = tr(1);
+    
+    % Compute a linear fit of the the T1 estimate for all voxels.
+    % M0: PD = M0 * G * exp(-TE / T2*).
+    [T1,M0] = relaxFitT1(cat(4,s(:).imData),flipAngles,tr,B1);
+    
+    % Zero-out the values that fall outside of the brain mask
+    T1(~HeadMask) = 0;
+    M0(~HeadMask) = 0;
     
     
+    % Save the T1 and PD data
+    dtiWriteNiftiWrapper(single(T1), xform,T1LFfile);
+    dtiWriteNiftiWrapper(single(M0), xform, M0LFfile);
     
-    
+    AnalysisInfo.T1LFfile=T1LFfile;
     
 end;
 

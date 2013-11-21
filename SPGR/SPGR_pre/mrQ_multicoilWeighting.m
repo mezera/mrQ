@@ -80,66 +80,63 @@ opt.sz       = sz;
 
 
 %% Align data and calculate weights
-kkk=1;
+
 for j=1:numel(flipAngles)
-    
+    % kkk is a counter to count how many images of the same flip anlge have
+    % been run
+    kkk=0;
+    % find all images with flip anlge j
     kk = find(flipAngles == flipAngles(j)); % won't kk always = j? *** originaly it was not the order of the flipangle as an input does not have to be the order of flipangle images saved in the s structure.
-        ref   = fullfile(datDir,['Align' num2str(flipAngles(j)) 'deg']);
-
-    if length(kk)>1
-        kk=kk(kkk);
-       ref   = fullfile(datDir,['Align' num2str(flipAngles(j)) 'deg_' num2str(kkk)]); 
-        kkk=kkk+1;
+    ref   = fullfile(datDir,['Align' num2str(flipAngles(j)) 'deg']);
+    
+    % Loop over images with the same flip angle
+    for fa = 1:length(kk)
+        kkk=kkk+1; % Count
+        ref   = fullfile(datDir,['Align' num2str(flipAngles(j)) 'deg_' num2str(kkk)]);
+        
+        % Create a reference nifti file (refIM) from the data structure (s)
+        mrQ_makeNiftiFromStruct(s(kk(kkk)),ref,xform);
+        refIM = readFileNifti(ref);
+        AlingSPGR{j}=ref;
+        
+        % Get the data from the nifti into a struct- (s1) Now the data will be
+        % in a structure with separate entries for each channel (-1 flag).
+        s1 = makeStructFromNifti(niiFile{j},-1,[],mrQ.permution);
+         
+        % The number of channels in the coil (It comes up +1 why?) --> becouse
+        % the scanner save also the combine image
+        channels = length(s1)-1;
+        
+        % Aligns all the series in s1 to the NIFTI file (or struct) refImg. If
+        % refImg is empty, all series are aligned to the first series. s11 is
+        % the structure, 'xform1' the transform and 's1' is the xformed
+        % multichannel data structure  %Only taking s1(33) and aligning that to
+        % the ref image.
+        [s11,xform1,s1] = relaxAlignAll_multichanels(s1(channels+1), refIM, mmPerVox, true, 1,s1(1:channels));
+          
+        % Size of the data for a given flip angle volume
+        szref = size(s(kk(kkk)).imData);
+        % Size of the data structure returned form relaxAlignAll_multichannels
+        szdat = size(s11(1).imData);
+          
+        % *** The data structures are different sizes. Handle that here.
+        if szref(1)>szdat(1); for k=1:length(s1); s1(k).imData(szdat(1):szref(1),:,:)=0; end; end
+        if szref(2)>szdat(2); for k=1:length(s1); s1(k).imData(:,szdat(2):szref(2),:)=0; end; end
+        if szref(3)>szdat(3); for k=1:length(s1); s1(k).imData(:,:,szdat(3):szref(3))=0; end; end
+        
+        % Do the coil weighting and return the weighted data in s2. For the
+        % first flip angle (j==1). For the rest of the volumes (j>1) Incoil
+        % will be passed through. Incoil is a 8x1 vector of indices of sorted
+        % channel means in descending order of the 8 coils (opt.numIn) with the
+        % highest mean signal assigined within mrQ_calculateCoilWeights
+        if j==1,
+            [s2(j) Incoil] = mrQ_calculateCoilWeights(s1,opt,s(kk(kkk)),[]);
+        else
+            [s2(j) dd]     = mrQ_calculateCoilWeights(s1,opt,s(kk(kkk)),Incoil);
+        end
+        
     end
-    % Create a reference nifti file (refIM) from the data structure (s)
- 
-    mrQ_makeNiftiFromStruct(s(kk),ref,xform); 
-    refIM = readFileNifti(ref);
-AlingSPGR{j}=ref;
-    
-    % Get the data from the nifti into a struct- (s1) Now the data will be
-    % in a structure with separate entries for each channel (-1 flag).
-    s1 = makeStructFromNifti(niiFile{j},-1,[],mrQ.permution);
-    
-    
-    % The number of channels in the coil (It comes up +1 why?) --> becouse
-    % the scanner save also the combine image
-    channels = length(s1)-1; 
-    
-    
-    % Aligns all the series in s1 to the NIFTI file (or struct) refImg. If
-    % refImg is empty, all series are aligned to the first series. s11 is
-    % the structure, 'xform1' the transform and 's1' is the xformed
-    % multichannel data structure  %Only taking s1(33) and aligning that to
-    % the ref image.
-    [s11,xform1,s1] = relaxAlignAll_multichanels(s1(channels+1), refIM, mmPerVox, true, 1,s1(1:channels));
-
-    
-    % Size of the data for a given flip angle volume
-    szref = size(s(kk).imData);
-    % Size of the data structure returned form relaxAlignAll_multichannels
-    szdat = size(s11(1).imData);
-    
-    
-    % *** The data structures are different sizes. Handle that here.
-    if szref(1)>szdat(1); for k=1:length(s1); s1(k).imData(szdat(1):szref(1),:,:)=0; end; end
-    if szref(2)>szdat(2); for k=1:length(s1); s1(k).imData(:,szdat(2):szref(2),:)=0; end; end
-    if szref(3)>szdat(3); for k=1:length(s1); s1(k).imData(:,:,szdat(3):szref(3))=0; end; end
-    
-    
-    % Do the coil weighting and return the weighted data in s2. For the
-    % first flip angle (j==1). For the rest of the volumes (j>1) Incoil
-    % will be passed through. Incoil is a 8x1 vector of indices of sorted
-    % channel means in descending order of the 8 coils (opt.numIn) with the
-    % highest mean signal assigined within mrQ_calculateCoilWeights
-    if j==1,
-        [s2(j) Incoil] = mrQ_calculateCoilWeights(s1,opt,s(kk),[]);
-    else
-        [s2(j) dd]     = mrQ_calculateCoilWeights(s1,opt,s(kk),Incoil);
-    end
-
 end
-
 
 %% Save out the data based on coil weights
 

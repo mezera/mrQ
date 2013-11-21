@@ -1,7 +1,21 @@
-function [Boxes, scaleFactor]=mrQ_ScaleBoxes_step2(Boxes,BoxesToUse,opt)
+function [Boxes, scaleFactor]=mrQ_ScaleBoxes_step2(Boxes,BoxesToUse,opt,errTres)
 
-%mrQ_ScaleBoxes(Boxes,BoxesToUse)
-                kk=0;
+%mrQ_ScaleBoxes(Boxes,BoxesToUse,errTres)
+
+if notDefined('errTres') 
+    % the max median present error btween two box that we still combine.
+    if isfield(opt,'T1reg');
+    % in case we don't use T1 regularization themedian present error defult
+    % treshold is higher. (5%)
+        if opt.T1reg==0
+            errTres=0.05;
+        end
+    else
+        % defult for any other case (include T1 reg) 1% error
+        errTres=0.01;
+    end
+end
+kk=0;
 
 %LinScaleMat=zeros(32*length(Boxes), length(Boxes));
 %LinScaleMat=zeros(length(Boxes), length(Boxes));
@@ -64,7 +78,7 @@ for ii=BoxesToUse %loop over boxes
 err= median(abs(Boxes(jj).PD(overlap_jj)*Ratio -Boxes(ii).PD(overlap_ii)) ./ Boxes(ii).PD(overlap_ii)  );
 %                    err=median((Boxes(jj).PD(overlap_jj)*Ratio -Boxes(ii).PD(overlap_ii)   ).^2 );
 %err=median(abs(Boxes(jj).PD(overlap_jj)*Ratio -Boxes(ii).PD(overlap_ii) ./ Boxes(ii).PD(overlap_ii)  ));
-            if err<0.01 && Ratio>0
+            if err<errTres && Ratio>0
                
 %                 if Ratio<0.1 || Ratio>3
 %                                     keyboard;

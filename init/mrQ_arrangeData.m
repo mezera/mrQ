@@ -112,7 +112,7 @@ rawDir = fullfile(dataDir,'raw');
 mrQ = mrQ_Set(mrQ,'raw',rawDir); % mrQ.rawDir=rawDir; % This should use mrQ_Set
 eval(['!  rm ' mrQ.RawDir '/mrQ_params.mat'])
 
-%keep truck of the dir re arangments 
+%keep truck of the dir re arangments
 if isfield(mrQ,'inputdata_seir')
     if isfield(mrQ.inputdata_seir,'dir')
         if strcmp(mrQ.inputdata_seir.dir,dataDir)
@@ -138,12 +138,12 @@ if ~exist(dcmDir,'dir')
     mkdir(fullfile(dcmDir,'tmp'));
 end
 if ~isempty(dcms)
-   for ii = 1:length(dcms)
-       % don't move the directory itself
-       if dcms(ii).isdir==0
-           movefile(fullfile(mrQ.RawDir,dcms(ii).name),fullfile(dcmDir,dcms(ii).name));
-       end
-   end
+    for ii = 1:length(dcms)
+        % don't move the directory itself
+        if dcms(ii).isdir==0
+            movefile(fullfile(mrQ.RawDir,dcms(ii).name),fullfile(dcmDir,dcms(ii).name));
+        end
+    end
 end
 % check if the files are tgz as oppose to zip
 tgzfile = dir(fullfile(dcmDir,'*.tgz'));
@@ -177,8 +177,8 @@ if (mrQ.MakeNewSEIRDir==1)
             SEIRepiDir_fit = fullfile(SEIRepiDir,'fitT1_GS');
             mkdir(SEIRepiDir_fit);
             ex=1;
-                mrQ.MakeNewSEIRDir=0;
-
+            mrQ.MakeNewSEIRDir=0;
+            
         end
         num=num+1;
     end
@@ -195,36 +195,49 @@ if (mrQ.MakeNewSEIRDir==1)
             
             Dat_Dir = [rawDir '/dicoms/' SEIR_seriesNumbers{i} '*'];
             Dat_Dir = dir(Dat_Dir);
-            Dat_Dir = [rawDir '/dicoms/' Dat_Dir.name];
+            name=Dat_Dir.name;
+            Dat_Dir = [rawDir '/dicoms/' name ];
             
-            % This is duplicating data - we don't want this.
-            if exist(Dat_Dir,'dir')
-                cmd = sprintf('!cp -r %s -d %s',Dat_Dir, SEIRepiDir_dat);
-                eval(cmd);
-            elseif exist(fullfile(rawDir,'dicoms'),'dir') && ~exist('istgz','var')
-                % This is how data came out of nims 1.0
-                % Assume the directory is within a .zip file
-                seirFile = fullfile(rawDir,'/dicoms/',[SEIR_seriesNumbers{i} '*.zip']);
-                % If it is a zip then unzip it
-                seirFile = ls(seirFile);
-                cmd = sprintf('! unzip %s -d %s',seirFile(1:end-1),SEIRepiDir_dat);
-                eval(cmd)
-            elseif exist('istgz','var') && istgz
-                % This is how data came out of nims 1.0
-                % Assume the directory is within a .zip file
-                seirFile = fullfile(rawDir,'/dicoms/',[SEIR_seriesNumbers{i} '*.tgz']);
-                % If it is a zip then unzip it
-                seirFile = ls(seirFile);
-                cmd = sprintf('! tar -xzvf %s -C %s',seirFile(1:end-1),SEIRepiDir_dat);
-                eval(cmd)
+            if isfield(mrQ,'SiemensDicom')
+                if i==1
+                    d=SIEMENS_dcm2nii(Dat_Dir, [], fullfile(SEIRepiDir_dat,name));
+                else
+                    d=SIEMENS_dcm2nii(Dat_Dir, [], fullfile(SEIRepiDir_dat,name),d);
+                end
+                stcname=fullfile(SEIRepiDir_dat,'raw_SEIR_strc');
+                save(stcname,'d');
+                mrQ.SEIR_raw_strac=stcname;
                 
             else
-                % This is for nims 2.0
-                untarNims2(rawDir,SEIR_seriesNumbers{i});
-                nims2 = true;
-                       
+                
+                % This is duplicating data - we don't want this.
+                if exist(Dat_Dir,'dir')
+                    cmd = sprintf('!cp -r %s -d %s',Dat_Dir, SEIRepiDir_dat);
+                    eval(cmd);
+                elseif exist(fullfile(rawDir,'dicoms'),'dir') && ~exist('istgz','var')
+                    % This is how data came out of nims 1.0
+                    % Assume the directory is within a .zip file
+                    seirFile = fullfile(rawDir,'/dicoms/',[SEIR_seriesNumbers{i} '*.zip']);
+                    % If it is a zip then unzip it
+                    seirFile = ls(seirFile);
+                    cmd = sprintf('! unzip %s -d %s',seirFile(1:end-1),SEIRepiDir_dat);
+                    eval(cmd)
+                elseif exist('istgz','var') && istgz
+                    % This is how data came out of nims 1.0
+                    % Assume the directory is within a .zip file
+                    seirFile = fullfile(rawDir,'/dicoms/',[SEIR_seriesNumbers{i} '*.tgz']);
+                    % If it is a zip then unzip it
+                    seirFile = ls(seirFile);
+                    cmd = sprintf('! tar -xzvf %s -C %s',seirFile(1:end-1),SEIRepiDir_dat);
+                    eval(cmd)
+                    
+                else
+                    % This is for nims 2.0
+                    untarNims2(rawDir,SEIR_seriesNumbers{i});
+                    nims2 = true;
+                    
+                end
             end
-            
         end
     end
     
@@ -284,121 +297,147 @@ if (mrQ.MakeNewSPGRRDir==1)
         
         
         for i=1:numel(SPGR_seriesNumbers)
-
+            
             Niifile=dir([rawDir '/' SPGR_seriesNumbers{i} '*.nii.gz']);
             Niifile=[rawDir '/'  Niifile.name];
             
             Dat_Dir=[rawDir '/dicoms/' SPGR_seriesNumbers{i} '*'];
             
             Dat_Dir=dir(Dat_Dir);
-            if Dat_Dir.name(end-3:end)=='.zip'
-                cmd = sprintf('! unzip %s -d %s',[rawDir '/dicoms/' Dat_Dir.name],[rawDir '/dicoms/']);
-                eval(cmd);
+            
+            
+%             for i = 1:numel(SEIR_seriesNumbers)
+%                 
+%                 Dat_Dir = [rawDir '/dicoms/' SEIR_seriesNumbers{i} '*'];
+%                 Dat_Dir = dir(Dat_Dir);
+%                 name=Dat_Dir.name;
+%                 Dat_Dir = [rawDir '/dicoms/' name ];
                 
-                Dat_Dir1=[rawDir '/dicoms/' SPGR_seriesNumbers{i} '*'];
-                Dat_Dir=dir(Dat_Dir1);
-                eval( ['! mv ' rawDir '/dicoms/' Dat_Dir(2).name ' ' rawDir '/dicoms/_' Dat_Dir(2).name])
-                Dat_Dir=Dat_Dir(1);
-            elseif strcmp(Dat_Dir.name(end-3:end), '.tgz')
-                cmd = sprintf('! tar -xzf %s -C %s',fullfile(dcmDir,Dat_Dir.name),fullfile(dcmDir,'tmp'));
-                eval(cmd)
-                % Find the name of this newly extracted directory
-                newDir=dir(fullfile(dcmDir,'tmp','*dicoms*'));
-                % Change it to be the correct name
-                movefile(fullfile(dcmDir,'tmp',newDir.name),fullfile(dcmDir,Dat_Dir.name(1:end-4)));
-                % delete the .tgz
-                delete(fullfile(dcmDir,Dat_Dir.name));
-                % Reset the variable to have the proper name
-                Dat_Dir.name = Dat_Dir.name(1:end-4);
-            end
-            
-            
-            Dat_Dir=[rawDir '/dicoms/' Dat_Dir.name];
-            
-            if exist(Dat_Dir,'dir')
-                if ( channels(i) == 0 && useNiftiFlag(i) == 0 )
-                    cmd = sprintf('!cp -r %s -d %s',Dat_Dir, SPGRDir_dat);
-                    eval(cmd);
-                    
-                elseif ( useNiftiFlag(i) == 1 )
-                    Dirname = [rawDir '/dicoms/' SPGR_seriesNumbers{i} '*'];
-                    Dirname = dir(Dirname);
-                    SPGRdataDir = fullfile(SPGRDir_dat, Dirname.name);
-                    mkdir(SPGRdataDir);
-                    cmd = sprintf('!cp -r %s -d %s',Niifile, SPGRdataDir);
-                    eval(cmd);
-                    files = dir(fullfile(Dat_Dir, '*MR*'));
-                    if isempty(files)
-                        files = dir(fullfile(Dat_Dir, '*dcm*'));
+                if isfield(mrQ,'SiemensDicom')
+                    name=Dat_Dir.name;
+                    Dat_Dir=[rawDir '/dicoms/' name ];
+                    Dat_Dirchannels=[rawDir '/dicoms/channels/' name ];
+                    if i==1
+                       [ ~, s,niiFiles{i},mrQ.coilNum(i)]=SIEMENS_dcm2nii(Dat_Dirchannels,Dat_Dir, fullfile(SPGRDir_dat,name));
+                    else
+                        [ ~, s,niiFiles{i},mrQ.coilNum(i)]=SIEMENS_dcm2nii(Dat_Dirchannels, Dat_Dir, fullfile(SPGRDir_dat,name),[],s);
                     end
+                    stcname=fullfile(SPGRDir_dat,'raw_SPGR_strc');
+                    save(stcname,'s', 'niiFiles');
+                    mrQ.SPGR_raw_strac=stcname;
                     
-                    cmd = sprintf('!cp %s %s',fullfile(Dat_Dir,files(1).name),fullfile(SPGRdataDir,files(1).name));
-                    eval(cmd);
+                else
                     
-                elseif ( channels(i) ~= 0 && useNiftiFlag(i) == 0 )
-                    Dirname = [rawDir '/dicoms/' SPGR_seriesNumbers{i} '*'];
-                    Dirname = dir(Dirname);
-                    SPGRdataDir = fullfile(SPGRDir_dat, Dirname.name);
-                    mkdir(SPGRdataDir);
-                    files = dir(fullfile(Dat_Dir, '*MR*'));
-                    for ii = channels(i)+1:channels(i)+1:length(files)
-                        cmd=sprintf('!cp %s %s',fullfile(Dat_Dir,files(ii).name),fullfile(SPGRdataDir,files(ii).name));
+                    
+                    if Dat_Dir.name(end-3:end)=='.zip'
+                        cmd = sprintf('! unzip %s -d %s',[rawDir '/dicoms/' Dat_Dir.name],[rawDir '/dicoms/']);
+                        eval(cmd);
+                        
+                        Dat_Dir1=[rawDir '/dicoms/' SPGR_seriesNumbers{i} '*'];
+                        Dat_Dir=dir(Dat_Dir1);
+                        eval( ['! mv ' rawDir '/dicoms/' Dat_Dir(2).name ' ' rawDir '/dicoms/_' Dat_Dir(2).name])
+                        Dat_Dir=Dat_Dir(1);
+                    elseif strcmp(Dat_Dir.name(end-3:end), '.tgz')
+                        cmd = sprintf('! tar -xzf %s -C %s',fullfile(dcmDir,Dat_Dir.name),fullfile(dcmDir,'tmp'));
                         eval(cmd)
+                        % Find the name of this newly extracted directory
+                        newDir=dir(fullfile(dcmDir,'tmp','*dicoms*'));
+                        % Change it to be the correct name
+                        movefile(fullfile(dcmDir,'tmp',newDir.name),fullfile(dcmDir,Dat_Dir.name(1:end-4)));
+                        % delete the .tgz
+                        delete(fullfile(dcmDir,Dat_Dir.name));
+                        % Reset the variable to have the proper name
+                        Dat_Dir.name = Dat_Dir.name(1:end-4);
                     end
-                end
-            else
-                % Assume that the files are in a zip file.
-                seirFile = [rawDir '/' SPGR_seriesNumbers{i} '*.zip'];
-                seirFile =  ls(seirFile);
-                if ( channels(i) == 0 )
-                    cmd = sprintf('! unzip %s -d %s',seirFile(1:end-1),SPGRDir_dat); %#ok<NASGU>
                     
-                elseif ( channels(i)~=0 )
-                    tmpDir = fullfile(rawDir,'tmp');
-                    mkdir(tmpDir);
                     
-                    cmd = sprintf('! unzip %s -d %s',seirFile(1:end-1),tmpDir);
-                    eval(cmd);
+                    Dat_Dir=[rawDir '/dicoms/' Dat_Dir.name];
                     
-                    [~, Dirname] = fileparts(seirFile(1:end-5));
-                    SPGRdataDir = fullfile(SPGRDir_dat, Dirname);
-                    mkdir(SPGRdataDir);
-                    
-                    files = dir(fullfile(tmpDir, Dirname,'*.dcm'));
-                    
-                    for ii = channels(i)+1:channels(i)+1:length(files);
-                        cmd = sprintf('!cp %s %s',fullfile(tmpDir,Dirname,files(ii).name),fullfile(SPGRdataDir,files(ii).name));
-                        eval(cmd)
+                    if exist(Dat_Dir,'dir')
+                        if ( channels(i) == 0 && useNiftiFlag(i) == 0 )
+                            cmd = sprintf('!cp -r %s -d %s',Dat_Dir, SPGRDir_dat);
+                            eval(cmd);
+                            
+                        elseif ( useNiftiFlag(i) == 1 )
+                            Dirname = [rawDir '/dicoms/' SPGR_seriesNumbers{i} '*'];
+                            Dirname = dir(Dirname);
+                            SPGRdataDir = fullfile(SPGRDir_dat, Dirname.name);
+                            mkdir(SPGRdataDir);
+                            cmd = sprintf('!cp -r %s -d %s',Niifile, SPGRdataDir);
+                            eval(cmd);
+                            files = dir(fullfile(Dat_Dir, '*MR*'));
+                            if isempty(files)
+                                files = dir(fullfile(Dat_Dir, '*dcm*'));
+                            end
+                            
+                            cmd = sprintf('!cp %s %s',fullfile(Dat_Dir,files(1).name),fullfile(SPGRdataDir,files(1).name));
+                            eval(cmd);
+                            
+                        elseif ( channels(i) ~= 0 && useNiftiFlag(i) == 0 )
+                            Dirname = [rawDir '/dicoms/' SPGR_seriesNumbers{i} '*'];
+                            Dirname = dir(Dirname);
+                            SPGRdataDir = fullfile(SPGRDir_dat, Dirname.name);
+                            mkdir(SPGRdataDir);
+                            files = dir(fullfile(Dat_Dir, '*MR*'));
+                            for ii = channels(i)+1:channels(i)+1:length(files)
+                                cmd=sprintf('!cp %s %s',fullfile(Dat_Dir,files(ii).name),fullfile(SPGRdataDir,files(ii).name));
+                                eval(cmd)
+                            end
+                        end
+                    else
+                        % Assume that the files are in a zip file.
+                        seirFile = [rawDir '/' SPGR_seriesNumbers{i} '*.zip'];
+                        seirFile =  ls(seirFile);
+                        if ( channels(i) == 0 )
+                            cmd = sprintf('! unzip %s -d %s',seirFile(1:end-1),SPGRDir_dat); %#ok<NASGU>
+                            
+                        elseif ( channels(i)~=0 )
+                            tmpDir = fullfile(rawDir,'tmp');
+                            mkdir(tmpDir);
+                            
+                            cmd = sprintf('! unzip %s -d %s',seirFile(1:end-1),tmpDir);
+                            eval(cmd);
+                            
+                            [~, Dirname] = fileparts(seirFile(1:end-5));
+                            SPGRdataDir = fullfile(SPGRDir_dat, Dirname);
+                            mkdir(SPGRdataDir);
+                            
+                            files = dir(fullfile(tmpDir, Dirname,'*.dcm'));
+                            
+                            for ii = channels(i)+1:channels(i)+1:length(files);
+                                cmd = sprintf('!cp %s %s',fullfile(tmpDir,Dirname,files(ii).name),fullfile(SPGRdataDir,files(ii).name));
+                                eval(cmd)
+                            end
+                            rmdir(tmpDir,'s');
+                        end
                     end
-                    rmdir(tmpDir,'s');
+                    
                 end
             end
-            
         end
+        
     end
     
-end
-
-
-
-
-
-%% Start a log file that will track what was done.
-
-%  Save out the variables and the directories so we can feed this stuff
-%  into the next functions in the pipeline.
-mrQ.Arange_Date=date;
-
-save(mrQ.name,'mrQ');
-return
-
-
-function untarNims2(rawDir, filename)
-
-tmp = dir(fullfile(rawDir,[filename '*']));
-seirDir = fullfile(rawDir,tmp.name);
-cmd = sprintf('tar -tzf %s', fullfile(seirDir,'*.tgz'));
-[~,tgzfiles] = system(cmd);
-f1 = strfind(tgzfiles,'.dcm');
-cmd = sprintf('tar -xzvf %s', fullfile(seirDir,'*.tgz'));
-system(cmd);
+    
+    
+    
+    
+    %% Start a log file that will track what was done.
+    
+    %  Save out the variables and the directories so we can feed this stuff
+    %  into the next functions in the pipeline.
+    mrQ.Arange_Date=date;
+    
+    save(mrQ.name,'mrQ');
+    return
+    
+    
+    function untarNims2(rawDir, filename)
+    
+    tmp = dir(fullfile(rawDir,[filename '*']));
+    seirDir = fullfile(rawDir,tmp.name);
+    cmd = sprintf('tar -tzf %s', fullfile(seirDir,'*.tgz'));
+    [~,tgzfiles] = system(cmd);
+    f1 = strfind(tgzfiles,'.dcm');
+    cmd = sprintf('tar -xzvf %s', fullfile(seirDir,'*.tgz'));
+    system(cmd);

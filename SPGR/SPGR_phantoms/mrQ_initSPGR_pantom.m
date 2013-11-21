@@ -46,11 +46,22 @@ s = dicomLoadAllSeries(dicomDir);
 for ii = 1:numel(niiFiles)
     [ s1(ii)  mrQ.coilNum(ii)]= makeStructFromNifti(niiFiles{ii},-2,s(ii),mrQ.permution);
     s1(ii).imData=double(s1(ii).imData);
+    
+    % consider add those for canonical corditate space
+   % canXform = mrAnatComputeCannonicalXformFromDicomXform(s1(ii).imToScanXform,size(s1(ii).data));
+   % [s1(ii).imData,s1(ii).mmPerVox] = applyCannonicalXform(s1(ii).data, canXform, s1(ii).mmPerVox, false);
+   % s1(ii).imToScanXform= inv(canXform*inv(s1(ii).imToScanXform));
+
+    
 end
 
 clear s
 s = s1;
 clear s1
+
+
+ 
+
 mmPerVox = s(1).mmPerVox(1:3);
 xform=s(1).imToScanXform;
 

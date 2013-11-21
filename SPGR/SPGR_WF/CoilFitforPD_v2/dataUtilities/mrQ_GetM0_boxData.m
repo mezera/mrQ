@@ -16,7 +16,9 @@ if ~notDefined('smoothkernel')
         tmp=M0(:,:,:,ii);
         M0(:,:,:,ii)=smooth3(tmp,'g',smoothkernel);
     end
+    if ~isempty(T1)
         T1(:,:,:)=smooth3(T1,'g',smoothkernel);
+    end
     end
 end
 XX(1)=opt.X(fb(1),fb(2),fb(3))-opt.HboxS(1);
@@ -39,8 +41,9 @@ boxSize = size(M01);
 [meanVal, coilIndex] = sort(squeeze(mean(mean(mean(M01)))),'descend');
 M01     = M01(:,:,:,coilIndex);
 meanVal = meanVal(coilIndex);
-
+    if ~isempty(T1)
 t1=T1(XX(1):XX(2),YY(1):YY(2),ZZ(1):ZZ(2));
+    end
 BM1=logical(BM(XX(1):XX(2),YY(1):YY(2),ZZ(1):ZZ(2)));
     
 

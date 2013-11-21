@@ -203,7 +203,10 @@ else
     
     fh(mask) = (1./T1(mask)- 1/T1freeval)./(1000./(0.934.*L + 93.03)-1/T1freeval); % THIS is the right one for some reson i used the other so better to redo it
 end
-
+% fh is a fraction of interacting protons. T1 is a wighted sum of the
+% proton population nder fast exchange system .
+% 1/T1= fh*(1/T1h)+ (1-fh)1/T1free.
+%fh is fraction of protons
 
 %% Threshold 
 
@@ -214,7 +217,7 @@ fh(find(fh<0))  = 0;
 
 
 %% The VIP map is calculated from VIP= fh x WF.
-
+% VIP make fh be frqction of voxel (volume).
 VIP       = zeros(size(T1));
 VIP(mask) = WF(mask).*fh(mask);
 
@@ -235,6 +238,13 @@ TV=1-WF;
 SIR=VIP./TV;
 
 %% This is a differnt model but it's work nicly as well
+% 1/T1= C*(1/T1h)+ (1-C)1/T1free.
+% % under the assumption that C is very small --> 0.
+%1-C=~1
+% Csir=C*(1/T1h) This is a constant in  a voxel
+% CC= TV*C1;
+% CC= TV*Csir*(1/T1h)
+% 1/T1=~ CC+ 1/T1free
 
 Csir       = zeros(size(T1));
 Csir(mask)=(1./T1(mask)- 1/4.3)./TV(mask);

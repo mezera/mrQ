@@ -1,4 +1,4 @@
-function [logname]=mrQ_PD_multicoil_RgXv_GridCall(outDir,SunGrid,proclass,subName,degrees,M0file,T1file,BMfile,outMm,boxSize,pracent_overlap,Coilsinfo,clobber)
+function [logname]=mrQ_PD_multicoil_RgXv_GridCall(outDir,SunGrid,proclass,subName,degrees,M0file,T1file,BMfile,outMm,boxSize,pracent_overlap,Coilsinfo,T1Reg,clobber)
 %
 %   [opt]=mrQ_PD_multicoil_RgXv_GridCall(outDir,SunGrid,proclass,subName,degrees,M0file,T1file,BMfile,outMm,boxSize,pracent_overlap,Coilsinfo,clobber)
 % # Create a stracture of information to fit the M0 boxes ffor coil gain
@@ -70,19 +70,6 @@ if(~exist('M0file','var') || isempty(M0file))
 end
 opt.M0file = M0file;
 
-if(~exist('T1file','var') || isempty(T1file))
-    T1file = fullfile(outDir,'T1_map_lsq.nii.gz');
-end
-if ~exist(T1file,'file')
-    T1file = fullfile(outDir,'maps/T1_lsq.nii.gz');
-end
-if ~exist(T1file,'file')
-    
-    disp(' can not find theT1 file')
-    error
-end
-
-opt.T1file=T1file;
 
 %using sungrid  defult no
 if(~exist('SunGrid','var'))
@@ -109,9 +96,37 @@ end
 if notDefined('outMm')
     outMm=[2 2 2];
 end
+% defult T1 regularization
+if notDefined('T1Reg')
+    T1Reg=1;
+end
+% no regulariation if T1file is set to 0
+if ~notDefined('T1file')
+    if (T1file==0 )
+        T1Reg=0;
+    end
+end
 
-
-
+% in case of T1 regularization load the T1 map.
+if  T1Reg==0
+    
+    opt.T1reg=0;
+else
+    opt.T1reg=1;
+    
+    if(~exist('T1file','var') || isempty(T1file))
+        T1file = fullfile(outDir,'T1_map_lsq.nii.gz');
+    end
+    if ~exist(T1file,'file')
+        T1file = fullfile(outDir,'maps/T1_lsq.nii.gz');
+    end
+    if ~exist(T1file,'file')
+        
+        disp(' can not find theT1 file')
+        error
+    end
+    opt.T1file=T1file;
+end
 
 
 
@@ -153,10 +168,15 @@ if notDefined('clobber')
     clobber = false;
 end
 
+
+
+if opt.T1reg
+
+
 %segmening R1 to tissue types 
 opt=R1Seg(opt);
 
-
+end
 %% find the boxes we will to fit
 
 
@@ -213,6 +233,10 @@ opt.donemask = donemask;
 opt.BasisFlag = 'qr'; %ortonormal basis for the coil  polynomyals
 opt.lambda = [1e4 5e3 1e3 5e2 1e2 5e1 1e1 5  1e0 0.5 1e-1 0] ;%[1e4  1e3 5e2 1e2  1e1  1e0  0] ; %the different wights (lambda) for the T1 regularization we will check the differnt lambda by cross validation.
 opt.Kfold=2;   % the cross validation fold ( use split half)
+
+if ~opt.T1reg
+opt.lambda=[ 1e16  1e15 1e14  1e12 1e10 1e9 1e8  1e4  1e0  0];
+end
 
 % the coils information how many coil to use and to poll from.
 opt.maxCoil=Coilsinfo.maxCoil;

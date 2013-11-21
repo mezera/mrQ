@@ -81,7 +81,7 @@ while any (ToDo==1)
     VxUsed(DoNow,1)=length(use);
     
     % add the new voxel to the great M0 image
-    if doneSt==0 % cheack if this is the first time we add voxels
+    if doneSt==0 % cheack if this is the first time we addthe  voxels
         doneSt=1;
         M0(use)=Im;
         Wait(use)=1;
@@ -93,14 +93,14 @@ while any (ToDo==1)
         [tf, loc]=ismember(use,whV); % the overlap locations
         loc=loc(loc>0);
         if ~isempty(loc)
-            % we need to calculate the offset btween the added voxel and the great M0.
+            % we need to calculate the scaler between the added voxel and the great M0.
             dc=median(M0(whV(loc))./Im(tf));
             VxUsed(DoNow,2)=length(find(tf==0));
             
             err1(DoNow)=median(abs (M0(whV(loc))-Im(tf).*dc)./M0(whV(loc)));
-            %  lets be sure that this is not totly off
+            %  lets be sure that this is not totaly off
             if (err1(DoNow)<0.01 && dc>0)
-                % we adding this voxel as wited sum. in the location to the location we
+                % we adding this voxel as weighted sum. for locations we
                 % allready estimate.
                 M0(use)=(M0(use).*Wait(use)+Im.*dc)./(Wait(use)+1); %waited sum
                 Wait(use)=Wait(use)+1;

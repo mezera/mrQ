@@ -307,8 +307,7 @@ if (mrQ.calM0_done==0);
     fprintf('\n calculate M0 for each coil               \n');
     
     %build a multi coil M0 image for the coils raw data and then fitted T1
-    [mrQ.M0combineFile] = mrQ_multicoilM0(mrQ.spgr_initDir,[],[],mrQ.SPGR_niiFile,mrQ.SPGR_niiFile_FA,mrQ);
-
+    [mrQ.M0combineFile] = mrQ_multicoilM0phantom(mrQ.spgr_initDir,[],[],mrQ.SPGR_niiFile,mrQ.SPGR_niiFile_FA,mrQ);
     mrQ.calM0_done=1;
     save(mrQ.name,'mrQ');
 else

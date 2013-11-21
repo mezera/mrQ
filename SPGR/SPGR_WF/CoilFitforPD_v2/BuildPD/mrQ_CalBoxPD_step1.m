@@ -11,8 +11,8 @@ M0=readFileNifti(opt.M0file);
 M0=M0.data;
 SZ=size(M0);
 %T1
-T1=readFileNifti(opt.T1file);
-T1=T1.data;
+%T1=readFileNifti(opt.T1file);
+%T1=T1.data;
 
 %Brain mask
 BM=readFileNifti(opt.BMfile);
@@ -37,12 +37,12 @@ for ii=BoxesToUse
     [fb(1,1,1), fb(1,1,2), fb(1,1,3)]=ind2sub(size(opt.X),opt.wh(ii));
     
     % get all the relevant box data for the fit
-    [M01, t1, BM1, SZ, skip, ~,~, XX, YY, ZZ ]= mrQ_GetM0_boxData(opt,T1,M0,BM,fb(1,1,:),smoothkernel);
+    [M01, ~, BM1, SZ, skip, ~,~, XX, YY, ZZ ]= mrQ_GetM0_boxData(opt,[],M0,BM,fb(1,1,:),smoothkernel);
     
     M0_v = reshape(M01, prod(SZ(1:3)), SZ(4));
     %make a R1 regularazation matrix
-    R1basis(1:nVoxels,1) = 1; R1=1./(t1(:)); R1basis(:,2) =R1;
-    R1basis=double(R1basis);
+  %  R1basis(1:nVoxels,1) = 1; R1=1./(t1(:)); R1basis(:,2) =R1;
+  %  R1basis=double(R1basis);
     
     % 1. Get G
     g=CoilGains(ii).g;

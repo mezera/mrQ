@@ -180,6 +180,11 @@ if isfield(mrQ,'inputdata_spgr') %infut of list of nifti file and the relevant s
     [s niiFiles]=mrQ_input2Stuck(mrQ.inputdata_spgr,0);
     t1Inds(1:length(s))=1;
     t1Inds=logical(t1Inds);
+    
+elseif  isfield(mrQ,'SPGR_raw_strac')
+    load(mrQ.SPGR_raw_strac);
+     t1Inds(1:length(s))=1;
+    t1Inds=logical(t1Inds);
 else
     
 dicomDir = fullfile(spgrDir,'data');
@@ -290,14 +295,16 @@ if process
     end
     % Loop over niiFiles to get the data from the nifti and combine
     % with the dicom info - reshape and permute.
+    if  isfield(mrQ,'SPGR_raw_strac')
+    else
     for ii = 1:numel(niiFiles)
-        [s1(ii) mrQ.coilNum(ii)]= makeStructFromNifti(niiFiles{ii},-2,s(ii),mrQ.permution);
+        [s1(ii), mrQ.coilNum(ii)]= makeStructFromNifti(niiFiles{ii},-2,s(ii),mrQ.permution);
     end
     clear s
     s = s1;
     clear s1
 end
-
+end
 
 %% More checks and housekeeping
 
@@ -319,9 +326,12 @@ tr = [s(t1Inds).TR];
 
 % Make sure that the TRs are all the same
 if ~all(tr == tr(1))
-    p = input(['TR''s do not match: ' num2str(tr) ' please select the TR ']) ;
-    trIndsNot = [s(:).TR] ~= p;
-    t1Inds    = t1Inds & ~trIndsNot;
+    p = input(['TR''s do not match: ' num2str(tr) ' please select the TR, press 0 to use all of the scans  \n ']) ;
+    if p==0
+    else
+        trIndsNot = [s(:).TR] ~= p;
+        t1Inds    = t1Inds & ~trIndsNot;
+    end
 end
 
 
@@ -331,9 +341,12 @@ te = [s(t1Inds).TE];
 
 % Check that the TEs match
 if ~all(te == te(1))
-    p = input(['TE''s do not match: ' num2str(te) ' please select the TE ']) ;
-    teIndsNot = [s(:).TE] ~= p;
-    t1Inds = t1Inds & ~teIndsNot;
+    p = input(['TE''s do not match: ' num2str(te) ' please select the TE, press 0 to use all of the scans  \n']) ;
+    if p==0
+    else
+        teIndsNot = [s(:).TE] ~= p;
+        t1Inds = t1Inds & ~teIndsNot;
+    end
 end
 
 
@@ -349,7 +362,7 @@ if mrQ.cheack==1
     for f = 1:numel(s(t1Inds)),
         showMontage(s(f).imData,[],[],[],[],10);
         
-        an1 = input( ['Does the image  with of ' num2str(s(f).flipAngle) ' is good? Press 1 if yes 0 if no '])
+        an1 = input( ['Does the image  with of ' num2str(s(f).flipAngle) ' is good? Press 1 if yes 0 if no \n'])
        
          if an1==0
          t1Inds(f) = 0;  
@@ -428,9 +441,33 @@ if process
     
     
     % Align all the series to this subject's reference volume
-    ref       = readFileNifti(refImg);
-    [s,xform] = relaxAlignAll(s(find(t1Inds)),ref,mmPerVox,true,interp); %#ok<FNDSB>
+    %% NOTES
+    % originatly we used spm 8 ridge body registration code applayied
+    % by RFD for detail see relaxAlignAll. this was tested and work on
+    % GE data.
+    % this code is not working for our siemens data we there for use
+    % fsl implemntaion for details see mrQ_fslAlignCall. it still to test if all data need to be
+    % use this code.
+    %
     
+    
+    
+       % if  ~isfield(mrQ,'SPGR_raw_strac')
+            %spm
+        ref       = readFileNifti(refImg);
+
+    [s,xform] = relaxAlignAll(s(find(t1Inds)),ref,mmPerVox,true,interp); %#ok<FNDSB>
+        %else
+           %         Dpath=fullfile(mrQ.SPGR,'data');
+% make nii from the images
+                    %for ii=1:length(s)
+                        
+              %          niilist(ii).name=['T1w_FA' num2str(s(ii).flipAngle) '.nii.gz'];
+                %        savename=fullfile(Dpath,niilist(ii).name);
+                  %  mrQ_makeNiftiFromStruct(s(ii),savename,s(ii).imToScanXform);
+                    %end
+       % [s, xform ]=mrQ_fslAlignCall(Dpath,s,niilist,refImg);
+       % end
     
     % Save out the aligned data
     outFile = fullfile(outDir,'dat_aligned.mat');

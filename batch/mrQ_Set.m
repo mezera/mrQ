@@ -99,6 +99,8 @@ switch(param)
         mrQ.brakeAfterT1=varargin;
     case {'siemens'}
         mrQ.siemens=varargin;
+        case {'siemensdicom'}
+        mrQ.SiemensDicom=varargin;
     case {'permution'}
         mrQ.permution=varargin;
         case {'inputdata_seir'}
@@ -123,7 +125,10 @@ switch(param)
         mrQ.SPGR_PDBuild_done=varargin;
     case{ 'freesurfer'}
         mrQ.freesurfer=varargin;
-        
+            case{ 'reset_raw_dir'}
+mrQ.RawDir=fileparts(mrQ.name);
+ case{ 'muti_coil_im'}
+        mrQ.muti_coil_im=varargin;
     otherwise
         
         error('Uknown mrQ parameter');

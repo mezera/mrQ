@@ -1,5 +1,10 @@
-function opt=R1Seg(opt)
+function opt=R1Seg(opt,CSFVal)
 
+
+
+if notDefined('CSFVal')
+    CSFVal=0.35; %R1 in -sec water in boday temp  (minimum value ) any think above that will cosider as water for segmentation (the same tissue)
+end
 
 BM=readFileNifti(opt.BMfile);
 BM=logical(BM.data);
@@ -8,7 +13,7 @@ T1=readFileNifti(opt.T1file);
 
 R1=1./T1.data;
 seg=zeros(size(R1));
-CSF= R1<0.35; %any tisuue with T1> ~0.2.85 is mostlly water and is a differnt tissue (CSF) then brain tissue
+CSF= R1<CSFVal; %any tisuue with T1> ~0.2.85 is mostlly water and is a differnt tissue (CSF) then brain tissue
 
 R1(R1>2.5)=2.5;
 mask= BM & ~CSF & R1<2 ;% in the brain not CSF and not very low (bon or noise)
@@ -22,6 +27,7 @@ while notdone==0
     
     notdone=1;
     % check we don't get a strange cluster that is very small in size (if
+    
     % so this might be just noise)
     if  length(find(IDX==1))/length(IDX)<0.05
         mask=mask & seg~=1;

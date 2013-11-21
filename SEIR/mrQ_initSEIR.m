@@ -97,11 +97,13 @@ saveName = fullfile(loadPath, 'SEIR_Dat');
 %% Load raw DICOM data into a single structure (d)
 if isfield(mrQ,'inputdata_seir') %infut of list of nifti file and the relevant scan parameters
     d=mrQ_input2Stuck(mrQ.inputdata_seir);
+elseif  isfield(mrQ,'SEIR_raw_strac')
+    load(mrQ.SEIR_raw_strac)
 else
     d     = dicomLoadAllSeries(loadPath);
     xform = d(1).imToScanXform; % We don't seem to use this anywhere.
     
-
+    
     %to do i think that the siemens and the other nifti need to be used
     %with the genral nifti case inputdata_seir
     if isfield(mrQ,'siemens');
@@ -161,17 +163,32 @@ end
 
 % seriesDescription maybe missing so we will add it. otherwise part of code
 % will brack
-    for ii=1:length(d)
+for ii=1:length(d)
     if isempty(d(ii).seriesDescription); d(ii).seriesDescription='SEIR';end
-    end
+end
 %% Align series in d and deal with complex data
 
 % Align & ~Complex
 if (alignFlag == 1) && (complexFlag == 0)
-    mm = d.mmPerVox;
-    [d xform] = relaxAlignAll(d, [], mm, false, 1);
+    %% NOTES
+    % originatly we used spm 8 ridge body registration code applayied
+    % by RFD for detail see relaxAlignAll. this was tested and work on
+    % GE data.
+    % this code is not working for our siemens data we there for use
+    % fsl implemntaion for details see mrQ_fslAlignCall. it still to test if all data need to be
+    % use this code.
+    %
+    if ~isfield(mrQ,'SEIR_raw_strac')
+        %spm
+        mm = d.mmPerVox;
+        [d xform] = relaxAlignAll(d, [], mm, false, 1);
+    else
+        %fsl
+        Dpath=fullfile(mrQ.SEIRepiDir,'data');
+        [d, xform]=mrQ_fslAlignCall(Dpath,d);
+        
+    end
 end
-
 % Determine number of rows (nRows) number of Columns (nCol) and number of
 % slices (nSlice) and number of series (nSeries) and initialize the data
 % matrix and extra structure.

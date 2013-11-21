@@ -1,4 +1,4 @@
-function SIEMENS_dcm2nii(dicomDir, combineddicomDir, savefilename)
+function [s_all, s_comb,niiName,Ncoils]=SIEMENS_dcm2nii(dicomDir, combineddicomDir, savefilename,s_all,s_comb,saveFullStrc,saveCombStrc)
 
 % Preliminary script to sort T1 flash dicom file in SIEMENS scanner in
 % order to create a nifti file used for mrQ analyses.
@@ -71,7 +71,8 @@ for(imNum=1:length(dicomFiles))
         s.mmPerVox = [info.PixelSpacing(:)' info.SliceThickness];
     end
     
-    
+           s.fieldStrength=info.MagneticFieldStrength;
+
     % Number of slices
     sliceNum = info.InstanceNumber;
     
@@ -84,63 +85,70 @@ for(imNum=1:length(dicomFiles))
     s.flipAngle = info.FlipAngle;
     % TE
     s.TE=info.EchoTime;
-
-
+    
+    
     if (isfield(info,'InversionTime'))
         s.inversionTime=info.InversionTime;
     else
         s.inversionTime=[];
     end
-        
-
-
+    
+    
+    
     % Read the header which specifies which dicom is from which channel
     channeltag = info.Private_0051_100f;
     [token,remain] = strtok(channeltag,'H');
     channelcode = str2num(token);
+    if ~isempty(channelcode)
     s.imData(:,:,sliceNum, channelcode) = dicomread(info)';
-end
-
-%% Read the dicom files combining all slices
-
-% Argument chekinc of dicom folder
-d = genpath(combineddicomDir);
-if(isempty(d))
-    error(['Dicom dir "' d '" not found or empty.']);
-end
-if(isunix)
-    d = explode(':',genpath(combineddicomDir));
-else
-    d = explode(';',genpath(combineddicomDir));
-end
-d = d(1:end-1);
-n = 0;
-
-% Specifying the dicom file name
-for(ii=1:length(d))
-    d2 = dir(fullfile(d{ii},'*'));
-    for(jj=1:length(d2))
-        if(~d2(jj).isdir)
-            n = n+1;
-            dicomFiles2{n} = fullfile(d{ii},d2(jj).name);
-        end
+    else
+            s.imData(:,:,sliceNum) = dicomread(info)';
     end
 end
+Ncoils=size( s.imData,4);
 
-clear d;
-numSeries = 0;
-
-% Attaching combined dicom info to nifti file as a 33th channel
-for(imNum=1:length(dicomFiles2))
-    curFile = dicomFiles2{imNum};
-    info = dicominfo(curFile);
-    s.TR = info.RepetitionTime;
-    s.seriesDescription = info.SeriesDescription;
-    s.phaseEncodeDir = info.InPlanePhaseEncodingDirection;
-    sliceNum = info.InstanceNumber;
-    s.imData(:,:,sliceNum, 33) = dicomread(info)';
+%% Read the dicom files combining all slices
+if ~notDefined('combineddicomDir')
+    % Argument chekinc of dicom folder
+    d = genpath(combineddicomDir);
+    if(isempty(d))
+        error(['Dicom dir "' d '" not found or empty.']);
+    end
+    if(isunix)
+        d = explode(':',genpath(combineddicomDir));
+    else
+        d = explode(';',genpath(combineddicomDir));
+    end
+    d = d(1:end-1);
+    n = 0;
+    
+    % Specifying the dicom file name
+    for(ii=1:length(d))
+        d2 = dir(fullfile(d{ii},'*'));
+        for(jj=1:length(d2))
+            if(~d2(jj).isdir)
+                n = n+1;
+                dicomFiles2{n} = fullfile(d{ii},d2(jj).name);
+            end
+        end
+    end
+    
+    clear d;
+    numSeries = 0;
+    
+    % Attaching combined dicom info to nifti file as a 33th channel
+    for(imNum=1:length(dicomFiles2))
+        curFile = dicomFiles2{imNum};
+        info = dicominfo(curFile);
+        s.TR = info.RepetitionTime;
+        s.seriesDescription = info.SeriesDescription;
+        s.phaseEncodeDir = info.InPlanePhaseEncodingDirection;
+       s.fieldStrength=info.MagneticFieldStrength;
+ 
+        sliceNum = info.InstanceNumber;
+        s.imData(:,:,sliceNum, Ncoils+1) = dicomread(info)';
+    end
 end
-
 %% Compute scanner-to-image xform
 
 dim = size(s.imData);
@@ -213,9 +221,8 @@ else fpsDim = [1 2 3]; end
 
 % Initilize nifti structure
 ni = niftiGetStruct(s.imData, s.imToScanXform, 1, s.seriesDescription, [], [], fpsDim);
-
 %for now we are keeping the same trasform to the nifti and dicoms
-% Applying xform to nifti  
+% Applying xform to nifti
 ni = niftiApplyCannonicalXform(ni);
 
 % Setting nifti file name
@@ -224,7 +231,43 @@ ni.fname = savefilename;
 % Save file
 niiName=[savefilename '.nii.gz'];
 niftiWriteMatlab(ni,savefilename);
+
+
+s_comb1=s;
+s_comb1.imData=s.imData(:,:,:,end);
+
+
+if notDefined('saveCombStrc')
+    saveCombStrc=false;
+end
+if saveCombStrc
+strName=[savefilename 'Comb.mat'];
+save(strName,'s_comb1')
+end
+
+if notDefined('saveFullStrc')
+    saveFullStrc=false;
+end
+if saveFullStrc
 strName=[savefilename '.mat'];
 
 save(strName,'s')
+end
+
+
+
+if notDefined('s_all')
+    s_all=s;
+else
+    ii=length(s_all);
+    s_all(ii+1)=s;
+end
+
+
+if notDefined('s_comb')
+    s_comb=s_comb1;
+else
+    ii=length(s_comb);
+    s_comb(ii+1)=s_comb1;
+end
 

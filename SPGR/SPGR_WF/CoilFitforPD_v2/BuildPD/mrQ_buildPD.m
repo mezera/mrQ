@@ -114,5 +114,6 @@ Boxes=mrQ_CalBoxPD_step1(opt,BoxesToUse,CoilGains);
 %eval(['! rm ' tmpfile])
 
 %% calculate WF by normalize PD to CSF==1
-
+if unique( ~csffile==0)
 opt=mrQ_PD2WF_step5(opt,csffile,segfile);
+end

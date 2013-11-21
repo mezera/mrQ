@@ -1,4 +1,4 @@
- function [opt]=mrQ_resamp4G_fit(opt,outMm,interp)
+ function [opt]=mrQ_resamp4G_fit(opt,outMm,interp,T1reg)
  %This function resample the M0f (4D)  T1 and brain mask (3D) images to
  %the the outMm resulotion and save those file location to the opt so they
  %will be used for Gain Fit. interp define the interpolation method
@@ -51,6 +51,7 @@ sz=size(BM.data);
 
 
 %% T1
+if opt.T1reg
 T1=readFileNifti(opt.T1file);
 
 
@@ -61,8 +62,10 @@ T1=readFileNifti(opt.T1file);
 % resample process
 T1UnderSamp((T1UnderSamp<0.4))=0; % brian tisuue
 T1UnderSamp((T1UnderSamp>5))=5; % too high T1
-BMUnderSamp(BMUnderSamp<1)=0; %not sure this is brain any more
 BMUnderSamp(T1UnderSamp==0)=0; % not brain by T1 values
+end
+
+BMUnderSamp(BMUnderSamp<1)=0; %not sure this is brain any more
 
 B=ones(3,3,3) ;% a 3X3x3 mask
 C=convn(BMUnderSamp,B,'same'); %to be sure lets only keep the voxel  that are neen brain voxel
@@ -77,6 +80,7 @@ opt.BMfile_Org=opt.BMfile;
 opt.BMfile=filename;
 %clear BM BMUnderSamp BMUnderSamp_Xform filename
 
+if opt.T1reg
 %T1
 filename=fullfile(opt.outDir,['T1resmp_' num2str(outMm(1)) '_' num2str(outMm(2)) '_' num2str(outMm(3)) '.nii.gz']);
 dtiWriteNiftiWrapper(single(T1UnderSamp),T1UnderSamp_Xform,filename);
@@ -84,7 +88,7 @@ dtiWriteNiftiWrapper(single(T1UnderSamp),T1UnderSamp_Xform,filename);
 
 opt.T1file_Org=opt.T1file;
 opt.T1file=filename;
-
+end
 %clear T1 T1UnderSamp T1UnderSamp_Xform filename
 
 

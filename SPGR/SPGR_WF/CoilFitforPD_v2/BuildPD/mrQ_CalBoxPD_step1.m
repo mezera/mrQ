@@ -1,11 +1,13 @@
-function Boxes=mrQ_CalBoxPD_step1(opt,BoxesToUse,CoilGains)
+function [Boxes, PositiveBoxs, UnCorBoxs]=mrQ_CalBoxPD_step1(opt,BoxesToUse,CoilGains)
 % Boxes=mrQ_CalBoxPD_step1(opt,BoxesToUse,CoilGains)
 %
 %
 % AM Vistalab team 2013
+%book keeping of box fit that went wrong
+PositiveBoxs=zeros(length(opt.wh),1);
+UnCorBoxs=zeros(length(opt.wh),1);
 
 % Get the M0 and T1 information
-
 %multi coil M0
 M0=readFileNifti(opt.M0file);
 M0=M0.data;
@@ -40,6 +42,7 @@ for ii=BoxesToUse
     [M01, ~, BM1, SZ, skip, ~,~, XX, YY, ZZ ]= mrQ_GetM0_boxData(opt,[],M0,BM,fb(1,1,:),smoothkernel);
     
     M0_v = reshape(M01, prod(SZ(1:3)), SZ(4));
+    
     %make a R1 regularazation matrix
   %  R1basis(1:nVoxels,1) = 1; R1=1./(t1(:)); R1basis(:,2) =R1;
   %  R1basis=double(R1basis);
@@ -58,7 +61,8 @@ for ii=BoxesToUse
     %if it less then Zerow it is just wrong
     mask=PD>0; 
     
-    % 3. solve all coils Gain
+    
+    % 3. solve for  all coils Gain
     G  = zeros(nVoxels,Ncoils);
     g0 = zeros(nPolyCoef,Ncoils);
     for jj=1:Ncoils
@@ -68,7 +72,8 @@ for ii=BoxesToUse
     G = pBasis*g0;
     % 4 solve all coil PD
     PD = zeros(nVoxels,1);
-    for jj=1:nVoxels
+    V=1:nVoxels & mask';
+    for jj=find(V)
         PD(jj) = G(jj,:)' \ M0_v(jj,useCoil)';
     end
     
@@ -76,10 +81,24 @@ for ii=BoxesToUse
     Boxes(ii).XX=XX;
     Boxes(ii).YY=YY;
     Boxes(ii).ZZ=ZZ;
+    % cheack for coralation role
     Mc=corrcoef(M0_v(:,useCoil));Gc=corrcoef(G);
     Bad= find(Mc<Gc);
+    
+    %cheack for bad solotion negative PD. 
+    if     length(find(mask))/length(mask)<0.5 
+%        if there 50% negative value it clearly a wrong solotion
+         Boxes(ii).NegativeBad=1;
+    else
+         Boxes(ii).NegativeBad=0;
+         PositiveBoxs(ii)=1;
+    end
+    
+    % cheack if the M0 vector are more colralated the the G. they must be
+    % or the sulotion is wrong
     if isempty(Bad)
         Boxes(ii).Corgood=1;
+        UnCorBoxs(ii)=1;
     else
         Boxes(ii).Corgood=0;
     end

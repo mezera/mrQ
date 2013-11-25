@@ -1,4 +1,5 @@
-function [M0,Wait,VxUsed,Boxorder,err1]= mrQ_BoxsWiseAlignment_step3(Boxes,ScaleMat,BoxesToUse,boxNm,opt)
+function [M0,Wait,VxUsed,Boxorder,err1]= mrQ_BoxsWiseAlignment_step3(Boxes,ScaleMat,BoxesToUse,boxNm,opt,errTres)
+% [M0,Wait,VxUsed,Boxorder,err1]= mrQ_BoxsWiseAlignment_step3(Boxes,ScaleMat,BoxesToUse,boxNm,opt,errTres)
 
 
 if ~isfield(Boxes,'loc')
@@ -7,7 +8,22 @@ end
 if notDefined('boxNm')
     boxNm=1;
 end
+if notDefined('errTres') 
+        % the max median present error btween two box that we still combine.
 
+       % defult for any other case (include T1 reg) 1% error
+        errTres=0.03;
+    if isfield(opt,'T1reg');
+    % in case we don't use T1 regularization themedian present error defult
+    % treshold is higher. (12%)
+        if opt.T1reg==0
+            errTres=0.12;
+        end
+   
+    end
+     
+     
+end
 %% intiate parameters
 %brain mask
 BM=readFileNifti(opt.BMfile);
@@ -74,7 +90,7 @@ while any (ToDo==1)
     Im=nanmedian(MMii,2);
     % cheack that the estimation are not wildly different
     ImS=nanstd(MMii,[],2);
-    good=(ImS./Im)<0.03;
+    good=(ImS./Im)<errTres;
     Im=Im(good);
     use=use(good);
     % keep track of the number of voxel we add

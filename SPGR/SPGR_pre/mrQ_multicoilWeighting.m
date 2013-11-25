@@ -80,14 +80,13 @@ opt.sz       = sz;
 
 
 %% Align data and calculate weights
-
-for j=1:numel(flipAngles)
+for j=1:numel(unique(   flipAngles))
     % kkk is a counter to count how many images of the same flip anlge have
     % been run
     kkk=0;
     % find all images with flip anlge j
     kk = find(flipAngles == flipAngles(j)); % won't kk always = j? *** originaly it was not the order of the flipangle as an input does not have to be the order of flipangle images saved in the s structure.
-    ref   = fullfile(datDir,['Align' num2str(flipAngles(j)) 'deg']);
+   % ref   = fullfile(datDir,['Align' num2str(flipAngles(j)) 'deg']);
     
     % Loop over images with the same flip angle
     for fa = 1:length(kk)

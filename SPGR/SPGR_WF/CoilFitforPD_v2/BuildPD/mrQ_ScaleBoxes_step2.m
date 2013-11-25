@@ -1,25 +1,30 @@
 function [Boxes, scaleFactor]=mrQ_ScaleBoxes_step2(Boxes,BoxesToUse,opt,errTres)
-
+%
 %mrQ_ScaleBoxes(Boxes,BoxesToUse,errTres)
+%
+% AM (C) Stanford University, VISTA
 
-if notDefined('errTres') 
+if notDefined('errTres')
+        % defult for any other case (include T1 reg) 1% error
+    errTres=0.01;
+
     % the max median present error btween two box that we still combine.
     if isfield(opt,'T1reg');
-    % in case we don't use T1 regularization themedian present error defult
-    % treshold is higher. (5%)
+        % in case we don't use T1 regularization themedian present error defult
+        % treshold is higher. (5%)
         if opt.T1reg==0
             errTres=0.05;
         end
-    else
-        % defult for any other case (include T1 reg) 1% error
-        errTres=0.01;
+        
     end
+
 end
 kk=0;
 
 %LinScaleMat=zeros(32*length(Boxes), length(Boxes));
 %LinScaleMat=zeros(length(Boxes), length(Boxes));
 scaleFactor=zeros(length(Boxes), length(Boxes));
+
 donemask=ones(length(Boxes), length(Boxes));
 donemask(BoxesToUse,BoxesToUse)=0;
 %Ref=randperm(BoxesToUse);
@@ -92,8 +97,8 @@ err= median(abs(Boxes(jj).PD(overlap_jj)*Ratio -Boxes(ii).PD(overlap_ii)) ./ Box
                 % we wll agreagate all the boxes like that in LinScaleMat and solve the linear  eqation system
                 % after
                 
-                %LinScaleMat(ii,ii)=Mij+LinScaleMat(ii,ii);
-                %LinScaleMat(ii,jj)=-Mji;
+%                 LinScaleMat(ii,ii)=1+LinScaleMat(ii,ii);
+%                 LinScaleMat(ii,jj)=-Ratio;
             
             end
             

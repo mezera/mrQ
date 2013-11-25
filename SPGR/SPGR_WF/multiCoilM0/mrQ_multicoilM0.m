@@ -63,25 +63,27 @@ B1 = double(B1.data);
 
 
 %% Align the channels to the reference image and combine them
-kkk=1;
+
 
 % For each flip angle align the individual channel data to the reference
 % image and combine them
-for j=1:length(flip_Angles)
-    kk = find(flipAngles==flip_Angles(j));
+for j=1:numel(unique(flipAngles))
     
-    % The ref image here will be an indivudual nifti file containing the
-    % data from a given flip angle. 
-    ref = fullfile(datDir,['Align' num2str(flip_Angles(j)) 'deg']);
+  % kkk is a counter to count how many images of the same flip anlge have
+    % been run
+    kkk=0;
+    % find all images with flip anlge j
+    kk = find(flipAngles == flipAngles(j)); % won't kk always = j? *** originaly it was not the order of the flipangle as an input does not have to be the order of flipangle images saved in the s structure.
+  %  ref   = fullfile(datDir,['Align' num2str(flipAngles(j)) 'deg']);
     
-    if length(kk)>1
+    % Loop over images with the same flip angle
+    for fa = 1:length(kk)
+        kkk=kkk+1; % Count
+        nk=kk(kkk);
+        ref   = fullfile(datDir,['Align' num2str(flipAngles(j)) 'deg_' num2str(kkk)]);
         
-        kk=kk(kkk);
-       ref   = fullfile(datDir,['Align' num2str(flipAngles(j)) 'deg_' num2str(kkk)]); 
-        kkk=kkk+1;
-    end
     
-    mrQ_makeNiftiFromStruct(s(kk),ref,xform);
+    mrQ_makeNiftiFromStruct(s(nk),ref,xform);
     refIM = readFileNifti(ref);
     
     % niifile here is the raw image???
@@ -91,7 +93,7 @@ for j=1:length(flip_Angles)
     [s11,xform1 s1] = relaxAlignAll_multichanels(s1(channels+1), refIM, mmPerVox, true, 1,s1(1:channels));
     
     
-    szref = SZraw(:,:,:,kk)';
+    szref = SZraw(:,:,:,nk)';
     szdat = size(s11(1).imData);
     clear refIM s11
     % Dimension checks 
@@ -100,9 +102,9 @@ for j=1:length(flip_Angles)
     if szref(3)>szdat(3);   for k=1:length(s1); s1(k).imData(:,:,szdat(3):szref(3))=0;end;   end
     
     
-    fa  = flipAngles(kk).*B1;
+    fa  = flipAngles(nk).*B1;
     fa  = fa./180.*pi;
-    tr  = TR(kk);
+    tr  = TR(nk);
     
     M0c = zeros(szref(1),szref(2),szref(3),channels);
     
@@ -119,11 +121,11 @@ for j=1:length(flip_Angles)
     fprintf('save file: %s',SaveFilename);
     dtiWriteNiftiWrapper(single(M0c),xform, SaveFilename);
     
-    clear M0c ref kk
+    clear M0c ref 
     
     Files{j} = SaveFilename;
 end
-
+end
 % Combine the data for each coil using the multi channel data and save it to
 % disk
  combineFile = mrQ_AvcoilM0(Files,datDir);

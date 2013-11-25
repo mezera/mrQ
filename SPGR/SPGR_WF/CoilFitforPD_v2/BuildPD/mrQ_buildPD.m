@@ -95,21 +95,31 @@ tmpfile=fullfile(opt.outDir,'Boxtmp');
 %save(tmpfile,'BoxesToUse','CoilGains')
 %% get the location and PD information to each box we will use
 
-Boxes=mrQ_CalBoxPD_step1(opt,BoxesToUse,CoilGains);
+[Boxes, PositiveBoxs]=mrQ_CalBoxPD_step1(opt,BoxesToUse,CoilGains);
+BoxesToUse=find(PositiveBoxs)';
+
 %save(tmpfile,'BoxesToUse','CoilGains','Boxes')
 
 %%  join the boxs
-
 % find the ratio for each boxes PD with it's niebores
 [Boxes, ScaleMat]=mrQ_ScaleBoxes_step2(Boxes,BoxesToUse,opt);
 %save('tmp','LinScaleMat','ScaleMat')
 %save(tmpfile,'BoxesToUse','CoilGains','Boxes','ScaleMat')
 
-%join the boxes step by step
-[PD_fit]= mrQ_BoxsWiseAlignment_step3(Boxes,ScaleMat,BoxesToUse,BoxesToUse(1),opt);
+% solving the box wights by system of linear eqation that adjust the median ratio
+% between all the boxs 
+[Cbox SHub]=mrQ_boxScaleGlobLinear(ScaleMat);
+
+% join the box acording to the box Costat calculate by
+% mrQ_boxScaleGlobLinear.m
+[PD_fit]= mrQ_BoxJoinBox(Boxes,Cbox,opt);
+
+%Try to use this function if is the other didn't work. This will join the boxes one by one and reject outlayer.
+%this function may be dependent on the starting box.
+%[PD_fit]= mrQ_BoxsWiseAlignment_step3(Boxes,ScaleMat,BoxesToUse,BoxesToUse(1),opt);
 %save(tmpfile,'BoxesToUse','CoilGains','Boxes','ScaleMat','PD_fit')
 
-%% get a smooth G and calculate PD
+%% get a smooth G and in all location, bring back to original image space anscalculate P . 
 [opt]=mrQ_smoothGain_step4(opt,PD_fit);
 %eval(['! rm ' tmpfile])
 

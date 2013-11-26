@@ -113,15 +113,18 @@ if interp ~= 1 && interp ~= 7
     error('Invalid interpolation method. Must be 1 (linear) or 7 (trilinear)');
 end
 
-
-
-
 % Clobber flag. Overwrite existing dat_aligned.mat if it already exists and
 % redo the acpc.
 if notDefined('clobber')
     clobber = false;
 end
 
+% Check if the acpc alignment should be done automatically or manually
+if exist('mrQ','var') && ~isempty(mrQ) && isfield(mrQ,'autoacpc')
+    autoAcpc = mrQ.autoacpc;
+else
+    autoAcpc = 0;
+end
 
 %% Check for dat_aligned.mat
 %  In some cases a subject could have already been run through the
@@ -413,15 +416,25 @@ if process
         t1w_acpcfile = fullfile(outDir,'t1w_acpc.nii.gz');
         dtiWriteNiftiWrapper(single(s(sec(1)).imData), s(sec(1)).imToScanXform, fileRaw);
         
-        
-        % Do the acpc alignment - prompt the user to make sure it's good.
-        an = 0;
-        while an ~= 1 || isempty(an)
-            mrAnatAverageAcpcNifti({fileRaw},t1w_acpcfile);
-            an = questdlg('Does the alignment look good?','ACPC ALIGNMENT','YES','NO','YES');
-            if strcmp('YES',an), an = 1; else an = 0; end
+        % Decide whether to do manual or automatic alignment
+        if ~exist('autoAcpc','var') || isempty(autoAcpc) || autoAcpc = 0;
+            % Do the acpc alignment - prompt the user to make sure it's good.
+            an = 0;
+            while an ~= 1 || isempty(an)
+                mrAnatAverageAcpcNifti({fileRaw},t1w_acpcfile);
+                an = questdlg('Does the alignment look good?','ACPC ALIGNMENT','YES','NO','YES');
+                if strcmp('YES',an), an = 1; else an = 0; end
+            end
+        else
+            % Automatically identify the ac and pc and mid sage by
+            % computing a spatial normalization
+            ni = readFileNifti(fileRaw);
+            ni = niftiApplyCannonicalXform(ni);
+            template = fullfile(AFQ_directories,'templates','mni_icbm152_nlin_asym_09a_nifti','mni_icbm152_t1_tal_nlin_asym_09a.nii')
+            sn = mrAnatComputeSpmSpatialNorm(ni.data, ni.qto_xyz, template);
+            c = mrAnatGetImageCoordsFromSn(sn, tal2mni([0,0,0; 0,-16,0; 0,-8,40])', true)';
+            mrAnatAverageAcpcNifti(ni,t1w_acpcfile,c);
         end
-        
         close all
         % The refImg is now the acpc aligned image.
         refImg = t1w_acpcfile;

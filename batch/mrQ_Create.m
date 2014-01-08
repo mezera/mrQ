@@ -1,4 +1,4 @@
-function mrQ = mrQ_Create(path)
+function mrQ = mrQ_Create(path,name)
 %  mrQ = mrQ_Create(path)
 %
 % This function will load data into a mrQ structure and set default
@@ -10,7 +10,9 @@ function mrQ = mrQ_Create(path)
 %     path -  The path is a string of location wehre the structure is saved.
 %             the path will be also set as the rawDir. Therefore it is
 %             usful to make path the location of the raw image.
-%
+%     name -  a string that will be saved as the name of the mrQ structure. The defult
+%             is "mrQ_params"
+
 %
 % EXAMPLE USAGE:
 %
@@ -27,8 +29,11 @@ end
 
 mrQ.RawDir = path;
 
-% remove spaces and upper case
-mrQ.name = fullfile(mrQ.RawDir,'mrQ_params.mat');
+if notDefined('name')
+    mrQ.name = fullfile(mrQ.RawDir,'mrQ_params.mat');
+else
+    mrQ.name = fullfile(mrQ.RawDir,[name '.mat']); 
+end
 
 % Check for and load mrQ file if it exists
 if exist(mrQ.name,'file')

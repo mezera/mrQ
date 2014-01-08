@@ -417,7 +417,7 @@ if process
         dtiWriteNiftiWrapper(single(s(sec(1)).imData), s(sec(1)).imToScanXform, fileRaw);
         
         % Decide whether to do manual or automatic alignment
-        if ~exist('autoAcpc','var') || isempty(autoAcpc) || autoAcpc = 0;
+        if ~exist('autoAcpc','var') || isempty(autoAcpc) || autoAcpc == 0;
             % Do the acpc alignment - prompt the user to make sure it's good.
             an = 0;
             while an ~= 1 || isempty(an)

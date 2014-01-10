@@ -93,6 +93,10 @@ end
 
 % Make a raw directory and move all data into this folder, which
 % will then be placed in dataDir.
+% if this was done before don't forget to:
+%       mrQ=mrQ_Set(mrQ,'arrangerawflag',0)
+
+
 if arrangeRawFlag
     oneup  = fileparts(dataDir);
     rawDir = fullfile(oneup,'raw');
@@ -107,10 +111,17 @@ end
 % Set the path to the raw directory, in which all data will now exist.
 %mrQ.name=fullfile(dataDir,'mrQ_params');
 
+% if this was donw before don't forget to run 
+ %    mrQ=mrQ_Set(mrQ,'reset_raw_dir')
 
 rawDir = fullfile(dataDir,'raw');
-mrQ = mrQ_Set(mrQ,'raw',rawDir); % mrQ.rawDir=rawDir; % This should use mrQ_Set
-eval(['!  rm ' mrQ.RawDir '/mrQ_params.mat'])
+mrQ = mrQ_Set(mrQ,'raw',rawDir); %update the raw Dir and also save a copy of mrQ in the original locatation (if it was moved in the if loop before).
+ [~, oldStracName]=fileparts(mrQ.name);
+ 
+ %clear the old file if needed
+ oldStracName=[mrQ.RawDir  '/' oldStracName '.mat'];
+ 
+if exist('oldStracName','file'); eval(['!  rm ' oldStracName ]); end
 
 %keep truck of the dir re arangments
 if isfield(mrQ,'inputdata_seir')

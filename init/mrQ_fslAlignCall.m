@@ -20,13 +20,14 @@ end
 if notDefined('niilist')
 niilist=dir(fullfile(Dpath,'*nii.gz'));
 end
+    st=1;
 
 if notDefined('Ref') 
     % use the first niifti to regiser in case res is not defined
     Ref=fullfile(Dpath,niilist(1).name);
-    st=2;
+    %st=2;
 else
-    st=1;
+   % st=1;
 end
 if notDefined('d') 
 d=[];

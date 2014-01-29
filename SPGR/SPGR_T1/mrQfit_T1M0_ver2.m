@@ -469,7 +469,7 @@ else
     
     %%% Move B1 from epi space to SPGR smooth and upsample
     
-    
+    keyboard
     %we smoth the SEIR B1 map by local and then feel the gap by global
     %regrigions and then register back the smooth B1 to the SPGR space by Ants
     %softwere

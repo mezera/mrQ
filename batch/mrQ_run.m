@@ -447,8 +447,6 @@ eval(cmd);
 cmd =(['! mv ' mrQ.spgr_initDir '/SIR_map.nii.gz ' mapDir '/.']) ;
 eval(cmd);
 
-cmd =(['! mv ' mrQ.spgr_initDir '/cT1SIR_map.nii.gz ' mapDir '/.']) ;
-eval(cmd);
 
 
 mrQ.mapsDir=mapDir;
@@ -456,7 +454,6 @@ mrQ.maps.T1path=fullfile(mapDir,'T1_map_lsq.nii.gz');
 mrQ.maps.WFpath=fullfile(mapDir,'WF_map.nii.gz');
 mrQ.maps.TVpath=fullfile(mapDir,'TV_map.nii.gz');
 mrQ.maps.SIRpath=fullfile(mapDir,'SIR_map.nii.gz');
-mrQ.maps.cT1SIRpath=fullfile(mapDir,'cT1SIR_map.nii.gz');
 
 %done
 mrQ.AnalysisDone=1;

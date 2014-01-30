@@ -121,7 +121,7 @@ mrQ = mrQ_Set(mrQ,'raw',rawDir); %update the raw Dir and also save a copy of mrQ
  %clear the old file if needed
  oldStracName=[mrQ.RawDir  '/' oldStracName '.mat'];
  
-if exist('oldStracName','file'); eval(['!  rm ' oldStracName ]); end
+if exist(oldStracName,'file'); eval(['!  rm ' oldStracName ]); end
 
 %keep truck of the dir re arangments
 if isfield(mrQ,'inputdata_seir')

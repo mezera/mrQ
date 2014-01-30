@@ -237,19 +237,7 @@ TV=1-WF;
 %calculate the voulume ratio SIR
 SIR=VIP./TV;
 
-%% This is a differnt model but it's work nicly as well
-% 1/T1= C*(1/T1h)+ (1-C)1/T1free.
-% % under the assumption that C is very small --> 0.
-%1-C=~1
-% Csir=C*(1/T1h) This is a constant in  a voxel
-% CC= TV*C1;
-% CC= TV*Csir*(1/T1h)
-% 1/T1=~ CC+ 1/T1free
 
-Csir       = zeros(size(T1));
-Csir(mask)=(1./T1(mask)- 1/4.3)./TV(mask);
-Csir(Csir>12)=0;
-Csir(Csir<0)=0;
 
 %% Save Output
 
@@ -263,7 +251,6 @@ else
     dtiWriteNiftiWrapper(single(VIP), xform, fullfile(outDir,'VIP_map.nii.gz'));
     dtiWriteNiftiWrapper(single(TV), xform, fullfile(outDir,'TV_map.nii.gz'));
     dtiWriteNiftiWrapper(single(SIR), xform, fullfile(outDir,'SIR_map.nii.gz'));
-    dtiWriteNiftiWrapper(single(Csir), xform, fullfile(outDir,'cT1SIR_map.nii.gz'));
 
 end
 

@@ -117,8 +117,8 @@ function mrQ_run(mrQfileName,clobber)
 if (~exist(mrQfileName,'file') )
     error(['cant find ' mrQfileName ])
 else
-load (mrQfileName) 
-
+    load (mrQfileName)
+    
 end
 
 
@@ -286,8 +286,8 @@ else
 end
 
 if     mrQ.brakeAfterT1==1
-        fprintf('\n brake T1 map  are done              \n');
-
+    fprintf('\n brake T1 map  are done              \n');
+    
     return
 end
 
@@ -300,19 +300,19 @@ else
 end
 
 if mrQ.segmentaion==0;
-   
-   
-       % run Free surfare
-     if (mrQ.runfreesurfer==1)
+    
+    
+    % run Free surfare
+    if (mrQ.runfreesurfer==1)
         mrQ=mrQ_Complitfreesurfer(mrQ);
-         
+        
         mrQ.segmentaion=1;
         % use an uploaded freesurafre nii.zg
-     elseif isfield(mrQ,'freesurfer');
-         [mrQ.AnalysisInfo]=mrQ_CSF(mrQ.spgr_initDir,mrQ.freesurfer,[],mrQ.AnalysisInfo);
-
-              mrQ.segmentaion=1;
-
+    elseif isfield(mrQ,'freesurfer');
+        [mrQ.AnalysisInfo]=mrQ_CSF(mrQ.spgr_initDir,mrQ.freesurfer,[],mrQ.AnalysisInfo);
+        
+        mrQ.segmentaion=1;
+        
     else
         % Segment the T1w by FSL (step 1) and get the tissue mask (CSF WM GM) (step 2)
         mrQ=mrQ_segmentT1w2tissue(mrQ);
@@ -333,7 +333,7 @@ if (mrQ.calM0_done==0);
     
     %build a multi coil M0 image for the coils raw data and then fitted T1
     [mrQ.M0combineFile] = mrQ_multicoilM0(mrQ.spgr_initDir,[],[],mrQ.SPGR_niiFile,mrQ.SPGR_niiFile_FA,mrQ);
-
+    
     mrQ.calM0_done=1;
     save(mrQ.name,'mrQ');
 else
@@ -354,18 +354,18 @@ end
 if mrQ.SPGR_PDfit_done==0;
     fprintf('\n calculate PD from the M0 of all the coil               \n');
     
-   
+    
     %send the a call for the grid to fit  PD
-%  [mrQ.opt]=mrQ_fitPD_multicoil(mrQ.spgr_initDir,1,[],mrQ.PolyDeg,[],mrQ.sub,mrQ.proclass);
- if isfield(mrQ,'opt_logname');
-else
-[mrQ.opt_logname]=mrQ_PD_multicoil_RgXv_GridCall(mrQ.spgr_initDir,mrQ.SunGrid,mrQ.proclus,mrQ.sub,mrQ.PolyDeg);
-save(mrQ.name,'mrQ');
-mrQ_fitM0boxesCall(mrQ.opt_logname,mrQ.SunGrid,mrQ.proclus);
-
-
- end
- 
+    %  [mrQ.opt]=mrQ_fitPD_multicoil(mrQ.spgr_initDir,1,[],mrQ.PolyDeg,[],mrQ.sub,mrQ.proclass);
+    if isfield(mrQ,'opt_logname');
+    else
+        [mrQ.opt_logname]=mrQ_PD_multicoil_RgXv_GridCall(mrQ.spgr_initDir,mrQ.SunGrid,mrQ.proclus,mrQ.sub,mrQ.PolyDeg);
+        save(mrQ.name,'mrQ');
+        mrQ_fitM0boxesCall(mrQ.opt_logname,mrQ.SunGrid,mrQ.proclus);
+        
+        
+    end
+    
     if mrQ.SunGrid==1;
         %check for SGE is done  before you move on (while loop)
         mrQ.SPGR_PDfit_done=mrQ_Gridcheack(mrQ.opt_logname,mrQ.SunGrid,mrQ.proclus);
@@ -415,8 +415,8 @@ end
 fprintf('\n orgenized the maps in a maps directory                \n');
 mapDir=fullfile(mrQ.spgr_initDir,'maps');
 
-            % if we redo it and maps dir is already exsist we will saved
-            % the old before we make a new one
+% if we redo it and maps dir is already exsist we will saved
+% the old before we make a new one
 if (exist(mapDir,'dir'))
     ex=0; num=0;
     while ex==0
@@ -432,8 +432,19 @@ end
 
 mkdir(mapDir);
 
-cmd =(['! mv ' mrQ.spgr_initDir '/T1_map_lsq.nii.gz ' mapDir '/.']) ;
-eval(cmd);
+% If T1_map_lsq.nii.gz exists in the spgr_intDir then move it to the map
+% dir. Otherwise assume that it ended up in mapDirOld and retain this t1
+% map. This would occur if the pd fits were rerun but the t1 fits were not
+if exist(fullfile(mrQ.spgr_initDir, 'T1_map_lsq.nii.gz'),'file')
+    cmd =(['! mv ' mrQ.spgr_initDir '/T1_map_lsq.nii.gz ' mapDir '/.']);
+    eval(cmd);
+else
+    % If a new t1 map was not generated than copy it from the old
+    % directory. We copy rather than move to leave the old directory intact
+    cmd =(['! cp ' mapDirOld '/T1_map_lsq.nii.gz ' mapDir '/.']);
+    eval(cmd);
+end
+
 
 cmd =(['! mv ' mrQ.spgr_initDir '/WF_map.nii.gz ' mapDir '/.']) ;
 eval(cmd);

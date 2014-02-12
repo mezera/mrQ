@@ -94,7 +94,7 @@ for i = 1:numel(niFiles)
     nifti{i} = niftiGetParamsFromDescrip(niFiles{i});
 end
 
-% Get the flip angles
+% Get the flip angles % NEEDS MORE TESTING
 c = 0;
 for ii = 1:numel(nifti)
     if isfield(nifti{ii},'fa') && isfield(nifti{ii},'rs')
@@ -149,66 +149,3 @@ mrQ = mrQ_Set(mrQ,'inputdata_spgr',inputData_spgr);
 mrQ = mrQ_Set(mrQ,'inputdata_seir',inputData_seir);
 
 return
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-%%
-% nifile = '/scarlet/westonhavens/data/upload/testlab/20130509_1152_4534/someFile.nii.gz';
-% inputData_seir.name={'1301' '1401' '1501' '1601'};
-% inputData_seir.TR=[3000 3000 3000 3000];
-% inputData_seir.TE=[38 38 38 38];
-% inputData_seir.IT=[2400 1200 400 50];
-
-% 
-% % Get the flip angles
-% for ii = 1:numel(nif)
-%     if isfield(nif{ii},'fa')
-%         switch nif{ii}.fa
-%             case 10
-%               fa10 = ii;
-%             case 20
-%               fa20 = ii;
-%             case 4 
-%               fa4 = ii;
-%             case 30
-%               fa30 = ii;
-%         end
-%     end
-% end
-% 
-% % Get the IT for the SIR
-% for jj = 1:numel(nif)
-%     if isfield(nif{jj},'ti')
-%         switch nif{jj}.ti
-%             case 2400
-%               it2400 = jj;
-%             case 1200
-%               it1200 = jj;
-%             case 400 
-%               it400 = jj;
-%             case 50
-%               it50 = jj;
-%         end
-%     end
-%     
-% end

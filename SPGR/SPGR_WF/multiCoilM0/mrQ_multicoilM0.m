@@ -50,6 +50,10 @@ end
 if (~exist('T1file','var') || isempty(T1file)),
     T1file= fullfile(datDir,'T1_map_lsq.nii.gz');
 end
+
+if ~exist(T1file,'file') && isfield(mrQ,'outDir') 
+    T1file = fullfile(mrQ.outDir,'T1_map_lsq.nii.gz');
+end
 T1 = readFileNifti(T1file);
 T1 = double(T1.data);T1=T1.*1000;
 
@@ -58,6 +62,11 @@ T1 = double(T1.data);T1=T1.*1000;
 if (~exist('B1file','var') || isempty(B1file)),
     B1file= fullfile(datDir,'B1_Map.nii.gz');
 end
+
+if ~exist(B1file,'file') && isfield(mrQ,'outDir') 
+    B1file = fullfile(mrQ.outDir,'B1_Map.nii.gz');
+end
+
 B1 = readFileNifti(B1file);
 B1 = double(B1.data);
 

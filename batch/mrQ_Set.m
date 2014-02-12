@@ -131,6 +131,8 @@ switch(param)
         mrQ.muti_coil_im=varargin;
     case{ 'autoacpc'}
         mrQ.autoacpc = varargin;
+    case{ 'field','stregth','fieldstrength'}
+        mrQ.fieldstrength = varargin;
     otherwise
         
         error('Uknown mrQ parameter');

@@ -359,7 +359,7 @@ if mrQ.SPGR_PDfit_done==0;
 %  [mrQ.opt]=mrQ_fitPD_multicoil(mrQ.spgr_initDir,1,[],mrQ.PolyDeg,[],mrQ.sub,mrQ.proclass);
  if isfield(mrQ,'opt_logname');
 else
-[mrQ.opt_logname]=mrQ_PD_multicoil_RgXv_GridCall(mrQ.spgr_initDir,mrQ.SunGrid,mrQ.proclus,mrQ.sub,mrQ.PolyDeg);
+[mrQ.opt_logname]=mrQ_PD_multicoil_RgXv_GridCall(mrQ.spgr_initDir,mrQ.SunGrid,mrQ.proclus,mrQ.sub,mrQ.PolyDeg,[],[],[],[],[],[],[],[],[],mrQ);
 save(mrQ.name,'mrQ');
 mrQ_fitM0boxesCall(mrQ.opt_logname,mrQ.SunGrid,mrQ.proclus);
 

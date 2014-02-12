@@ -1,4 +1,4 @@
-function mrQ = mrQ_Create(path,name)
+function mrQ = mrQ_Create(path,name,outDir)
 %  mrQ = mrQ_Create(path)
 %
 % This function will load data into a mrQ structure and set default
@@ -27,18 +27,26 @@ if notDefined('path') || ~exist(path,'dir')
     path = uigetdir(pwd,'Choose mrQ directory');
 end
 
+if notDefined('outDir') || ~exist(outDir,'dir')
+    outDir = path;
+else
+    mrQ.outDir = outDir;
+end
+
 mrQ.RawDir = path;
+mrQ.outDir = outDir;
 
 if notDefined('name')
-    mrQ.name = fullfile(mrQ.RawDir,'mrQ_params.mat');
+    mrQ.name = fullfile(mrQ.outDir,'mrQ_params.mat');
 else
-    mrQ.name = fullfile(mrQ.RawDir,[name '.mat']); 
+    mrQ.name = fullfile(mrQ.outDir,[name '.mat']); 
 end
 
 % Check for and load mrQ file if it exists
 if exist(mrQ.name,'file')
     load (mrQ.name)
     setDefault = 0;
+    fprintf('mrQ file found:\n\tLoading %s.\n',mrQ.name);
 else
     setDefault = 1;
 end

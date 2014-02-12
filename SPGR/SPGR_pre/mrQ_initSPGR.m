@@ -430,11 +430,18 @@ if process
             % computing a spatial normalization
             ni = readFileNifti(fileRaw);
             ni = niftiApplyCannonicalXform(ni);
-            template = fullfile(AFQ_directories,'templates','mni_icbm152_nlin_asym_09a_nifti','mni_icbm152_t1_tal_nlin_asym_09a.nii')
-            sn = mrAnatComputeSpmSpatialNorm(ni.data, ni.qto_xyz, template);
+            sn = mrAnatComputeSpmSpatialNorm(ni.data, ni.qto_xyz, 'MNI_T1');
             c = mrAnatGetImageCoordsFromSn(sn, tal2mni([0,0,0; 0,-16,0; 0,-8,40])', true)';
-            mrAnatAverageAcpcNifti(ni,t1w_acpcfile,c);
-        end
+            mrAnatAverageAcpcNifti(ni, t1w_acpcfile, c, [], [], [], false);
+              
+              % The acpc alignment was failing with the following template
+              % - so these next 4 lines were commented out and replaced
+              % with those above from RFD.
+              % template = fullfile(AFQ_directories,'templates','mni_icbm152_nlin_asym_09a_nifti','mni_icbm152_t1_tal_nlin_asym_09a.nii')
+              % sn = mrAnatComputeSpmSpatialNorm(ni.data, ni.qto_xyz, template);
+              % c = mrAnatGetImageCoordsFromSn(sn, tal2mni([0,0,0; 0,-16,0; 0,-8,40])', true)';
+              % mrAnatAverageAcpcNifti(ni,t1w_acpcfile,c);
+        end     
         close all
         % The refImg is now the acpc aligned image.
         refImg = t1w_acpcfile;
@@ -488,7 +495,7 @@ if process
     
     
     mrQ.spgr_initDir=outDir;
-    
+    mrQ.outDir=outDir;
     
 end
 

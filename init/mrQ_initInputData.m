@@ -65,7 +65,7 @@ end
 
 % Find all nifti files in mrQ.RawDir (recursively)
 tn = tempname;
-cmd = ['find ' mrQ.RawDir ' -follow -type f -name *.nii.gz | tee ' tn];
+cmd = ['find ' mrQ.RawDir ' -follow -type f -name "*.nii.gz" | tee ' tn];
 
 % Run the command 
 [status, result] = system(cmd);
@@ -95,7 +95,8 @@ for i = 1:numel(niFiles)
 end
 
 % Get the flip angles % NEEDS MORE TESTING
-c = 0;
+c  = 0;
+fa = {};
 for ii = 1:numel(nifti)
     if isfield(nifti{ii},'fa') && isfield(nifti{ii},'rs')
         switch nifti{ii}.fa
@@ -108,7 +109,8 @@ end
 
 
 % Get the IT for the SEIR structure
-c=0;
+c  = 0;
+it ={};
 for jj = 1:numel(nifti)
     if isfield(nifti{jj},'ti')
         switch nifti{jj}.ti
@@ -122,6 +124,8 @@ end
 
 %% Construct inputData structures
 
+inputData_spgr = {};
+
 % Loop over the fa and it structs and populate the input data fields
 for x = 1:numel(fa)
     inputData_spgr.name{x}          = nifti{fa{x}}.niftiFile;
@@ -131,6 +135,7 @@ for x = 1:numel(fa)
     inputData_spgr.fieldStrength(x) = mrQ.fieldstrength;
 end
 
+inputData_seir = {};
 for y = 1:numel(it)
     inputData_seir.name{y}     = nifti{it{y}}.niftiFile;
     inputData_seir.TR(y)       = nifti{it{y}}.tr;

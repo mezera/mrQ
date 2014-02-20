@@ -412,7 +412,7 @@ if (mrQ.SPGR_PDBuild_done==1)
 end
 
 %% orgnized the OutPut  directory 
-mrQ=mrQ_arangeOutPutDir(mrQ)
+mrQ=mrQ_arangeOutPutDir(mrQ);
 
 %done
 mrQ.AnalysisDone=1;

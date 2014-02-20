@@ -411,60 +411,8 @@ if (mrQ.SPGR_PDBuild_done==1)
     save(mrQ.name,'mrQ');
 end
 
-%% last orgnized the brain maps in a directory named maps
-fprintf('\n orgenized the maps in a maps directory                \n');
-mapDir=fullfile(mrQ.spgr_initDir,'maps');
-
-% if we redo it and maps dir is already exsist we will saved
-% the old before we make a new one
-if (exist(mapDir,'dir'))
-    ex=0; num=0;
-    while ex==0
-        num=num+1;
-        mapDirOld=fullfile(mrQ.spgr_initDir,['mapsOld_' num2str(num)] );
-        if (~exist(mapDirOld,'dir'))
-
-            eval(['! mv ' mapDir  ' ' mapDirOld]);
-            ex=1;
-        end
-    end
-end
-
-mkdir(mapDir);
-
-% If T1_map_lsq.nii.gz exists in the spgr_intDir then move it to the map
-% dir. Otherwise assume that it ended up in mapDirOld and retain this t1
-% map. This would occur if the pd fits were rerun but the t1 fits were not
-if exist(fullfile(mrQ.spgr_initDir, 'T1_map_lsq.nii.gz'),'file')
-    cmd =(['! mv ' mrQ.spgr_initDir '/T1_map_lsq.nii.gz ' mapDir '/.']);
-    eval(cmd);
-else
-    % If a new t1 map was not generated than copy it from the old
-    % directory. We copy rather than move to leave the old directory intact
-    cmd =(['! cp ' mapDirOld '/T1_map_lsq.nii.gz ' mapDir '/.']);
-    eval(cmd);
-end
-
-
-cmd =(['! mv ' mrQ.spgr_initDir '/WF_map.nii.gz ' mapDir '/.']) ;
-eval(cmd);
-
-cmd =(['! mv ' mrQ.spgr_initDir '/VIP_map.nii.gz ' mapDir '/.']) ;
-eval(cmd);
-
-cmd =(['! mv ' mrQ.spgr_initDir '/TV_map.nii.gz ' mapDir '/.']) ;
-eval(cmd);
-
-cmd =(['! mv ' mrQ.spgr_initDir '/SIR_map.nii.gz ' mapDir '/.']) ;
-eval(cmd);
-
-
-
-mrQ.mapsDir=mapDir;
-mrQ.maps.T1path=fullfile(mapDir,'T1_map_lsq.nii.gz');
-mrQ.maps.WFpath=fullfile(mapDir,'WF_map.nii.gz');
-mrQ.maps.TVpath=fullfile(mapDir,'TV_map.nii.gz');
-mrQ.maps.SIRpath=fullfile(mapDir,'SIR_map.nii.gz');
+%% orgnized the OutPut  directory 
+mrQ=mrQ_arangeOutPutDir(mrQ)
 
 %done
 mrQ.AnalysisDone=1;

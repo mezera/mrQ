@@ -1,4 +1,4 @@
-function [logname]=mrQ_PD_multicoil_RgXv_GridCall(outDir,SunGrid,proclass,subName,degrees,M0file,T1file,BMfile,outMm,boxSize,pracent_overlap,Coilsinfo,T1Reg,clobber)
+function [logname]=mrQ_PD_multicoil_RgXv_GridCall(outDir,SunGrid,proclass,subName,degrees,M0file,T1file,BMfile,outMm,boxSize,pracent_overlap,Coilsinfo,T1Reg,clobber,mrQ)
 %
 %   [opt]=mrQ_PD_multicoil_RgXv_GridCall(outDir,SunGrid,proclass,subName,degrees,M0file,T1file,BMfile,outMm,boxSize,pracent_overlap,Coilsinfo,clobber)
 % # Create a stracture of information to fit the M0 boxes ffor coil gain
@@ -120,10 +120,12 @@ else
     if ~exist(T1file,'file')
         T1file = fullfile(outDir,'maps/T1_lsq.nii.gz');
     end
+    if ~exist(T1file,'file') && isfield(mrQ,'outDir')
+        T1file = fullfile(mrQ.outDir,'T1_map_lsq.nii.gz');
+    end
     if ~exist(T1file,'file')
         
-        disp(' can not find theT1 file')
-        error
+        error('can not find theT1 file')
     end
     opt.T1file=T1file;
 end
@@ -135,12 +137,16 @@ end
 if(~exist('BMfile','var') || isempty(BMfile))
     BMfile = fullfile(outDir,'brainMask.nii.gz');
 end
+if ~exist(BMfile,'file') && isfield(mrQ,'outDir')
+    BMfile = fullfile(mrQ.outDir,'brainMask.nii.gz');
+end
+
 if (exist(BMfile,'file'))
     disp(['Loading brain Mask data from ' BMfile '...']);
     brainMask = readFileNifti(BMfile);
     mmPerVox  = brainMask.pixdim;
     opt.BMfile = BMfile;
-
+    
     % In casses of high resltion data we can undersample the data when we fit the coil gains this may shorter the fit time.  not that the Coil gain was writtern for 2X2X2 resultion.
     % images different resultion may need some changes in the regularization protocol.
     if (outMm(1)~=mmPerVox(1) || outMm(2)~=mmPerVox(2) || outMm(3)~=mmPerVox(3) )
@@ -169,13 +175,11 @@ if notDefined('clobber')
 end
 
 
-
+% segmening R1 to tissue types
 if opt.T1reg
-
-
-%segmening R1 to tissue types 
-opt=R1Seg(opt);
-
+ 
+    opt=R1Seg(opt);
+    
 end
 %% find the boxes we will to fit
 
@@ -268,10 +272,10 @@ if clobber && (exist(dirname,'dir'))
     % deleat them
     eval(['! rm -r ' dirname]);
 end
+return
 
 
-
-% %%   Perform the gain fits
+%% %   Perform the gain fits
 % % Perform the fits for each box using the Sun Grid Engine
 % if SunGrid==1;
 %     

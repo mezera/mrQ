@@ -48,6 +48,10 @@ mkdir(mapDir);
 if exist(fullfile(mrQ.spgr_initDir, 'T1_map_lsq.nii.gz'),'file')
     cmd =(['! mv ' mrQ.spgr_initDir '/T1_map_lsq.nii.gz ' mapDir '/.']);
     eval(cmd);
+    
+    cmd =(['! ln -s  '  mapDir '/T1_map_lsq.nii.gz ' mrQ.spgr_initDir '/.']) ;
+eval(cmd);
+
 else
     % If a new t1 map was not generated than copy it from the old
     % directory. We copy rather than move to leave the old directory intact
@@ -83,6 +87,8 @@ mkdir(SEIRT1Dir)
 cmd =(['! cp ' mrQ.T1file ' '  SEIRT1Dir '/.']) ;
 eval(cmd);
 
+
+
 %% BIAS
 
 BiasDir=fullfile(mrQ.OutPutNiiDir,'BiasMap');
@@ -108,6 +114,8 @@ mkdir(BiasDir);
 cmd =(['! mv ' mrQ.spgr_initDir '/B1_Map.nii.gz ' BiasDir '/.']) ;
 eval(cmd);
 
+cmd =(['! ln -s  '  BiasDir '/B1_Map.nii.gz ' mrQ.spgr_initDir '/.']) ;
+eval(cmd);
 
 %% wighted images
 
@@ -134,4 +142,8 @@ mkdir(T1wDir);
 cmd =(['! mv ' mrQ.spgr_initDir '/T1wfs_4.nii.gz ' T1wDir '/.']) ;
 eval(cmd);
 
+cmd =(['! ln -s  '  T1wDir '/T1wfs_4.nii.gz ' mrQ.spgr_initDir '/.']) ;
+eval(cmd);
 
+%%
+ save(mrQ.name,'mrQ');

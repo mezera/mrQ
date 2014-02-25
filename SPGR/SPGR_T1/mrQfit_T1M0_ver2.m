@@ -82,6 +82,12 @@ if ~isfield(mrQ,'lsq');
 end
 lsqfit = mrQ.lsq;
 
+if ~isfield(mrQ,'LW');
+    mrQ.LW = false;
+end
+LWfit = mrQ.LW;
+
+
 if ~isfield(mrQ,'SEIRepiDir')
     error('can not fit SEIR epi to spgr the SEIRepi_Dir path is missing')
 end
@@ -235,6 +241,7 @@ AnalysisInfo.outDir             = outDir;
 AnalysisInfo.dataDir            = dataDir;
 AnalysisInfo.complexFlag        = complexFlag;
 AnalysisInfo.lsqfit             = lsqfit;
+AnalysisInfo.LWfit             = LWfit;
 AnalysisInfo.SEIRepi_Dir        = SEIRepi_Dir;
 AnalysisInfo.T1MOfitdata        = date;
 AnalysisInfo.sub                = sub;
@@ -516,7 +523,7 @@ if lsqfit==1,
         M0=readFileNifti(M0lsqfile);
         T1=double(T1.data);
         M0=double(M0.data);
-        
+
     else
         
         
@@ -546,11 +553,70 @@ if lsqfit==1,
         AnalysisInfo.T1lsqfile=T1lsqfile;
            
     end
-    
-    %%% LINEAR FITTING (lsqfit ~=1) Linear fit is used to calculate T1 and M0
-    %%% (Linear fitting can bias the fit but it's very fast)
-    
 end
+
+
+if LWfit==1
+%% Weited linear Fit 
+disp([' linear fits of T1 and PD !!!'] );
+T1WLFfile= fullfile(outDir,['T1_map_Wlin.nii.gz']);
+T1LFfile= fullfile(outDir,['T1_map_lin.nii.gz']);
+M0LFfile= fullfile(outDir,['M0_map_Wlin.nii.gz']);
+M0WLFfile= fullfile(outDir,['M0_map_Wlin.nii.gz']);
+%
+
+if (exist( T1WLFfile,'file') && exist( M0WLFfile,'file')  && ~clobber),
+    
+    disp(['loading exsisting T1 and M0 linear fit'])
+    T1=readFileNifti(T1WLFfile);
+    M0=readFileNifti(M0WLFfile);
+    T1=double(T1.data);
+    M0=double(M0.data);
+    
+else
+    
+    disp('Performing weighted linear fit of T1 and M0...');
+    flipAngles = [s2(:).flipAngle];
+    tr = [s(:).TR];
+    
+    % Check that all TRs are the same across all the scans in S
+    if(~all(tr == tr(1))), error('TR''s do not match!'); end
+    tr = tr(1);
+    
+    % Compute a linear fit of the the T1 estimate for all voxels.
+    % M0: PD = M0 * G * exp(-TE / T2*).
+    
+    Gain=double(HeadMask);
+
+    [T1w, T1,M0w, MO] = mrQ_T1M0_LWFit(s,HeadMask,tr,flipAngles,Gain,B1,outDir,xform,SunGrid,[],sub,mrQ.proclus);
+    
+    % Save the T1 and PD data
+    dtiWriteNiftiWrapper(single(T1), xform,T1LFfile);
+    dtiWriteNiftiWrapper(single(M0), xform, M0LFfile);
+    dtiWriteNiftiWrapper(single(T1w), xform,T1WLFfile);
+    dtiWriteNiftiWrapper(single(M0w), xform, M0WLFfile);
+    
+    
+    AnalysisInfo.T1WLFfile=T1WLFfile;
+    AnalysisInfo.T1LFfile=T1LFfile;
+
+
+end
+end
+
+
+
+
+
+
+
+
+
+    %%
+    % LINEAR FITTING (lsqfit ~=1) Linear fit is used to calculate T1 and M0
+    % (Linear fitting can bias the fit but it's very fast)
+    
+
 disp([' linear fits of T1 and PD !!!'] );
 T1LFfile= fullfile(outDir,['T1_map_lin.nii.gz']);
 M0LFfile= fullfile(outDir,['M0_map_lin.nii.gz']);
@@ -590,6 +656,12 @@ else
     AnalysisInfo.T1LFfile=T1LFfile;
     
 end;
+
+
+
+
+
+
 
 save(infofile,'AnalysisInfo');
 

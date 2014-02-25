@@ -133,6 +133,8 @@ switch(param)
         mrQ.autoacpc = varargin;
     case{ 'field','stregth','fieldstrength'}
         mrQ.fieldstrength = varargin;
+         case{ 'wl'}
+             mrQ.LW= varargin;  
     otherwise
         
         error('Uknown mrQ parameter');

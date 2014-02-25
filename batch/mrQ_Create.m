@@ -101,7 +101,7 @@ if setDefault
     mrQ.viewbrake=0;
     %%  T1 fit of SPGR
     mrQ.lsq=1; %see for detail inside we recomand the lsq version
-    
+    mrQ.LW=0;  %or the WL fits
     %% Segmentation
     mrQ.segmentaion=0;
     mrQ.runfreesurfer=0;

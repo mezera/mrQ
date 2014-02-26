@@ -142,8 +142,9 @@ to avoid the long .computing (may days on single CPU for all brain  1mm voxel). 
 See: Linear least-squares method for unbiased estimation of T1 from SPGR signals. Chang LC, Koay CG, Basser PJ, Pierpaoli C. Magn Reson Med. 2008 Aug;60(2):496-501.
 
 to run it use this setting:
-  mrQ=mrQ_Set(mrQ,'wl’,1);
-  mrQ=mrQ_Set(mrQ,’lsq’,0);
+
+    mrQ=mrQ_Set(mrQ,'wl’,1);
+    mrQ=mrQ_Set(mrQ,’lsq’,0);
 
 The weighted least square will take few minutes using weighted least square or few hours on a single CPU. 
 

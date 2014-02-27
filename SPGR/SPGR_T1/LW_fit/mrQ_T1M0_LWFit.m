@@ -2,7 +2,7 @@ function [T1_WL, T1_L,PD_WL, PD_L] = mrQ_T1M0_LWFit(s,brainMask,tr,flipAngles,Ga
 %
 % [T1 PD resNorm] = mrQ_T1M0_LWFit(s,brainMask,tr,flipAngles,M0,t1,Gain,B1,outDir,xform,SGE,savenow,sb,proclass)
 %
-% Perform weights lis squre fitting of T1 and PD according to:
+% Perform weighted least square fitting of T1 and PD according to:
 % Linear least-squares method for unbiased estimation of T1 from SPGR signals. Chang LC, Koay CG, Basser PJ, Pierpaoli C. Magn Reson Med. 2008 Aug;60(2):496-501.
 %
 %

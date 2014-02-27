@@ -239,7 +239,7 @@ opt.lambda = [1e4 5e3 1e3 5e2 1e2 5e1 1e1 5  1e0 0.5 1e-1 0] ;%[1e4  1e3 5e2 1e2
 opt.Kfold=2;   % the cross validation fold ( use split half)
 
 if ~opt.T1reg
-opt.lambda=[ 1e16  1e15 1e14  1e12 1e10 1e9 1e8  1e4  1e0  0];
+opt.lambda=[10 5 2 1 0.1 0.05 0.01 0.005 0.001 0];
 end
 
 % the coils information how many coil to use and to poll from.

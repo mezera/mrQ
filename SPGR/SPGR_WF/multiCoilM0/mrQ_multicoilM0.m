@@ -76,28 +76,30 @@ B1 = double(B1.data);
 
 % For each flip angle align the individual channel data to the reference
 % image and combine them
-for j=1:numel(unique(flipAngles))
+imN=0;
+FAU= unique(flipAngles);
+
+for j=1:numel( FAU)
     
-  % kkk is a counter to count how many images of the same flip anlge have
-    % been run
     kkk=0;
     % find all images with flip anlge j
-    kk = find(flipAngles == flipAngles(j)); % won't kk always = j? *** originaly it was not the order of the flipangle as an input does not have to be the order of flipangle images saved in the s structure.
+    kk = find(flipAngles == FAU(j)); % won't kk always = j? *** originaly it was not the order of the flipangle as an input does not have to be the order of flipangle images saved in the s structure.
   %  ref   = fullfile(datDir,['Align' num2str(flipAngles(j)) 'deg']);
     
     % Loop over images with the same flip angle
     for fa = 1:length(kk)
+         imN=imN+1;
+
         kkk=kkk+1; % Count
         nk=kk(kkk);
-        ref   = fullfile(datDir,['Align' num2str(flipAngles(j)) 'deg_' num2str(kkk)]);
-        
     
+        ref   = fullfile(datDir,['Align' num2str(FAU(j)) 'deg_' num2str(kkk)]);
     mrQ_makeNiftiFromStruct(s(nk),ref,xform);
     refIM = readFileNifti(ref);
     
     % niifile here is the raw image???
-    s1 = makeStructFromNifti(niifile{j},-1,[],mrQ.permution);
-    
+    s1 = makeStructFromNifti(niifile{nk},-1,[],mrQ.permution);
+
     channels = length(s1)-1;
     [s11,xform1 s1] = relaxAlignAll_multichanels(s1(channels+1), refIM, mmPerVox, true, 1,s1(1:channels));
     
@@ -132,7 +134,7 @@ for j=1:numel(unique(flipAngles))
     
     clear M0c ref 
     
-    Files{j} = SaveFilename;
+    Files{nk} = SaveFilename;
 end
 end
 % Combine the data for each coil using the multi channel data and save it to

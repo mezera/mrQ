@@ -1,4 +1,4 @@
-function [AnalysisInfo]=mrQ_VIP(outDir,WFfile,T1file,mField,T1freeval,Fullerton)
+function [AnalysisInfo]=mrQ_VIP(mrQ,outDir,WFfile,T1file,mField,T1freeval,Fullerton)
 % 
 % mrQ_VIP(outDir,WFfile,T1file,mField,T1freeval,Fullerton)
 %# Load T1 and WF maps and calculate the VIP and SIR map using the model develop by
@@ -75,6 +75,10 @@ function [AnalysisInfo]=mrQ_VIP(outDir,WFfile,T1file,mField,T1freeval,Fullerton)
 
 %% CHECK INPUTS
 
+if notDefined('outDir')
+    outDir=mrQ.spgr_initDir;
+end
+
 if(exist('Fullerton','var') && Fullerton == 1)
     disp('Using Fullerton model');
     % Using Fullerton parameters form Fullerton et.al. 1984
@@ -94,24 +98,25 @@ end
 if(exist('T1file','var') && ~isempty(T1file))
     disp(['Loading T1 data from ' T1file '...']);
 else
-        T1file1= fullfile(outDir,'maps/T1_map_lsq.nii.gz');
-    T1file= fullfile(outDir,'T1_map_lsq.nii.gz');
-    if(exist(T1file,'file'))
-        disp(['Loading T1 data from ' T1file '...']);
-   
-    elseif(exist(T1file1,'file') &&  ~exist(T1file,'file') )
-          disp(['Loading T1 data from ' T1file1 '...']);
-          T1file=T1file1;
-        
-    else
-        T1file = mrvSelectFile('r','*.nii.gz','Select T1 fit file',outDir);
-        if isempty(T1file)
-            error('User cancelled.')
-        else
-            disp(['Loading T1 data from ' T1file '...']);
-        end
-    end
-end
+    T1file=mrQ_getT1file(mrQ);
+%         T1file1= fullfile(outDir,'maps/T1_map_lsq.nii.gz');
+%     T1file= fullfile(outDir,'T1_map_lsq.nii.gz');
+%     if(exist(T1file,'file'))
+%         disp(['Loading T1 data from ' T1file '...']);
+%    
+%     elseif(exist(T1file1,'file') &&  ~exist(T1file,'file') )
+%           disp(['Loading T1 data from ' T1file1 '...']);
+%           T1file=T1file1;
+%         
+%     else
+%         T1file = mrvSelectFile('r','*.nii.gz','Select T1 fit file',outDir);
+%         if isempty(T1file)
+%             error('User cancelled.')
+%         else
+%             disp(['Loading T1 data from ' T1file '...']);
+%         end
+%     end
+% end
 
 
 % Get the Water Fraction File

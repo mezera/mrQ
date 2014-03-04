@@ -52,7 +52,8 @@ if (~exist('T1file','var') || isempty(T1file)),
 end
 
 if ~exist(T1file,'file') && isfield(mrQ,'outDir') 
-    T1file = fullfile(mrQ.outDir,'T1_map_lsq.nii.gz');
+    T1file=mrQ_getT1file(mrQ);
+    %T1file = fullfile(mrQ.outDir,'T1_map_lsq.nii.gz');
 end
 T1 = readFileNifti(T1file);
 T1 = double(T1.data);T1=T1.*1000;

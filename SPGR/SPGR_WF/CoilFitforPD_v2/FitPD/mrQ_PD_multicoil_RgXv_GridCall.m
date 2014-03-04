@@ -115,23 +115,24 @@ else
     opt.T1reg=1;
     
     if(~exist('T1file','var') || isempty(T1file))
-        T1file = fullfile(outDir,'T1_map_lsq.nii.gz');
-    end
-    if ~exist(T1file,'file')
-        T1file = fullfile(outDir,'maps/T1_lsq.nii.gz');
-    end
-    if ~exist(T1file,'file') && isfield(mrQ,'outDir')
-        T1file = fullfile(mrQ.outDir,'T1_map_lsq.nii.gz');
-    end
-    if ~exist(T1file,'file')
-        
-        error('can not find theT1 file')
-    end
-    opt.T1file=T1file;
-end
+        T1file=mrQ_getT1file(mrQ);
+    end   
+      opt.T1file=T1file;
+end     
 
-
-
+%         T1file = fullfile(outDir,'T1_map_lsq.nii.gz');
+%     end
+%     if ~exist(T1file,'file')
+%         T1file = fullfile(outDir,'maps/T1_lsq.nii.gz');
+%     end
+%     if ~exist(T1file,'file') && isfield(mrQ,'outDir')
+%         T1file = fullfile(mrQ.outDir,'T1_map_lsq.nii.gz');
+%     end
+%     if ~exist(T1file,'file')
+%         
+%         error('can not find theT1 file')
+%     end
+ 
 
 % Load the brain mask file
 if(~exist('BMfile','var') || isempty(BMfile))

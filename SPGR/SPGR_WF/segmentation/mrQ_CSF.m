@@ -42,14 +42,16 @@ if exist('T1file','var') && ~isempty(T1file)
     T1 = readFileNifti(T1file);
     T1 = double(T1.data);
 else
-    T1file = fullfile(outDir,'T1_map_lsq.nii.gz');
-    disp(['trying  to load T1 from ' T1file '...']);
+    T1file=mrQ_getT1file(mrQ);
+   % T1file = fullfile(outDir,'T1_map_lsq.nii.gz');
+   % disp(['trying  to load T1 from ' T1file '...']);
     if(exist(T1file,'file'))
         disp(['Loading T1 data from ' T1file '...']);
         T1 = readFileNifti(T1file);
         T1 = double(T1.data);
-    else
-        T1file = mrvSelectFile('r','*.nii.gz','Select T1 File');
+    
+   %else
+    %    T1file = mrvSelectFile('r','*.nii.gz','Select T1 File');
         % disp(['error , can not find the file: '  T1file]);
         %error
     end

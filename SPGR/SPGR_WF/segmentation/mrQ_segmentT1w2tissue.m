@@ -11,18 +11,21 @@ if exist('T1file','var') && ~isempty(T1file)
     T1 = readFileNifti(T1file);
     T1 = double(T1.data);
 else
-    T1file = fullfile(outDir,'T1_map_lsq.nii.gz');
-    disp(['trying  to load T1 from ' T1file '...']);
-    if(exist(T1file,'file'))
-        disp(['Loading T1 data from ' T1file '...']);
-        T1 = readFileNifti(T1file);
-        T1 = double(T1.data);
-    else
-        T1file = mrvSelectFile('r','*.nii.gz','Select T1 File');
-        % disp(['error , can not find the file: '  T1file]);
-        %error
-    end
+    T1file=mrQ_getT1file(mrQ);
+    
 end
+%     T1file = fullfile(outDir,'T1_map_lsq.nii.gz');
+%     disp(['trying  to load T1 from ' T1file '...']);
+%     if(exist(T1file,'file'))
+%         disp(['Loading T1 data from ' T1file '...']);
+%         T1 = readFileNifti(T1file);
+%         T1 = double(T1.data);
+%     else
+%         T1file = mrvSelectFile('r','*.nii.gz','Select T1 File');
+%         % disp(['error , can not find the file: '  T1file]);
+%         %error
+%     end
+%end
 
 if notDefined('BMfile')
     BMfile = fullfile(outDir,'brainMask.nii.gz');
@@ -62,13 +65,13 @@ brainMask = logical(brainMask.data);
 
 %% FSL
 % run bet of fsl
-fprintf('\n running fls bet ...\n');
+fprintf('\n running fsl bet ...\n');
 
 
 segfile=fullfile(outDir,'t1_bet.nii.gz')
 eval(['! bet ' t1wfile ' ' segfile ' -m -f .4'])
 
-fprintf('\n fls fast ...\n');
+fprintf('\n fsl fast ...\n');
 eval(['! fast '  segfile ])
 
 

@@ -407,7 +407,7 @@ end
 if (mrQ.SPGR_PDBuild_done==1)
     fprintf('\n calculate VIP TV SIR form T1 and WF maps               \n');
 
-    [mrQ.AnalysisInfo] = mrQ_VIP(mrQ.spgr_initDir);
+    [mrQ.AnalysisInfo] = mrQ_VIP(mrQ);
     save(mrQ.name,'mrQ');
 end
 

@@ -154,7 +154,7 @@ sub = mrQ.sub;
 
 if isfield(mrQ,'Arange_Date') && ~isempty(mrQ.Arange_Date)
 
-    fprintf([ '\n  using data intiate at ' mrQ.Arange_Date ' !  \n']);
+    fprintf([ '\n  Arranged data found: ' mrQ.Arange_Date ' !  \n']);
 
 else
     fprintf('\n  Arranging the data ...\n  ')
@@ -411,7 +411,7 @@ if (mrQ.SPGR_PDBuild_done==1)
     save(mrQ.name,'mrQ');
 end
 
-%% orgnized the OutPut  directory 
+%% Organize the OutPut  directory
 mrQ=mrQ_arangeOutPutDir(mrQ);
 
 %done

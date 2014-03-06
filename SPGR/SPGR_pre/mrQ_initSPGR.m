@@ -430,7 +430,8 @@ if process
             % computing a spatial normalization
             ni = readFileNifti(fileRaw);
             ni = niftiApplyCannonicalXform(ni);
-            sn = mrAnatComputeSpmSpatialNorm(ni.data, ni.qto_xyz, 'MNI_T1');
+            template =  fullfile(mrDiffusionDir, 'templates', 'MNI_T1.nii.gz');
+            sn = mrAnatComputeSpmSpatialNorm(ni.data, ni.qto_xyz, template);
             c = mrAnatGetImageCoordsFromSn(sn, tal2mni([0,0,0; 0,-16,0; 0,-8,40])', true)';
             mrAnatAverageAcpcNifti(ni, t1w_acpcfile, c, [], [], [], false);
 

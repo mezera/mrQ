@@ -99,6 +99,8 @@ if(exist('T1file','var') && ~isempty(T1file))
     disp(['Loading T1 data from ' T1file '...']);
 else
     T1file=mrQ_getT1file(mrQ);
+end
+
 %         T1file1= fullfile(outDir,'maps/T1_map_lsq.nii.gz');
 %     T1file= fullfile(outDir,'T1_map_lsq.nii.gz');
 %     if(exist(T1file,'file'))

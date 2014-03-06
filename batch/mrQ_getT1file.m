@@ -1,6 +1,8 @@
 function T1file=mrQ_getT1file(mrQ)
-% search for the T1 file. can be one of three file name depend on the fit
-% process.
+% search for the T1 file. can be one of three file names depending on the
+% fit process.
+
+
 T1file=[];
 %% is there an linear fit T1 file?
 if isfield(mrQ.AnalysisInfo,'T1LFfile')
@@ -24,11 +26,12 @@ if isfield(mrQ.AnalysisInfo,'T1lsqfile')
     end
 end
 
-%% maybe it is allready in the outputDir
-if isfield(mrQ.maps,'T1path')
-
-    if exist(mrQ.maps.T1path,'file')
-        T1file= mrQ.maps.T1path;
+%% maybe it is already in the outputDir
+if isfield(mrQ, 'maps')
+    if isfield(mrQ.maps,'T1path')
+        if exist(mrQ.maps.T1path,'file')
+            T1file= mrQ.maps.T1path;
+        end
     end
 end
 

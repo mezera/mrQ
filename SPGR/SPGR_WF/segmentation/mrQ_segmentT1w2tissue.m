@@ -1,19 +1,22 @@
 function mrQ=mrQ_segmentT1w2tissue(mrQ,BMfile,T1file,t1wfile,csffile,boxsize)
-%the function segment by FSL to three tissue
-%take the CSF tissue restrict it by the T1 values
-%the CSF is also restricted to be in the center of the brain in a box of
-%~ 60x80x40mm asuming the brain is in ACPC space this is where the
-%ventrical are.
+% 
+% The function segment by FSL to three tissue take the CSF tissue restrict
+% it by the T1 values the CSF is also restricted to be in the center of the
+% brain in a box of ~ 60x80x40mm asuming the brain is in ACPC space this is
+% where the ventrical are.
+% 
+% 
+outDir = mrQ.AnalysisInfo.outDir;
 
-outDir=mrQ.AnalysisInfo.outDir;
-if exist('T1file','var') && ~isempty(T1file)
-    disp(['Loading T1 data from ' T1file '...']);
-    T1 = readFileNifti(T1file);
-    T1 = double(T1.data);
-else
-    T1file=mrQ_getT1file(mrQ);
-    
+if ~exist('T1file','var') || isempty(T1file)
+    T1file = mrQ_getT1file(mrQ); 
 end
+
+disp(['Loading T1 data from ' T1file '...']);
+T1 = readFileNifti(T1file);
+T1 = double(T1.data);
+
+
 %     T1file = fullfile(outDir,'T1_map_lsq.nii.gz');
 %     disp(['trying  to load T1 from ' T1file '...']);
 %     if(exist(T1file,'file'))
@@ -84,7 +87,7 @@ AnalysisInfo.T1wSeg         = segfile
 save(infofile,'AnalysisInfo');
 
 
-fprintf('\n T1 map and ventrical location restrictions \n');
+fprintf('\n T1 map and ventrical location restrictions... \n');
 
 % T1 cliping of csf
 seg=readFileNifti(segfile);
@@ -121,12 +124,12 @@ CSF1= CSF1 & T1>4. & T1< 5;
 dtiWriteNiftiWrapper(single(CSF1), xform, csffile);
 
 if length(find(CSF1))<200
-           fprintf(['\n wornign we could find only ' num2str(length(find(CSF1))) ' csf voxel this make the CSF WF estimation very noise cosider to edit csf_seg_T1.nii.gz fiel see below \n']);
+           fprintf(['\n Warning: We could find only ' num2str(length(find(CSF1))) ' csf voxel this make the CSF WF estimation very noise cosider to edit csf_seg_T1.nii.gz fiel see below \n']);
 end
-           % we save also ROI that  will include more voxel in the CSF ROI but will be more permisive to
-% patial voulume. this should be use if CSF is hard hard to estime form
-% small number of voxel. this can happen with subject with small vertricals
-% and low resulotion scans.
+% we save also ROI that  will include more voxel in the CSF ROI but will be
+% more permisive to patial voulume. this should be use if CSF is hard hard
+% to estime form small number of voxel. this can happen with subject with
+% small vertricals and low resulotion scans.
 CSFtmp= CSFtmp & T1>3;
 
 %length(find(CSF1));

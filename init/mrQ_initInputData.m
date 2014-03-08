@@ -103,7 +103,7 @@ nifti(cellfun(@isempty,nifti)) = [];
 % Get the flip angles 
 fa = {};
 for ii = 1:numel(nifti)
-    if isfield(nifti{ii},'fa') && isfield(nifti{ii},'rs')
+    if isfield(nifti{ii},'fa') && ( isfield(nifti{ii},'rs') || isfield(nifti{ii},'r') )
         switch nifti{ii}.fa
             case {10, 20, 30, 4};
                 fa{end+1} = ii;

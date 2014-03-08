@@ -89,37 +89,44 @@ end
 nifti = {};
 
 % Read the parameters for each of the nifti files
-for i = 1:numel(niFiles)
-%     fprintf('Reading niFiles %d\n',i);
-    nifti{i} = niftiGetParamsFromDescrip(niFiles{i});
+for jj = 1:numel(niFiles)
+%     fprintf('Reading  %s\n',niFiles{jj});
+%     if jj == 9
+%         keyboard
+%     end
+    nifti{end+1} = niftiGetParamsFromDescrip(niFiles{jj});
 end
 
-% Get the flip angles % NEEDS MORE TESTING
-c  = 0;
+% Remove empty entries 
+nifti(cellfun(@isempty,nifti)) = []; 
+
+% Get the flip angles 
 fa = {};
 for ii = 1:numel(nifti)
     if isfield(nifti{ii},'fa') && isfield(nifti{ii},'rs')
         switch nifti{ii}.fa
             case {10, 20, 30, 4};
-                c = c+1; 
-                fa{c} = ii;
+                fa{end+1} = ii;
         end
     end
 end
 
+% Do another check of those nifti files for those with duplicate FAs
+
 
 % Get the IT for the SEIR structure
-c  = 0;
 it ={};
 for jj = 1:numel(nifti)
     if isfield(nifti{jj},'ti')
         switch nifti{jj}.ti
             case {2400, 1200, 400, 50}
-              c = c+1;
-              it{c} = jj;
+              it{end+1} = jj;
         end
     end
 end
+
+% Do another check of those nifti files for those with duplicate ITs
+
 
 
 %% Construct inputData structures
@@ -152,5 +159,9 @@ inputData_spgr.rawDir = mrQ.RawDir;
 
 mrQ = mrQ_Set(mrQ,'inputdata_spgr',inputData_spgr);
 mrQ = mrQ_Set(mrQ,'inputdata_seir',inputData_seir);
+
+if numel(it) <2 || numel(fa) <2
+    fprintf('\n[%s] - Files required for mrQ not found in %s\n',mfilename,mrQ.RawDir);
+end
 
 return

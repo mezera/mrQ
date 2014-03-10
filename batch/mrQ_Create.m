@@ -57,7 +57,8 @@ end
 if setDefault
     %% intiate
     mrQ.clobber = false;
-    [~, mrQ.sub] = fileparts(mrQ.RawDir);
+    [~, mrQ.sub] =fileparts(tempname);
+    %[~, mrQ.sub] = fileparts(mrQ.RawDir);
     mrQ.arrangeRawFlag=1;
     mrQ.channels=[];
     %% SEIR

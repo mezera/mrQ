@@ -68,19 +68,21 @@ a_fitparam=ll_T1(:,:,:,2); %tissue parameter form theSEIR eqation
 b_fitparam=ll_T1(:,:,:,3);%tissue parameter form theSEIR eqation
 clear ll_T1
 
-%no fot to big or small B1 (50%)
+%probably wrong  too big or small B1 (50%)
 tisuuemask=  B1<1.5 & B1>.5 & ~isinf(SEIRResid) ;
-
-% no for big residual
-tt=~isinf(SEIRResid) & SEIRResid>0;
-
-tisuuemask=tisuuemask & SEIRResid<prctile(SEIRResid(tt),98) & B1fitResid<prctile(B1fitResid(find(B1fitResid)),97) ...
-    & Res{1}.im<5000 & Res{1}.im>350 & b_fitparam>prctile(b_fitparam(tt),1) &a_fitparam<prctile(a_fitparam(tt),99);
-
-tisuuemask=tisuuemask & B1>prctile(B1(tisuuemask),1) & B1<prctile(B1(tisuuemask),99);
+% to high to low T1 & too high too low T1 error
+tisuuemask=tisuuemask & (Res{1}.im./(Res{2}.im*1000))<  3 & Res{1}.im<5000 & Res{1}.im>350 ;
 tisuuemask=tisuuemask & (Res{1}.im./(Res{2}.im*1000))>  0.3;
 
-tisuuemask=tisuuemask & (Res{1}.im./(Res{2}.im*1000))<  3;
+% no for big residual
+tt=~isinf(SEIRResid) & SEIRResid>0 & tisuuemask;
+
+tisuuemask=tisuuemask & SEIRResid<prctile(SEIRResid(tt),98) & B1fitResid<prctile(B1fitResid(find(B1fitResid)),97) ...
+     & b_fitparam>prctile(b_fitparam(tt),1) &a_fitparam<prctile(a_fitparam(tt),99);
+
+tisuuemask=tisuuemask & B1>prctile(B1(tisuuemask),1) & B1<prctile(B1(tisuuemask),99);
+
+
 
 
 

@@ -85,52 +85,59 @@ end
 
 
 %% Read each nifti and set up the structures
-
 nifti = {};
 
 % Read the parameters for each of the nifti files
 for jj = 1:numel(niFiles)
 %     fprintf('Reading  %s\n',niFiles{jj});
-%     if jj == 9
-%         keyboard
-%     end
     nifti{end+1} = niftiGetParamsFromDescrip(niFiles{jj});
 end
 
 % Remove empty entries 
 nifti(cellfun(@isempty,nifti)) = []; 
 
-% Get the flip angles 
+
+%% Flip Angle
+% The flip angles we want
+reqfa = [10, 20, 30, 4];
+
+% This specifies how many degrees, +/- the actual flip angle must be within compared to the 
+% prescribed flip angles above. 
+fad  = 2;
+
+% Get the index for files with flip angles we want
 fa = {};
 for ii = 1:numel(nifti)
     if isfield(nifti{ii},'fa') && ( isfield(nifti{ii},'rs') || isfield(nifti{ii},'r') )
-        switch nifti{ii}.fa
-            case {10, 20, 30, 4};
-                fa{end+1} = ii;
-        end
+    	for xx = 1:numel(reqfa)
+    		if ( nifti{ii}.fa >=  (reqfa(xx) - fad) ) && ( nifti{ii}.fa <=  (reqfa(xx) + fad) )
+    			fa{end+1} = ii;
+    		end
+    	end
     end
 end
 
-% Do another check of those nifti files for those with duplicate FAs
 
+%% Inversion Time
+reqit = [2400, 1200, 400, 50];
+
+% Difference in ms allowed between the prescribed IT and actual IT in the dicom. 
+itd = 20;
 
 % Get the IT for the SEIR structure
 it ={};
 for jj = 1:numel(nifti)
     if isfield(nifti{jj},'ti')
-        switch nifti{jj}.ti
-            case {2400, 1200, 400, 50}
-              it{end+1} = jj;
+		for itx = 1:numel(reqit)    
+	        if ( nifti{jj}.ti >= reqit(itx) - itd ) && ( nifti{jj}.ti <= reqit(itx) + itd )
+    	        it{end+1} = jj;
+        	end
         end
     end
 end
 
-% Do another check of those nifti files for those with duplicate ITs
-
-
 
 %% Construct inputData structures
-
 inputData_spgr = {};
 
 % Loop over the fa and it structs and populate the input data fields
@@ -153,7 +160,6 @@ end
 
 
 %% Return the results
-
 inputData_seir.rawDir = mrQ.RawDir;
 inputData_spgr.rawDir = mrQ.RawDir; 
 
@@ -161,7 +167,9 @@ mrQ = mrQ_Set(mrQ,'inputdata_spgr',inputData_spgr);
 mrQ = mrQ_Set(mrQ,'inputdata_seir',inputData_seir);
 
 if numel(it) <2 || numel(fa) <2
-    fprintf('\n[%s] - Files required for mrQ not found in %s\n',mfilename,mrQ.RawDir);
+    fprintf('[%s] - Files required for mrQ not found in %s\n',mfilename,mrQ.RawDir);
+    else
+    fprintf('[%s] - Files required for mrQ found!\n',mfilename);
 end
 
 return

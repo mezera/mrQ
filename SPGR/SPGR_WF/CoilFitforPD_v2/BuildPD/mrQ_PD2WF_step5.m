@@ -10,7 +10,7 @@ if notDefined('segfile');segfile = fullfile(opt.outDir, 't1_bet_seg.nii.gz');end
 
 if(exist(csffile,'file')); fprintf(['Loading CSF data from: ' csffile '\n']); CSF = readFileNifti(csffile);CSF=double(CSF.data);
 else   error(['error , can not find the file: '  csffile])    ;end
-
+% 
 if(exist(segfile,'file'));fprintf(['Loading segmentation data from: ' segfile '\n']);seg = readFileNifti(segfile);seg=double(seg.data);
 else error(['error , can not find the file: '  segfile]);end
 

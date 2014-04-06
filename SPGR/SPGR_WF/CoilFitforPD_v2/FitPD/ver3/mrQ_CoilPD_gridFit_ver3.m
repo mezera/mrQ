@@ -1,4 +1,4 @@
-function mrQ_CoilPD_gridFit(opt,jumpindex,jobindex)
+function mrQ_CoilPD_gridFit_ver3(opt,jumpindex,jobindex)
 %
 % mrQ_CoilPD_gridFit_ver3(opt,jumpindex,jobindex)
 %  this function call by the sun grid it load the relavant data and fit the

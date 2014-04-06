@@ -1,4 +1,4 @@
-function opt=mrQ_buildPD(opt_Log_name,csffile,segfile,RepErrTreshold,PrcCutOff)
+function opt=mrQ_buildPD_old(opt_Log_name,csffile)
 % this function colect all the fitted coil gains in different small voulumes (box) that was fitted in paraller
 %and join them back to a PD map and calculate the WF map. Strfilenameis the log file of the parralel fits.
 %   opt=mrQ_buildPD(opt_Log_name,csffile,segfile)
@@ -44,7 +44,7 @@ BoxBestReg=zeros(length(opt.wh),2);
 BoxExitflag=zeros(length(opt.wh),1);
 BoxX_valdationErr=zeros(2,length(opt.lambda),length(opt.wh));
 BoxX_ValSign=zeros(length(opt.wh),1);
-BoxResidErr=zeros(length(opt.wh),1);
+
 
 for ii=1:length(jobindexs);
     
@@ -61,7 +61,7 @@ for ii=1:length(jobindexs);
     for jj=1:length(boxes)
         if skip(jj)==0
             GoodBoxs(boxes(jj))=1;
-            BoxBestReg(boxes(jj),:)=opt.lambda(BestReg(jj,:));
+            BoxBestReg(boxes(jj),:)=BestReg(jj,:);
             BoxX_ValSign(boxes(jj))=X_valdationErrSN(jj);
             BoxX_valdationErr(:,:,boxes(jj))=X_valdationErr(:,:,jj);
             BoxExitflag(boxes(jj))=exitflag(jj);
@@ -70,42 +70,27 @@ for ii=1:length(jobindexs);
             Nc=length(coils);
             CoilGains(boxes(jj)).Clist=coils;
             CoilGains(boxes(jj)).g=gEst(:,1:Nc,jj);
-            BoxResidErr(boxes(jj))=ResidErr(jj,:);
         end
     end
 end
 
 
 %%
-% BoxMaxReg=zeros(length(opt.wh),2);
-% for ii=1:length(opt.wh)
-%     
-%     
-%     if GoodBoxs(ii)==1;
-%         X_valdationErr=BoxX_valdationErr(:,:,ii);
-%         for jj=1:2
-%             [v, ind]=sort(   X_valdationErr(jj,:)./min(X_valdationErr(jj,:)));
-%             
-%             BoxMaxReg(ii,jj)=min(ind( find(v<1.05)));
-%         end
-%     end
-% end
-
-
-%% select the box to combine
-
+BoxMaxReg=zeros(length(opt.wh),2);
+for ii=1:length(opt.wh)
+    
+    
+    if GoodBoxs(ii)==1;
+        X_valdationErr=BoxX_valdationErr(:,:,ii);
+        for jj=1:2
+            [v, ind]=sort(   X_valdationErr(jj,:)./min(X_valdationErr(jj,:)));
+            
+            BoxMaxReg(ii,jj)=min(ind( find(v<1.05)));
+        end
+    end
+end
 BoxesToUse=find(GoodBoxs)';
 
-if notDefined('RepErrTreshold') %the repetition betwwen coils max error 
-    RepErrTreshold=0.1;
-end
-if notDefined('PrcCutOff') %the lower pracential cut off for the regularization wight
-    PrcCutOff=1;
-end
-LowRepitionErr=BoxResidErr<RepErrTreshold;
-BoxesToUse=find(GoodBoxs & LowRepitionErr);
- RegW=BoxBestReg(BoxesToUse,2); LawW=prctile(RegW,PrcCutOff);
-BoxesToUse=find(GoodBoxs & LowRepitionErr &  BoxBestReg(:,2)>LawW)';
 tmpfile=fullfile(opt.outDir,'Boxtmp');
 %save(tmpfile,'BoxesToUse','CoilGains')
 %% get the location and PD information to each box we will use

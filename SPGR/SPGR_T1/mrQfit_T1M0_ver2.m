@@ -85,6 +85,10 @@ lsqfit = mrQ.lsq;
 if ~isfield(mrQ,'LW');
     mrQ.LW = false;
 end
+if lsqfit==0 
+    mrQ.LW = true;
+end
+
 LWfit = mrQ.LW;
 
 
@@ -111,7 +115,8 @@ runfreesurfer = mrQ.runfreesurfer;
 
 if ~isfield(mrQ,'sub');
     % This is a job name we get from the for SGE
-    [~, mrQ.sub] = fileparts(fileparts(fileparts(fileparts(fileparts(dataDir)))));
+  %  [~, mrQ.sub] = fileparts(fileparts(fileparts(fileparts(fileparts(dataDir)))));
+    [~, mrQ.sub] =fileparts(tempname);
     disp([' Subject name for lsq fit is ' mrQ.sub]);
 end
 sub = mrQ.sub;
@@ -124,10 +129,7 @@ if ~isfield(mrQ,'name');
     mrQ.name = fullfile(outDir,'mrQParams');
 end
 
-if ~isfield(mrQ,'lsq');
-    mrQ.lsq = 1;
-end
-lsqfit = mrQ.lsq;
+
 
 if ~isfield(mrQ,'SunGrid');
     mrQ.SunGrid = 1;
@@ -502,12 +504,68 @@ end
 %% VIII. LSQ or LINEAR fit of M0 and T1:
 %  Use the sun-grid to excelerate this fit
 
+
+
 % make a head mask that include for sure the brain mask
 HM = readFileNifti(HMfile);
 
 HeadMask=logical(HM.data +brainMask);
 
-%%% LSQ FIT
+
+
+
+
+
+    %%
+    % LINEAR FITTING  Linear fit is used to calculate T1 and M0 
+    % (Linear fitting can bias the fit but it's very fast)
+    
+
+disp([' linear fits of T1 and PD !!!'] );
+T1LFfile= fullfile(outDir,['T1_map_lin.nii.gz']);
+M0LFfile= fullfile(outDir,['M0_map_lin.nii.gz']);
+%
+
+if (exist( T1LFfile,'file') && exist( M0LFfile,'file')  && ~clobber),
+
+    disp(['loading exsisting T1 and M0 linear fit'])
+    T1=readFileNifti(T1LFfile);
+    M0=readFileNifti(M0LFfile);
+    T1=double(T1.data);
+    M0=double(M0.data);
+
+else
+
+    disp('Performing linear fit of T1 and M0...');
+    flipAngles = [s2(:).flipAngle];
+    tr = [s(:).TR];
+
+    % Check that all TRs are the same across all the scans in S
+    if(~all(tr == tr(1))), error('TR''s do not match!'); end
+    tr = tr(1);
+
+    % Compute a linear fit of the the T1 estimate for all voxels.
+    % M0: PD = M0 * G * exp(-TE / T2*).
+    [T1L,M0L] = relaxFitT1(cat(4,s(:).imData),flipAngles,tr,B1);
+
+    % Zero-out the values that fall outside of the brain mask
+    T1L(~HeadMask) = 0;
+    M0L(~HeadMask) = 0;
+
+
+    % Save the T1 and PD data
+    dtiWriteNiftiWrapper(single(T1L), xform,T1LFfile);
+    dtiWriteNiftiWrapper(single(M0L), xform, M0LFfile);
+
+    AnalysisInfo.T1LFfile=T1LFfile;
+
+end;
+
+
+
+
+
+%% LSQ FIT
 if lsqfit==1,
     %% lsq fit of M0 and T1 use the sun-grid to excelerate this fit
     disp('Fitting T1 and PD by lsq: This takes time - SGE can be used!!!');
@@ -532,7 +590,7 @@ if lsqfit==1,
             % deleat them
             eval(['! rm -r ' outDir '/tmpSG']);
         end
-
+        
 
 
         disp(['Fiting lsq T1 and M0']);
@@ -542,7 +600,7 @@ if lsqfit==1,
         Gain=double(HeadMask);
 
         % LSQ fit of M0 and T1: Use the sun-grid to excelerate this fit
-        [T1,M0] = mrQ_fitT1PD_LSQ(s2,HeadMask,tr,flipAngles,M0,t1,Gain,B1,outDir,xform,SunGrid,[],sub,mrQ.proclus);
+        [T1,M0] = mrQ_fitT1PD_LSQ(s2,HeadMask,tr,flipAngles,M0L,T1L,Gain,B1,outDir,xform,SunGrid,[],sub,mrQ.proclus);
 
         %
 
@@ -601,64 +659,12 @@ else
     AnalysisInfo.T1LFfile=T1LFfile;
 
 
-    %%% LINEAR FITTING (lsqfit ~=1) Linear fit is used to calculate T1 and M0
-    %%% (Linear fitting can bias the fit but it's very fast)
 
 end
 end
 
 
 
-
-
-
-
-
-
-    %%
-    % LINEAR FITTING (lsqfit ~=1) Linear fit is used to calculate T1 and M0
-    % (Linear fitting can bias the fit but it's very fast)
-    
-
-disp([' linear fits of T1 and PD !!!'] );
-T1LFfile= fullfile(outDir,['T1_map_lin.nii.gz']);
-M0LFfile= fullfile(outDir,['M0_map_lin.nii.gz']);
-%
-
-if (exist( T1LFfile,'file') && exist( M0LFfile,'file')  && ~clobber),
-
-    disp(['loading exsisting T1 and M0 linear fit'])
-    T1=readFileNifti(T1LFfile);
-    M0=readFileNifti(M0LFfile);
-    T1=double(T1.data);
-    M0=double(M0.data);
-
-else
-
-    disp('Performing linear fit of T1 and M0...');
-    flipAngles = [s2(:).flipAngle];
-    tr = [s(:).TR];
-
-    % Check that all TRs are the same across all the scans in S
-    if(~all(tr == tr(1))), error('TR''s do not match!'); end
-    tr = tr(1);
-
-    % Compute a linear fit of the the T1 estimate for all voxels.
-    % M0: PD = M0 * G * exp(-TE / T2*).
-    [T1,M0] = relaxFitT1(cat(4,s(:).imData),flipAngles,tr,B1);
-
-    % Zero-out the values that fall outside of the brain mask
-    T1(~HeadMask) = 0;
-    M0(~HeadMask) = 0;
-
-
-    % Save the T1 and PD data
-    dtiWriteNiftiWrapper(single(T1), xform,T1LFfile);
-    dtiWriteNiftiWrapper(single(M0), xform, M0LFfile);
-
-    AnalysisInfo.T1LFfile=T1LFfile;
-
-end;
 
 
 

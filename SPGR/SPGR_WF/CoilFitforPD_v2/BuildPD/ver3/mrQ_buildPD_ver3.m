@@ -1,4 +1,4 @@
-function opt=mrQ_buildPD(opt_Log_name,csffile,segfile,RepErrTreshold,PrcCutOff)
+function opt=mrQ_buildPD_ver3(opt_Log_name,csffile,segfile,RepErrTreshold,PrcCutOff)
 % this function colect all the fitted coil gains in different small voulumes (box) that was fitted in paraller
 %and join them back to a PD map and calculate the WF map. Strfilenameis the log file of the parralel fits.
 %   opt=mrQ_buildPD(opt_Log_name,csffile,segfile)

@@ -1,6 +1,6 @@
-function mrQ_CoilPD_gridFit(opt,jumpindex,jobindex)
+function mrQ_CoilPD_gridFit_old(opt,jumpindex,jobindex)
 %
-% mrQ_CoilPD_gridFit_ver3(opt,jumpindex,jobindex)
+% mrQ_CoilPD_gridFit(opt,jumpindex,jobindex)
 %  this function call by the sun grid it load the relavant data and fit the
 %  PD and coils bias of M0 mage rigion (voulume).
 % the imaging voulume region also call here "box". The box is a location (few voxel 100's to
@@ -85,9 +85,6 @@ X_valdationErrSN=zeros(nIteration,1);
 X_valdationErr=zeros(2,length(opt.lambda),nIteration);
 BestReg=zeros(nIteration,2);
 Clists=zeros(maxCoil, nIteration);
-ResidErr=zeros(nIteration,1);
-Clists2=zeros(maxCoil, nIteration);
-
 Iter=0;
 
 %%  II. go over the box the boxs
@@ -119,43 +116,39 @@ for ii= st:ed,
         
         %% Select the coils to fit
         %
-                if length(useCoil)>SZ(4); useCoil=useCoil(1:SZ(4));end
-
-        Clist=mrQ_select_coilsMinCorrelation(maxCoil,max(useCoil),M0_v(BM1,:));
+        if length(useCoil)>SZ(4); useCoil=useCoil(1:SZ(4));end
+        c=nchoosek(useCoil,maxCoil);
+        Cor=ones(maxCoil,size(c,1))*100;
+        for k=minCoil:maxCoil
+            
+            c=nchoosek(useCoil,k);
+            
+            for kk=1:size(c,1)
+                A=(corrcoef(M0_v(BM1,c(kk,:))));
+                %    Cor(k,kk)=(sum(A(:))-k)/2;
+                Cor(k,kk)=(sum(abs(A(:)))-k)/((length(A(:))-k)*0.5);
+                
+                Cloc(k,kk,1:k)=c(kk,:);
+            end
+        end
+        
+        
+        [v ind]=sort(Cor(:)); %sort the coils by minimum corralation
+        [xx yy]=ind2sub(size(Cor),ind(1)); % find the combination with minimal corralation
+        Clist=[squeeze(Cloc(xx,yy,1:xx))']; % get the coil list
         nCoils=length(Clist);
         Clists(1:nCoils,Iter)=Clist;
+        %% Let's make sure we have no strange voxel
         
-        % find an alternative coil list
-        Mtmp=M0_v(BM1,:);
-        Mtmp(BM1,Clist)=1;
-        Clist2=mrQ_select_coilsMinCorrelation(maxCoil,max(useCoil),Mtmp);
-        Clists2(1:nCoils,Iter)=Clist2;
+        for jj=1:nCoils
+            M = M0_v(:,Clist(jj)) ; % Raw estimate
+        Bad=isnan(M) | isinf(M) | M==0;
+        BM1(Bad)=0;
+        end
+         Bad=isnan(R1) | isinf(R1) | R1==0;
+        BM1(Bad)=0;
+        
 
-        clear Mtmp;
-        %%
-        
-%         if length(useCoil)>SZ(4); useCoil=useCoil(1:SZ(4));end
-%         c=nchoosek(useCoil,maxCoil);
-%         Cor=ones(maxCoil,size(c,1))*100;
-%         for k=minCoil:maxCoil
-%             
-%             c=nchoosek(useCoil,k);
-%             
-%             for kk=1:size(c,1)
-%                 A=(corrcoef(M0_v(BM1,c(kk,:))));
-%                 %    Cor(k,kk)=(sum(A(:))-k)/2;
-%                 Cor(k,kk)=(sum(abs(A(:)))-k)/((length(A(:))-k)*0.5);
-%                 
-%                 Cloc(k,kk,1:k)=c(kk,:);
-%             end
-%         end
-%         
-%         
-%         [v ind]=sort(Cor(:)); %sort the coils by minimum corralation
-%         [xx yy]=ind2sub(size(Cor),ind(1)); % find the combination with minimal corralation
-%         Clist=[squeeze(Cloc(xx,yy,1:xx))']; % get the coil list
-%         nCoils=length(Clist);
-%         Clists(1:nCoils,Iter)=Clist;
         %% intiate the search parameters
         
         
@@ -170,7 +163,7 @@ for ii= st:ed,
             g0(:,jj) = pBasis(mask1,:) \ G(mask1,jj);  % Polynomial approximation
         end
         
-        
+        if any(isnan(g0(:)));        g0(isnan(g0))=0;        end
         %%  X-Validation Fit of coil Gain with T1 regularization
         
         [X_valdationErrF,  X_gEstF]=pdX_valdationLoop_2(opt.lambda,3,M0_v(BM1,Clist), pBasis(BM1,:),R1basis(BM1,:),g0,Segmask(BM1));
@@ -194,24 +187,9 @@ for ii= st:ed,
         end
         
         %  [PDfit,RMSE1]=pdCoilSearch_T1reg( lambda1(best1),M0_v(:,Clist),pBasis,R1basis,X_gEstF(:,:,1,best),[],[],PDsim);
-        [PDfit,~,G,gEst(:,:,Iter), resnorm(Iter),exitflag(Iter) ]=pdCoilSearch_T1reg( opt.lambda(best2),M0_v(BM1,Clist),pBasis(BM1,:),R1basis(BM1,:),X_gEstF(:,:,1,best2),Segmask(BM1));
+        [PDfit,~,G,gEst(:,1:xx,Iter), resnorm(Iter),exitflag(Iter) ]=pdCoilSearch_T1reg( opt.lambda(best2),M0_v(BM1,Clist),pBasis(BM1,:),R1basis(BM1,:),X_gEstF(:,:,1,best2),Segmask(BM1));
         
-        % get ht ePD with a different set of coils
-         [PDfit2 ]=pdCoilSearch_T1reg( opt.lambda(best2),M0_v(BM1,Clist2),pBasis(BM1,:),R1basis(BM1,:),[],Segmask(BM1));
-         
-         %%
-         tmp=zeros(SZ(1:3));
-          tmp(BM1)=PDfit2(:);
-          PDfit2=tmp;
-            tmp(BM1)=PDfit(:);
-                      PDfit=tmp;
-
-         PDfit2  = reshape(PDfit2,SZ(1:3));
-         PDfit  = reshape(PDfit,SZ(1:3));
-
-         ErrMap=PDfit-PDfit2;
-         [~,~,ResidErr(Iter)] = fit3dpolynomialmodel(ErrMap,logical(ErrMap),1);
-
+        
         toc
         %
     end
@@ -219,6 +197,6 @@ end
 
 name=[ opt.name '_' num2str(st) '_' num2str(ed)];
 
-save(name,'gEst','resnorm','exitflag','st','ed','skip','fb' ,'X_valdationErr','X_valdationErrSN','BestReg','Clists','Clists2','ResidErr')
+save(name,'gEst','resnorm','exitflag','st','ed','skip','fb' ,'X_valdationErr','X_valdationErrSN','BestReg','Clists')
 
 

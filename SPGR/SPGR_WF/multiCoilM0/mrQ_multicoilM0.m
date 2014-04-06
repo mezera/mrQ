@@ -80,7 +80,7 @@ B1 = double(B1.data);
 imN=0;
 FAU= unique(flipAngles);
 
-for j=1:numel( FAU)
+for j=1:numel(FAU)
     
     kkk=0;
     % find all images with flip anlge j

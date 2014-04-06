@@ -41,7 +41,7 @@ if (~exist('sb','var')|| isempty(sb)),
     sb='UN';
 end
 
-sgename=[sb '_3dT1PD'];
+sgename=[sb 'T1PD'];
 
 if (~exist('SGE','var')|| isempty(SGE)),
     SGE=0;

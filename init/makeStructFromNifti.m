@@ -45,8 +45,13 @@ if exist('multiChannels','var') && ~isempty(multiChannels)
     % Reshape the data structure so the 3rd and 4th dimensions are
     % switched-up and Permute the data so that dat dim --> (x,y,z,coils)
     sz  = size(DD.data);
-    coilNum=sz(4)-1;
     
+    if length((sz))<4
+        coilNum=1;
+        sz(4)=1;
+    else
+    coilNum=sz(4)-1;
+    end
     if permution==1
         dat = reshape(DD.data,[sz(1) sz(2) sz(4) sz(3)]);
         dat = permute(dat,[1 2 4 3]);

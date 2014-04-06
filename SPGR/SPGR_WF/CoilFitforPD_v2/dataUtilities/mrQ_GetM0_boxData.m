@@ -61,7 +61,12 @@ Segmask=zeros(size(seg));
    if  length(find(Segmask))<(length(Segmask(:))*0.6) % we need at R1 data for regularization if we don't have it we wo't ue this box
        skip=1;
    end
-       
+   
+   %% if R1 values are worng we will skip the voxels
+       R1=1./t1;
+    Bad=isnan(R1) | isinf(R1) | R1==0;
+        BM1(Bad)=0;
+   
    
 end
 if length(find(BM1))<length(BM1(:))*0.8 ||  length(find(BM1))<200  % not enghf voxels

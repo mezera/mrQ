@@ -121,14 +121,14 @@ for ii= st:ed,
         %
                 if length(useCoil)>SZ(4); useCoil=useCoil(1:SZ(4));end
 
-        Clist=mrQ_select_coilsMinCorrelation(maxCoil,max(useCoil),M0_v(BM1,:));
+        Clist=mrQ_select_coils(maxCoil,max(useCoil),M0_v(BM1,:));
         nCoils=length(Clist);
         Clists(1:nCoils,Iter)=Clist;
         
         % find an alternative coil list
         Mtmp=M0_v(BM1,:);
         Mtmp(BM1,Clist)=1;
-        Clist2=mrQ_select_coilsMinCorrelation(maxCoil,max(useCoil),Mtmp);
+        Clist2=mrQ_select_coils(maxCoil,max(useCoil),Mtmp);
         Clists2(1:nCoils,Iter)=Clist2;
 
         clear Mtmp;

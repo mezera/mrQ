@@ -49,7 +49,6 @@ function mrQ = mrQ_initInputData(mrQ)
 
 
 %% Process inputs and checks
-% mrQ.RawDir = '/biac4/wandell/data/westonhavens/upload/testlab/20130509_1152_4534';
 fprintf('[%s]\n',mfilename);
 
 if ~isfield(mrQ,'RawDir')
@@ -61,13 +60,13 @@ if ~isfield(mrQ,'fieldstrength')
 end
 
 
+
 %% Build a struct with the path to each nifti file in mrQ.RawDir
 
 % Find all nifti files in mrQ.RawDir (recursively)
 tn = tempname;
 cmd = ['find ' mrQ.RawDir ' -follow -type f -name "*.nii.gz" | tee ' tn];
 
-% Run the command 
 [status, result] = system(cmd);
 if status ~= 0 
     error('There was a problem finding nifti files.'); 
@@ -78,10 +77,9 @@ if ~isempty(result)
     niFiles = readFileList(tn);
 else
     fprintf('mrQ - No nifti files found in %s', mrQ.RawDir); 
-%     Should this be returned empty, or should some flag be set??
-%     mrQ = []; 
     return
 end
+
 
 
 %% Read each nifti and set up the structures
@@ -97,15 +95,17 @@ end
 nifti(cellfun(@isempty,nifti)) = []; 
 
 
+
 %% Flip Angle
 
 % Rules: 
-%	- Data must be 4D of same size (multi-coil) - don't know about the same size thing? 
-%	- Minimum of 2 unique flip angles with 1 <=10 and 1 >= 10. 
 %	- FA must be <=30
 %	- TE <= 3
 % 	- TI == 0 
-%	- OFF RESONANCE == 0
+%	- Data must be 4D of same size (multi-coil)  
+%	- Minimum of 2 unique flip angles with 1 <=10 and 1 >= 10. 
+%	- ACQ should be equal 
+%   - 'r' or 'rs' should be equal
 
 disp('Looking for nifti files with valid flip angles...');
 fa = {};
@@ -125,7 +125,8 @@ for nn = 1:numel(fa)
 	fprintf('\t%s/%s: \tFlip angle = %d\n',epoch{end},[f,e],nifti{fa{nn}}.fa);
 end
 
-% Is 1 flip angle less than 10 and one greater than 10
+
+% CHECK: Is 1 flip angle less than 10 and one greater than 10
 f = zeros(size(fa));
 for fas = 1:numel(fa)
 	f(fas) = nifti{fa{fas}}.fa;
@@ -133,7 +134,52 @@ end
 if numel(f) < 3 && ( isempty(find(f > 10)) || isempty(find(f < 10)) ) 
 	warning('There are fewer than 3 valid nifti files and those flip angles are not consistent with this analysis!');
 end
-			
+
+
+% CHECK that the acquisition matrix is the same across scans 
+% - if not then remove those that are ~= mode. 
+acqs = zeros(size(fa));
+for acq = 1:numel(acqs)
+	acqs(acq) = str2double(sprintf('%i',nifti{fa{acq}}.acq));
+end
+if ~isempty(acqs) && numel(unique(acqs)) ~= 1
+    acq_mode = mode(acqs);
+    fa = fa(acqs == acq_mode);
+    warning('ACQUISITION MATRICES ARE NOT EQUAL!\nRemoving %d scans with ACQ not = %s',numel(find(acqs ~= acq_mode)), num2str(nifti{fa{1}}.acq));
+end
+
+
+% CHECK that 'r' or 'rs' is equal across scans
+c = 0; d = 0; sf = '';
+for i = 1:numel(fa)
+    if isfield(nifti{fa{i}},'r')
+        c = c+1;
+    end
+    if isfield(nifti{fa{i}},'rs')
+        d = d+1;
+    end 
+end
+
+if c == numel(fa)  
+    sf ='r';
+elseif d == numel(fa) 
+    sf = 'rs'; 
+end
+
+% If not then remove the 'r' or 'rs' that are ~= mode
+if ~isempty(sf) && (d == 0 || c == 0 )
+    rss = zeros(size(fa));
+    for rs = 1:numel(fa)
+        rss(rs) = nifti{fa{rs}}.(sf);
+    end
+    if ~isempty(rss) && numel(unique(rss)) ~= 1
+        rs_mode = mode(rss);
+        fa = fa(rss == rs_mode);
+        warning('SLICE FACTORS ARE NOT CONTSTANT! \nRemoving %d scans with %s not = %s',numel(find(rss ~= rs_mode)),sf,num2str(rs_mode));
+    end
+end
+
+
 
 %% Inversion Time
 % RULES: 
@@ -159,7 +205,7 @@ for nn = 1:numel(it)
 	fprintf('\t%s/%s: \tInversion time = %d\n',epoch{end},[f,e],nifti{it{nn}}.ti);
 end
 
-% Find out if the inversion times are unique
+% CHECK that the inversion times are unique
 t = zeros(size(it));
 for nit = 1:numel(it)
 	t(nit) = nifti{it{nit}}.ti;
@@ -168,14 +214,30 @@ if numel(unique(t)) ~= numel(it)
 	warning('INVERSION TIMES ARE NOT UNIQUE!');
 end
 
-% Find out if the TEs are constant
+% CHECK that the TEs are constant 
+% If not then remove the TEs ~= mode
 e = zeros(size(it));
 for ne = 1:numel(it)
 	e(ne) = nifti{it{ne}}.te;
 end
 if numel(unique(e)) ~= 1
-	warning('ECHO TIMES ARE NOT CONTSTANT!');
+    te_mode = mode(e);
+    it = it(e == te_mode);
+    warning('ECHO TIMES ARE NOT CONTSTANT! \nRemoving %d scans with TE not = %s',numel(find(e ~= te_mode)),num2str(te_mode));
 end
+
+% CHECK that the acquisition matrix is the same across scans 
+% - if not then remove those that are ~= mode. 
+acqs = zeros(size(it));
+for acq = 1:numel(acqs)
+	acqs(acq) = str2double(sprintf('%i',nifti{it{acq}}.acq));
+end
+if ~isempty(acqs) && numel(unique(acqs)) ~= 1
+    acq_mode = mode(acqs);
+    it = it(acqs == acq_mode);
+    warning('ACQUISITION MATRICES ARE NOT EQUAL!\nRemoving %d scans with ACQ not = %s',numel(find(acqs ~= acq_mode)), num2str(nifti{it{end}}.acq));
+end
+
 
 
 %% Construct inputData structure
@@ -196,8 +258,9 @@ for y = 1:numel(it)
     inputData_seir.TR(y)       = nifti{it{y}}.tr;
     inputData_seir.TE(y)       = nifti{it{y}}.te;
     inputData_seir.IT(y)       = nifti{it{y}}.ti;
-    inputData_seir.orientation = [1 1 1]; % how can this be derived???
+    inputData_seir.orientation = [1 1 1]; % It would be best if we could derive this
 end
+
 
 
 %% Return the results

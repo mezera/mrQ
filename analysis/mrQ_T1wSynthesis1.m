@@ -88,7 +88,9 @@ fa = symFA./180.*pi;
 
 % Calculate the synthetic t1 images 
 t1w = PD.*( (1-exp(-symTR./t1)).*sin(fa)./(1-exp(-symTR./t1).*cos(fa)));
-
+% for future exploration
+% t1w = ( (1-exp(-symTR./t1)).*sin(fa)./(1-exp(-symTR./t1).*cos(fa)));
+% t1w = t1w./PD;
 
 % scale up to have big number like a typical MRI
 t1w = t1w.*10000;

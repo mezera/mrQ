@@ -529,10 +529,10 @@ M0LFfile= fullfile(outDir,['M0_map_lin.nii.gz']);
 if (exist( T1LFfile,'file') && exist( M0LFfile,'file')  && ~clobber),
 
     disp(['loading exsisting T1 and M0 linear fit'])
-    T1=readFileNifti(T1LFfile);
-    M0=readFileNifti(M0LFfile);
-    T1=double(T1.data);
-    M0=double(M0.data);
+    T1L=readFileNifti(T1LFfile);
+    M0L=readFileNifti(M0LFfile);
+    T1L=double(T1L.data);
+    M0L=double(M0L.data);
 
 else
 

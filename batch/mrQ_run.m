@@ -103,6 +103,8 @@ function mrQ_run(mrQfileName,clobber)
 %
 %  runn or run the mrQ fit
 % mrQ_run(mrQ)
+%
+% % Copyright Aviv Mezer , Vista lab 2013
 
 
 
@@ -416,7 +418,7 @@ if     mrQ.brakeAfterPD==1
     return
 end
 
-
+%%
 % calculate VIP TV and SIR
 
 if (mrQ.SPGR_PDBuild_done==1)

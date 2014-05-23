@@ -214,18 +214,6 @@ if numel(unique(t)) ~= numel(it)
 	warning('INVERSION TIMES ARE NOT UNIQUE!');
 end
 
-% CHECK that the TEs are constant 
-% If not then remove the TEs ~= mode
-e = zeros(size(it));
-for ne = 1:numel(it)
-	e(ne) = nifti{it{ne}}.te;
-end
-if numel(unique(e)) ~= 1
-    te_mode = mode(e);
-    it = it(e == te_mode);
-    warning('ECHO TIMES ARE NOT CONTSTANT! \nRemoving %d scans with TE not = %s',numel(find(e ~= te_mode)),num2str(te_mode));
-end
-
 % CHECK that the acquisition matrix is the same across scans 
 % - if not then remove those that are ~= mode. 
 acqs = zeros(size(it));
@@ -236,6 +224,18 @@ if ~isempty(acqs) && numel(unique(acqs)) ~= 1
     acq_mode = mode(acqs);
     it = it(acqs == acq_mode);
     warning('ACQUISITION MATRICES ARE NOT EQUAL!\nRemoving %d scans with ACQ not = %s',numel(find(acqs ~= acq_mode)), num2str(nifti{it{end}}.acq));
+end
+
+% CHECK that the TEs are constant 
+% If not then remove the TEs ~= mode
+e = zeros(size(it));
+for ne = 1:numel(it)
+	e(ne) = nifti{it{ne}}.te;
+end
+if numel(unique(e)) ~= 1
+    te_mode = mode(e);
+    it = it(e == te_mode);
+    warning('ECHO TIMES ARE NOT CONTSTANT! \nRemoving %d scans with TE not = %s',numel(find(e ~= te_mode)),num2str(te_mode));
 end
 
 

@@ -486,7 +486,7 @@ else
 
 
     % Create the synthetic T1 weighted images and save them to disk
-    AnalysisInfo.T1wSynthesis=mrQ_T1wSynthesis(dataDir,B1file,outDir);
+    [AnalysisInfo.T1wSynthesis,AnalysisInfo.T1wSynthesis1, AnalysisInfo.maskSynthesis]=mrQ_T1wSynthesis(dataDir,B1file,outDir);
     save(infofile,'AnalysisInfo');
 
 
@@ -508,13 +508,14 @@ end
 
 % make a head mask that include for sure the brain mask
 HM = readFileNifti(HMfile);
+HMSYN=readFileNifti(AnalysisInfo.maskSynthesis);
+HeadMask=logical(HM.data +brainMask +HMSYN.data);
 
-HeadMask=logical(HM.data +brainMask);
+FullMaskFile= fullfile(outDir,'FullMask.nii.gz');
 
+dtiWriteNiftiWrapper(single(HeadMask), xform,FullMaskFile);
 
-
-
-
+AnalysisInfo.FullMaskFile=FullMaskFile;
 
     %%
     % LINEAR FITTING  Linear fit is used to calculate T1 and M0 

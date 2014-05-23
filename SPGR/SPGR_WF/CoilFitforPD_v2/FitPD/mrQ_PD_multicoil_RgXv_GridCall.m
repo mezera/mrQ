@@ -135,6 +135,15 @@ end
  
 
 % Load the brain mask file
+
+%first try the full mask 
+if(~exist('BMfile','var') || isempty(BMfile))
+    BMfile = fullfile(outDir,'FullMask.nii.gz');
+end
+if ~exist(BMfile,'file') && isfield(mrQ,'outDir')
+    BMfile = fullfile(mrQ.outDir,'FullMask.nii.gz');
+end
+
 if(~exist('BMfile','var') || isempty(BMfile))
     BMfile = fullfile(outDir,'brainMask.nii.gz');
 end

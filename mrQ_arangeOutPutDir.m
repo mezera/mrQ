@@ -145,5 +145,11 @@ eval(cmd);
 cmd =(['! ln -s  '  T1wDir '/T1wfs_4.nii.gz ' mrQ.spgr_initDir '/.']) ;
 eval(cmd);
 
+cmd =(['! mv ' mrQ.spgr_initDir '/T1wfs_2.nii.gz ' T1wDir '/.']) ;
+eval(cmd);
+
+cmd =(['! ln -s  '  T1wDir '/T1wfs_2.nii.gz ' mrQ.spgr_initDir '/.']) ;
+eval(cmd);
+
 %%
  save(mrQ.name,'mrQ');

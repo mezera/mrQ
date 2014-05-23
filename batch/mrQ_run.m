@@ -437,7 +437,7 @@ mrQ=mrQ_arangeOutPutDir(mrQ);
 
 %%  Create a series of synthetic T1w images
 
- [mrQ.T1w_file] =mrQ_T1wSynthesis1(mrQ);
+ [mrQ.T1w_file,mrQ.T1w_file1] =mrQ_T1wSynthesis1(mrQ);
 %done
 mrQ.AnalysisDone=1;
 mrQ.AnalysisDoneDate=date;

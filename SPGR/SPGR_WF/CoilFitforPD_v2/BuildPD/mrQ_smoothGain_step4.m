@@ -30,7 +30,7 @@ mask=BM & PD>0 ;
 G=zeros(size(M0));
 
 % we will estimate any other spcae by global smooth poly in the end
-Imsz=size(mask);degree=5;
+Imsz=size(mask);degree=3;
 [Poly1,str] = constructpolynomialmatrix3d(Imsz,find(ones(Imsz)),degree);
 
 

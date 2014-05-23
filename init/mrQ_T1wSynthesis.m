@@ -1,4 +1,4 @@
-function [T1wfs_4file] = mrQ_T1wSynthesis(dataDir,B1file,outDir,trIn,flipAngleIn)
+function [T1wfs_4file,T1wfs_2file, snyMaskfile] = mrQ_T1wSynthesis(dataDir,B1file,outDir,trIn,flipAngleIn)
 % 
 % mrQ_T1wSynthesis(dataDir,B1file,outDir,trIn,flipAngleIn)
 % 
@@ -192,22 +192,53 @@ dwon=max(0,M-3*S);
  t1w_4(t1w_4<dwon)=dwon;
  t1w_4(t1w_4>up)=up;    
 
+ 
+ 
+ mask=t1w_4>dwon & t1w_4<up;
+ for i=1:size(mask,3)
+       mask(:,:,i)=imfill(mask(:,:,i),'holes');
+    end;
+    mask=logical(mask);
+    
+    
+    
+    %%
+    t1w_2 = t1w_2.*M0;
+M=mean(t1w_2(brainMask));
+S=std(t1w_2(brainMask));
+
+up=min(10000,M+3*S);
+dwon=max(0,M-3*S);
+ t1w_2(t1w_2<dwon)=dwon;
+ t1w_2(t1w_2>up)=up;    
+
+ 
+ mask1=t1w_2>prctile(t1w_2(brainMask),0.1) & t1w_2<up;
+ [mask1] = ordfilt3D(mask1,6);
+ for i=1:size(mask1,3)
+       mask1(:,:,i)=imfill(mask1(:,:,i),'holes');
+    end;
+    mask=logical(mask1+mask);
+    
+
+    
 %% IV. Save out the resulting nifti files
 
 % Set the file names for writing to disk
 %Headfilefile = fullfile(outDir,'headMask.nii.gz');
 %T1wfs_1file  = fullfile(outDir,'T1wfs_1.nii.gz');
-%T1wfs_2file  = fullfile(outDir,'T1wfs_2.nii.gz');
+T1wfs_2file  = fullfile(outDir,'T1wfs_2.nii.gz');
 %T1wfs_3file  = fullfile(outDir,'T1wfs_3.nii.gz');
 T1wfs_4file  = fullfile(outDir,'T1wfs_4.nii.gz');
-
+snyMaskfile= fullfile(outDir,'synteticMask.nii.gz');
 % Write them to disk
 disp('2.  saving a syntetic T1w images');
 %dtiWriteNiftiWrapper(single(mask), xform,Headfilefile);
 %dtiWriteNiftiWrapper(single(t1w_1), xform,T1wfs_1file);
-%dtiWriteNiftiWrapper(single(t1w_2), xform, T1wfs_2file);
+dtiWriteNiftiWrapper(single(t1w_2), xform, T1wfs_2file);
 %dtiWriteNiftiWrapper(single(t1w_3), xform, T1wfs_3file);
 dtiWriteNiftiWrapper(single(t1w_4), xform, T1wfs_4file);
+dtiWriteNiftiWrapper(single(mask), xform, snyMaskfile);
 
 return
 

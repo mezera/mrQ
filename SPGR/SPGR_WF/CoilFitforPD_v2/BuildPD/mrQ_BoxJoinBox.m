@@ -1,4 +1,4 @@
-function [PD_fit]= mrQ_BoxJoinBox(Boxes,Cbox,opt)
+function [PD_fit]= mrQ_BoxJoinBox(Boxes,Cbox,opt,BMfile)
 %[PD_fit]= mrQ_BoxJoinBox(Boxes,Cbox,SHub,opt);
 % % join the boxes (Boxes) acording to the box Costats (Cbox) calculate by
 % mrQ_boxScaleGlobLinear.m .
@@ -7,9 +7,13 @@ function [PD_fit]= mrQ_BoxJoinBox(Boxes,Cbox,opt)
 %the box that we have estimations for
 wh=find(Cbox);
 
-%brain mask
-BM=readFileNifti(opt.BMfile);
+if notDefined('BMfile')
+    BMfile=opt.BMfilel
+end
+
+  BM=readFileNifti(BMfile);  
 BM=BM.data;
+
 SZ=size(BM);
 
 % the box we will work on

@@ -1,4 +1,4 @@
-function [Boxes, scaleFactor]=mrQ_ScaleBoxes_step2(Boxes,BoxesToUse,opt,errTres)
+function [Boxes, scaleFactor]=mrQ_ScaleBoxes_step2(Boxes,BoxesToUse,opt,errTres,BMfile)
 %
 %mrQ_ScaleBoxes(Boxes,BoxesToUse,errTres)
 %
@@ -28,9 +28,13 @@ scaleFactor=zeros(length(Boxes), length(Boxes));
 donemask=ones(length(Boxes), length(Boxes));
 donemask(BoxesToUse,BoxesToUse)=0;
 %Ref=randperm(BoxesToUse);
+if notDefined('BMfile')
+    BMfile=opt.BMfile;
+end
 
-BM=readFileNifti(opt.BMfile);
+  BM=readFileNifti(BMfile);  
 BM=BM.data;
+
 Boxes(1).loc=[];
 for ii=BoxesToUse %loop over boxes
    % tic

@@ -1,4 +1,4 @@
-function PDGridFit_done=mrQ_Gridcheack(opt_Log_name,SunGrid,proclus)
+function GridFit_done=mrQ_Gridcheack(opt_Log_name,SunGrid,proclus,CallType)
 %%
 % This loop checks if all the outputs have been saved or waits until
 % they are all done, it it's too long run again
@@ -14,21 +14,23 @@ end
 
 if notDefined('SunGrid');SunGrid=0;end
 if notDefined('proclus');proclus=0;end
-PDGridFit_done=false;
+if notDefined('CallType');CallType=1;end
+
+GridFit_done=false;
 
 %%
 
 fNum=ceil(length(opt.wh)/opt.jumpindex);
 sgename=opt.SGE;
 tic
-while PDGridFit_done~=true
+while GridFit_done~=true
     % List all the files that have been created from the call to the
     % grid
     list=ls(opt.dirname);
     % Check if all the files have been made.  If they are, then collect
     % all the nodes and move on.
     if length(regexp(list, '.mat'))>=fNum,
-        PDGridFit_done=true;
+        GridFit_done=true;
         % Once we have collected all the nodes we delete the sge outpust
         eval(['!rm -f ~/sgeoutput/*' sgename '*'])
     else
@@ -41,10 +43,11 @@ while PDGridFit_done~=true
             %then we will need to re run it.
             
             RunSelectedJob=true;
-            
+            if CallType==1
             mrQ_fitM0boxesCall(opt_Log_name,SunGrid,proclus,RunSelectedJob)
-           
-            
+            elseif CallType==2
+                mrQ_fitB1boxesCall(opt_Log_name,SunGrid,proclus,RunSelectedJob);
+            end
         end
         
     end

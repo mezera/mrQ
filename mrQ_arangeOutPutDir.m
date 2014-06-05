@@ -6,10 +6,10 @@ OutPutNiiDirName=fullfile(upDir,'OutPutFiles');
 
 %if (exist(OutPutNiiDir,'dir'))
     ex=false; num=1;
-            OutPutNiiDir=[OutPutNiiDirName '_' num2str(num)] ;
 
     while ex==false
-       
+                   OutPutNiiDir=[OutPutNiiDirName '_' num2str(num)] ;
+
         if (~exist(OutPutNiiDir,'dir'))
 mkdir(OutPutNiiDir);
 mrQ.OutPutNiiDir=OutPutNiiDir;

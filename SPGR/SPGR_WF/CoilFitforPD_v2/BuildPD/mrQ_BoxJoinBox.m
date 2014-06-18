@@ -8,7 +8,7 @@ function [PD_fit]= mrQ_BoxJoinBox(Boxes,Cbox,opt,BMfile)
 wh=find(Cbox);
 
 if notDefined('BMfile')
-    BMfile=opt.BMfilel
+    BMfile=opt.BMfile;
 end
 
   BM=readFileNifti(BMfile);  

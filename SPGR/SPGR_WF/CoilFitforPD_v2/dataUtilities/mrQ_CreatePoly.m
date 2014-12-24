@@ -28,7 +28,7 @@ function [pBasis, pTerms, nSamples] = ...
 %%
 if notDefined('pOrder'), pOrder = 3; end
 if notDefined('sDim'), sDim = 3; end
-if notDefined('oFlag'), oFlag = false; end
+if notDefined('BasisFlag'), BasisFlag = false; end
 
 nSamples=floor(boxS/2);
 spatialSamplesX = -nSamples(1):nSamples(1);

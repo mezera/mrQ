@@ -82,7 +82,12 @@ resnorm=zeros(nIteration,1);
 exitflag=zeros(nIteration,1);
 skip=zeros(nIteration,1);
 X_valdationErrSN=zeros(nIteration,1);
+if isfield(opt, 'lambda')
 X_valdationErr=zeros(2,length(opt.lambda),nIteration);
+else
+   X_valdationErr=[];
+end
+    
 BestReg=zeros(nIteration,2);
 Clists=zeros(maxCoil, nIteration);
 ResidErr=zeros(nIteration,1);
@@ -134,28 +139,7 @@ for ii= st:ed,
         clear Mtmp;
         %%
         
-%         if length(useCoil)>SZ(4); useCoil=useCoil(1:SZ(4));end
-%         c=nchoosek(useCoil,maxCoil);
-%         Cor=ones(maxCoil,size(c,1))*100;
-%         for k=minCoil:maxCoil
-%             
-%             c=nchoosek(useCoil,k);
-%             
-%             for kk=1:size(c,1)
-%                 A=(corrcoef(M0_v(BM1,c(kk,:))));
-%                 %    Cor(k,kk)=(sum(A(:))-k)/2;
-%                 Cor(k,kk)=(sum(abs(A(:)))-k)/((length(A(:))-k)*0.5);
-%                 
-%                 Cloc(k,kk,1:k)=c(kk,:);
-%             end
-%         end
-%         
-%         
-%         [v ind]=sort(Cor(:)); %sort the coils by minimum corralation
-%         [xx yy]=ind2sub(size(Cor),ind(1)); % find the combination with minimal corralation
-%         Clist=[squeeze(Cloc(xx,yy,1:xx))']; % get the coil list
-%         nCoils=length(Clist);
-%         Clists(1:nCoils,Iter)=Clist;
+
         %% intiate the search parameters
         
         

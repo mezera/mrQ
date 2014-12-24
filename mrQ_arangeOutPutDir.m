@@ -41,23 +41,30 @@ if (exist(mapDir,'dir'))
 end
 
 mkdir(mapDir);
-
-% If T1_map_lsq.nii.gz exists in the spgr_intDir then move it to the map
-% dir. Otherwise assume that it ended up in mapDirOld and retain this t1
-% map. This would occur if the pd fits were rerun but the t1 fits were not
-if exist(fullfile(mrQ.spgr_initDir, 'T1_map_lsq.nii.gz'),'file')
-    cmd =(['! mv ' mrQ.spgr_initDir '/T1_map_lsq.nii.gz ' mapDir '/.']);
-    eval(cmd);
-    
-    cmd =(['! ln -s  '  mapDir '/T1_map_lsq.nii.gz ' mrQ.spgr_initDir '/.']) ;
+  T1file=mrQ_getT1file(mrQ);
+  
+  [d dd ddd]=fileparts(T1file);
+ cmd =(['! mv ' T1file ' ' mapDir '/.']);
+     eval(cmd);
+  
+    cmd =(['! ln -s  '  mapDir '/' dd ddd ' ' mrQ.spgr_initDir '/.']) ;
 eval(cmd);
-
-else
-    % If a new t1 map was not generated than copy it from the old
-    % directory. We copy rather than move to leave the old directory intact
-    cmd =(['! cp ' mapDirOld '/T1_map_lsq.nii.gz ' mapDir '/.']);
-    eval(cmd);
-end
+% % If T1_map_lsq.nii.gz exists in the spgr_intDir then move it to the map
+% % dir. Otherwise assume that it ended up in mapDirOld and retain this t1
+% % map. This would occur if the pd fits were rerun but the t1 fits were not
+% if exist(fullfile(mrQ.spgr_initDir, 'T1_map_lsq.nii.gz'),'file')
+%     cmd =(['! mv ' mrQ.spgr_initDir '/T1_map_lsq.nii.gz ' mapDir '/.']);
+%     eval(cmd);
+%     
+%     cmd =(['! ln -s  '  mapDir '/T1_map_lsq.nii.gz ' mrQ.spgr_initDir '/.']) ;
+% eval(cmd);
+% 
+% else
+%     % If a new t1 map was not generated than copy it from the old
+%     % directory. We copy rather than move to leave the old directory intact
+%     cmd =(['! cp ' mapDirOld '/T1_map_lsq.nii.gz ' mapDir '/.']);
+%     eval(cmd);
+% end
 
 
 cmd =(['! mv ' mrQ.spgr_initDir '/WF_map.nii.gz ' mapDir '/.']) ;

@@ -1,7 +1,7 @@
 function GridFit_done=mrQ_Gridcheack(opt_Log_name,SunGrid,proclus,CallType)
 %%
 % This loop checks if all the outputs have been saved or waits until
-% they are all done, it it's too long run again
+% they are all done, if needed it will run again job that are missing
 
 if (~exist(opt_Log_name,'file')),
     
@@ -19,8 +19,12 @@ if notDefined('CallType');CallType=1;end
 GridFit_done=false;
 
 %%
+if CallType==1 || CallType==2
+    fNum=ceil(length(opt.wh)/opt.jumpindex);
+elseif CallType==3
+    fNum=ceil(opt.N_Vox2Fit/opt.jumpindex);
+end
 
-fNum=ceil(length(opt.wh)/opt.jumpindex);
 sgename=opt.SGE;
 tic
 while GridFit_done~=true
@@ -44,9 +48,15 @@ while GridFit_done~=true
             
             RunSelectedJob=true;
             if CallType==1
-            mrQ_fitM0boxesCall(opt_Log_name,SunGrid,proclus,RunSelectedJob)
+                if isfield(opt,'Reg') % ALWO DIFFERNT FITS METHODS
+                    mrQ_fitM0boxesCall_Multi(opt_Log_name,SunGrid,proclus,RunSelectedJob)
+                else
+                    mrQ_fitM0boxesCall(opt_Log_name,SunGrid,proclus,RunSelectedJob)
+                end
             elseif CallType==2
                 mrQ_fitB1boxesCall(opt_Log_name,SunGrid,proclus,RunSelectedJob);
+            elseif CallType==3
+                mrQ_fitB1LR_Call(opt_Log_name,SunGrid,proclus,RunSelectedJob);
             end
         end
         

@@ -113,6 +113,7 @@ for j=1:numel(FAU)
     if szref(2)>szdat(2);   for k=1:length(s1); s1(k).imData(:,szdat(2):szref(2),:)=0;end;   end
     if szref(3)>szdat(3);   for k=1:length(s1); s1(k).imData(:,:,szdat(3):szref(3))=0;end;   end
     
+    iM=sum(cat(4,s1(:).imData),4);
     
     fa  = flipAngles(nk).*B1;
     fa  = fa./180.*pi;
@@ -132,7 +133,8 @@ for j=1:numel(FAU)
     SaveFilename = [ref 'MC_m0'];
     fprintf('save file: %s',SaveFilename);
     dtiWriteNiftiWrapper(single(M0c),xform, SaveFilename);
-    
+    SaveFilename = [ref 'Sumraw'];
+    dtiWriteNiftiWrapper(single(iM),xform, SaveFilename);
     clear M0c ref 
     
     Files{nk} = SaveFilename;

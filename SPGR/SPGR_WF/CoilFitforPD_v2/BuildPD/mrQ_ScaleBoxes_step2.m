@@ -8,15 +8,15 @@ if notDefined('errTres')
         % defult for any other case (include T1 reg) 1% error
     errTres=0.01;
 
-    % the max median present error btween two box that we still combine.
-    if isfield(opt,'T1reg');
-        % in case we don't use T1 regularization themedian present error defult
-        % treshold is higher. (5%)
-        if opt.T1reg==0
-            errTres=0.05;
-        end
-        
-    end
+%     % the max median present error btween two box that we still combine.
+%     if isfield(opt,'T1reg');
+%         % in case we don't use T1 regularization themedian present error defult
+%         % treshold is higher. (5%)
+%         if opt.T1reg==0
+%             errTres=0.05;
+%         end
+%         
+%     end
 
 end
 kk=0;

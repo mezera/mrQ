@@ -38,4 +38,5 @@ function mrQ_runNIMS(dir,Callproclus,refFile,outDir)
             end
             
             % RUN IT
-            mrQ_run(mrQ.name);
+%            mrQ_run(mrQ.name);
+            mrQ_run_N(mrQ.name);

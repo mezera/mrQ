@@ -192,7 +192,9 @@ dwon=max(0,M-3*S);
  t1w_4(t1w_4<dwon)=dwon;
  t1w_4(t1w_4>up)=up;    
 
+ t1w_4(isnan(t1w_4))=dwon;
  
+ t1w_4(isinf(t1w_4))=up;
  
  mask=t1w_4>dwon & t1w_4<up;
  for i=1:size(mask,3)
@@ -212,6 +214,9 @@ dwon=max(0,M-3*S);
  t1w_2(t1w_2<dwon)=dwon;
  t1w_2(t1w_2>up)=up;    
 
+  t1w_2(isnan(t1w_2))=dwon;
+ 
+ t1w_2(isinf(t1w_2))=up;
  
  mask1=t1w_2>prctile(t1w_2(brainMask),0.1) & t1w_2<up;
  [mask1] = ordfilt3D(mask1,6);
@@ -219,6 +224,8 @@ dwon=max(0,M-3*S);
        mask1(:,:,i)=imfill(mask1(:,:,i),'holes');
     end;
     mask=logical(mask1+mask);
+    
+    
     
 
     

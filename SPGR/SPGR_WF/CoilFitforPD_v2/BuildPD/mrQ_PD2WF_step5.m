@@ -19,7 +19,7 @@ PD=readFileNifti(opt.PDfile); xform=PD.qto_xyz;PD=PD.data;
 %% calcute the CSF PD
 
 % find the white matter mean pd value from segmetation.
-wmV=mean(PD(seg==2 & PD>0));
+wmV=mean(PD(seg==3 & PD>0));
 
 % assure thata the CSF ROI have pd value that are resnable.  The csf roi is a reslut of segmentation algoritim runed on the
 % T1wighted image and cross section with T1 values. Yet  the ROI may have some contaminations or segmentation faules .
@@ -34,7 +34,7 @@ CSF1=CSF & PD>wmV & PD< wmV*2;
 CalibrationVal= csfDensity(find(csfValues==max(csfValues)));% median(PD(find(CSF)));
 
 %% calibrate the pd by the pd of the csf roi
-WF=PD./CalibrationVal;
+WF=PD./CalibrationVal(1);
 
 % let cut outlayers
 WF(WF<0)=0;

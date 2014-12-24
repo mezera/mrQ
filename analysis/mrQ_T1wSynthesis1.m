@@ -119,11 +119,14 @@ dwon=max(0,M-3*S);
  t1w(t1w<dwon)=dwon;
  t1w(t1w>up)=up;    
 
+  t1w(isnan(t1w))=dwon;
+ 
+ t1w(isinf(t1w))=up;
  % clip what we define as notbrain
   t1w(~mask)=0;
   
   %% now without PD
-  t1w = zeros(size(t1));
+  t1ww = zeros(size(t1));
 
 % Calculate values for t1 and fa
 fa = symFA./180.*pi;
@@ -147,6 +150,10 @@ dwon=max(0,M-3*S);
  t1ww(t1ww<dwon)=dwon;
  t1ww(t1ww>up)=up;    
 
+   t1ww(isnan(t1ww))=dwon;
+ 
+ t1ww(isinf(t1ww))=up;
+ 
  % clip what we define as notbrain
   t1ww(~mask)=0;
 

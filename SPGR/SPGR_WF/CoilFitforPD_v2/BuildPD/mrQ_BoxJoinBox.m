@@ -1,4 +1,4 @@
-function [PD_fit]= mrQ_BoxJoinBox(Boxes,Cbox,opt,BMfile)
+function [PD_fit, opt]= mrQ_BoxJoinBox(Boxes,Cbox,opt,BMfile)
 %[PD_fit]= mrQ_BoxJoinBox(Boxes,Cbox,SHub,opt);
 % % join the boxes (Boxes) acording to the box Costats (Cbox) calculate by
 % mrQ_boxScaleGlobLinear.m .
@@ -12,6 +12,8 @@ if notDefined('BMfile')
 end
 
   BM=readFileNifti(BMfile);  
+  xform=BM.qto_xyz;
+
 BM=BM.data;
 
 SZ=size(BM);
@@ -46,4 +48,12 @@ PD_fit=reshape(PD_fit,SZ);
 
 %Done
 
+PD_filename=fullfile(opt.outDir, 'PD_Partical.nii.gz');
+opt.PD_Partical=PD_filename;
+
+
+dtiWriteNiftiWrapper(single(PD_fit),xform,PD_filename);
+
+
+save(opt.logname,'opt')
 

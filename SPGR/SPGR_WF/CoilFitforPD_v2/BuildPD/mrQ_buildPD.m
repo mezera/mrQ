@@ -1,4 +1,4 @@
-function opt=mrQ_buildPD(opt_Log_name,csffile,segfile,RepErrTreshold,PrcCutOff)
+function opt=mrQ_buildPD(opt_Log_name,csffile,segfile,RepErrTreshold,PrcCutOff,ErrorTresh)
 % this function colect all the fitted coil gains in different small voulumes (box) that was fitted in paraller
 %and join them back to a PD map and calculate the WF map. Strfilenameis the log file of the parralel fits.
 %   opt=mrQ_buildPD(opt_Log_name,csffile,segfile)
@@ -32,6 +32,10 @@ if notDefined('csffile')
 end
 if notDefined('segfile')
     segfile = fullfile(opt.outDir, 't1_bet_seg.nii.gz');
+end
+
+if notDefined('ErrorTresh')
+ErrorTresh=0.01;
 end
 
 %% get the fit for each box
@@ -117,7 +121,7 @@ BoxesToUse=find(PositiveBoxs)';
 
 %%  join the boxs
 % find the ratio for each boxes PD with it's niebores
-[Boxes, ScaleMat]=mrQ_ScaleBoxes_step2(Boxes,BoxesToUse,opt);
+[Boxes, ScaleMat]=mrQ_ScaleBoxes_step2(Boxes,BoxesToUse,opt,ErrorTresh);
 %save('tmp','LinScaleMat','ScaleMat')
 %save(tmpfile,'BoxesToUse','CoilGains','Boxes','ScaleMat')
 

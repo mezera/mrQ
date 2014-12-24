@@ -9,14 +9,20 @@ end
 BM=readFileNifti(opt.BMfile);
 BM=logical(BM.data);
 T1=readFileNifti(opt.T1file);
-
-
+if isfield(opt,'TissueFile')
+    
+TM=readFileNifti(opt.TissueFile);
+TM=logical(TM.data);
+else
+    TM=BM;
+end
 R1=1./T1.data;
 seg=zeros(size(R1));
-CSF= R1<CSFVal; %any tisuue with T1> ~0.2.85 is mostlly water and is a differnt tissue (CSF) then brain tissue
+out=BM & ~TM;
+CSF= R1<CSFVal &~out; %any tisuue with T1> ~0.2.85 is mostlly water and is a differnt tissue (CSF) then brain tissue
 
 R1(R1>2.5)=2.5;
-mask= BM & ~CSF & R1<2 ;% in the brain not CSF and not very low (bon or noise)
+mask= TM & ~CSF & R1<2 ;% in the brain not CSF and not very low (bon or noise)
 notdone=0;
 
 %segment the R1 that is not CSF by kmeans (k=3)
@@ -55,7 +61,9 @@ end
 seg=zeros(size(R1));
 
 seg(mask)=IDX;
-seg(CSF)=length(C)+1;
+% seg(CSF)=length(C)+1;
+% seg(out)=length(C)+2;
+
 filename=fullfile(opt.outDir,'R1_seg.nii.gz');
 dtiWriteNiftiWrapper(single(seg),T1.qto_xyz,filename);
 

@@ -89,6 +89,9 @@ if SunGrid==1;
 else
     % with out grid call that will take very long
     disp(  'No parallre computation grid is used to fit PD. Using the local machin instaed , this may take very long time !!!');
+    if (~exist(dirname,'dir')),
+        mkdir(dirname);
+    end
     jumpindex=   length(opt.wh);
     opt.jumpindex=jumpindex;
     

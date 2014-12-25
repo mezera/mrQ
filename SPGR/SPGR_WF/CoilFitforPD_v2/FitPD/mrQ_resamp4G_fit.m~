@@ -76,10 +76,10 @@ T1UnderSamp((T1UnderSamp>5))=5; % too high T1
 BMUnderSamp(T1UnderSamp==0)=0; % not brain by T1 values
 BMUnderSamp(T1UnderSamp==5)=0; % not brain by T1 values
 if isfield(opt,'TissueFile')
+
 TissueMUnderSamp(T1UnderSamp==0)=0; % not brain by T1 values
 TissueMUnderSamp(T1UnderSamp==5)=0; % not brain by T1 values
 end
-
 end
 
 BMUnderSamp(BMUnderSamp<1)=0; %not sure this is brain any more
@@ -91,11 +91,11 @@ BMUnderSamp(C<9)=0;
 BMUnderSamp(sos<=0)=0;
 BMUnderSamp=logical(BMUnderSamp);
 
-if isfield(opt,'TissueFile')
+
 TissueMUnderSamp(C<9)=0;
 TissueMUnderSamp(sos<=0)=0;
 TissueMUnderSamp=logical(TissueMUnderSamp);
-end
+
 %% save
 %BM
 filename=fullfile(opt.outDir,['BMresmp_' num2str(outMm(1)) '_' num2str(outMm(2)) '_' num2str(outMm(3)) '.nii.gz']);
@@ -103,12 +103,12 @@ dtiWriteNiftiWrapper(single(BMUnderSamp),BMUnderSamp_Xform,filename);
 opt.BMfile_Org=opt.BMfile;
 opt.BMfile=filename;
 
-if isfield(opt,'TissueFile')
+
 filename=fullfile(opt.outDir,['TMresmp_' num2str(outMm(1)) '_' num2str(outMm(2)) '_' num2str(outMm(3)) '.nii.gz']);
 dtiWriteNiftiWrapper(single(TissueMUnderSamp),BMUnderSamp_Xform,filename);
 opt.TissueFile_Org=opt.TissueFile;
 opt.TissueFile=filename;
-end
+
 
 
 

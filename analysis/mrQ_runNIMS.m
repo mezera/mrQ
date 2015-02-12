@@ -1,4 +1,4 @@
-function mrQ_runNIMS(dir,Callproclus,refFile,outDir)
+function mrQ_runNIMS(dir,Callproclus,refFile,outDir,UnderDevelop)
 %mrQ_runNIMS(dir,Callproclus,refFile,outDir)
 %dir - where the nifti from NIMS are.
 %Callproclus use 1 when using proclus (stanfrod computing cluster)
@@ -38,5 +38,8 @@ function mrQ_runNIMS(dir,Callproclus,refFile,outDir)
             end
             
             % RUN IT
-%            mrQ_run(mrQ.name);
+            if notDefined('UnderDevelop') 
+            mrQ_run(mrQ.name);
+            else
             mrQ_run_N(mrQ.name);
+            end

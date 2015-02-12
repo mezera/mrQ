@@ -104,19 +104,19 @@ For an example of this structure see ‘runScript’ at http://purl.stanford.edu
     - mrQ=mrQ_Set(mrQ,field name,field value)
 
 For a given data set where SEIR scans are organized into 4 folders named  '0005' '0006' '0007' '0008' and SPGR scans are organized into 4 folders named '0009' '0010' '0011' '0012' the following can serve as an example script: 
-
-    % define the SEIR scans by the session’s 4 characters 
-    mrQ=mrQ_Set(mrQ,'SEIR',{'0005' '0006' '0007' '0008'})
+```matlab
+% define the SEIR scans by the session’s 4 characters 
+mrQ=mrQ_Set(mrQ,'SEIR',{'0005' '0006' '0007' '0008'})
     
-    % define the SPGR scans by the session 4 characters
-    mrQ=mrQ_Set(mrQ,'SPGR',{'0009' '0010' '0011' '0012'})
+% define the SPGR scans by the session 4 characters
+mrQ=mrQ_Set(mrQ,'SPGR',{'0009' '0010' '0011' '0012'})
 
-    % make a subject name
-    mrQ=mrQ_Set(mrQ,'sub','Examp')
+% make a subject name
+mrQ=mrQ_Set(mrQ,'sub','Examp')
 
-    % run
-    mrQ_run(mrQ.name) 
-
+% run
+mrQ_run(mrQ.name)
+```
 ##Versions##
 Version 1 (v.1) is the code to replicate that was used in Nature medicine mezer at. el. 2013 article: https://github.com/mezera/mrQ/tree/v1.0
 
@@ -129,10 +129,10 @@ mrQ takes advantage of parallel computing in three steps within analysis.
 3. To calculate the coil gain for different bloc in image space.
 
 mrQ is written to take advantage of the Sun grid parallel computing engine. Each user will need to change the specific calls to the grid according to the parallel computing environment available. One can turn off all those parallel jobs by editing the following setting when creating the mrQ structure:
-
-    mrQ=mrQ_Set(mrQ,'sungrid’,0);
-    mrQ=mrQ_Set(mrQ,’proclus’,0);
-
+```matlab
+mrQ=mrQ_Set(mrQ,'sungrid’,0);
+mrQ=mrQ_Set(mrQ,’proclus’,0);
+```
 If parallel computing is not available to you please contact us, as we are currently working on a general version of the code that does not rely on parallel computations. 
 
 ## T1 fit non linear vs. weighted least square
@@ -142,10 +142,10 @@ to avoid the long .computing (may days on single CPU for all brain  1mm voxel). 
 See: Linear least-squares method for unbiased estimation of T1 from SPGR signals. Chang LC, Koay CG, Basser PJ, Pierpaoli C. Magn Reson Med. 2008 Aug;60(2):496-501.
 
 to run it use this setting:
-
-    mrQ=mrQ_Set(mrQ,'wl’,1);
-    mrQ=mrQ_Set(mrQ,’lsq’,0);
-
+```matlab
+mrQ=mrQ_Set(mrQ,'wl’,1);
+mrQ=mrQ_Set(mrQ,’lsq’,0);
+```
 The weighted least square will take few minutes using weighted least square or few hours on a single CPU. 
 
 ##mrQ analysis overview##

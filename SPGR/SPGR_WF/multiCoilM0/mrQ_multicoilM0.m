@@ -133,8 +133,8 @@ for j=1:numel(FAU)
     SaveFilename = [ref 'MC_m0'];
     fprintf('save file: %s',SaveFilename);
     dtiWriteNiftiWrapper(single(M0c),xform, SaveFilename);
-    SaveFilename = [ref 'Sumraw'];
-    dtiWriteNiftiWrapper(single(iM),xform, SaveFilename);
+    SaveFilenameSum = [ref 'Sumraw'];
+    dtiWriteNiftiWrapper(single(iM),xform, SaveFilenameSum);
     clear M0c ref 
     
     Files{nk} = SaveFilename;

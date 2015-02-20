@@ -1,6 +1,6 @@
-function mrQ = mrQ_arrangeData_nimsfs(mrQ)
+function mrQ = mrQ_arrangeData_nimsfs(mrQ,inputData_spgr,inputData_seir)
 % 
-%  [mrQ] = mrQ_arrangeData_nimsfs(mrQ)
+%  [mrQ] = mrQ_arrangeData_nimsfs(mrQ,,inputdata_spgr,inputdata_seir)
 %
 % Arrange data from a series of scans gathered at the CNI. This function
 % will take a dataDir (mrQ.RawDir) and organize the data/folders within it
@@ -20,8 +20,16 @@ function mrQ = mrQ_arrangeData_nimsfs(mrQ)
 % Given mrQ.RawDir, the following function will return all the necessarry
 % paths to required nifti files in the mrQ.inputData_spgr and
 % mrQ.inputData_seir structures (maybe this should be part of mrQ create).
+   if ~notDefined('inputData_seir')
+mrQ=mrQ_Set(mrQ,'inputdata_seir',inputData_seir);
+   end
+   if ~notDefined('inputData_spgr')
+mrQ=mrQ_Set(mrQ,'inputdata_spgr',inputData_spgr);
+   end
+%   go to the nifti hdr if needed
+   if ~isfield(mrQ,'inputdata_spgr') || ~isfield(mrQ,'inputdata_seir')
 mrQ = mrQ_initInputData(mrQ);
-
+   end
 
 %% Arrange SEIR data
 

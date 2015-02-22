@@ -47,9 +47,10 @@ For more information please contact
     Optional:
 
     You can convert your dicom to nifti:
-    We use code that was developed for the NIMS project. (https://scitran.stanford.edu/nims/)
-    This code allows an automatic way to make nifti and also save the hdr info. 
-    https://registry.hub.docker.com/u/vistalab/nimsdata/ 
+    We use code that was developed for the NIMS project: (https://scitran.stanford.edu/nims/).
+    
+    This code allows an automatic way to make nifti and also save the hdr info:
+    https://registry.hub.docker.com/u/vistalab/nimsdata/ .
     You can also find the code they use inside.
 
 It also an option to you different nifti files. See details below.

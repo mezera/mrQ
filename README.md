@@ -12,7 +12,7 @@ and the following patent application
 
 For application see:
 
-Yeatman JD,Wandell BA,Mezer A. Lifespan maturation and degeneration of human brain white matter. Nature Communications ,2014. http://www.nature.com/ncomms/2014/140917/ncomms5932/abs/ncomms5932.html
+>Yeatman JD,Wandell BA,Mezer A. Lifespan maturation and degeneration of human brain white matter. Nature Communications ,2014. http://www.nature.com/ncomms/2014/140917/ncomms5932/abs/ncomms5932.html
 
 For more information please contact
 

@@ -10,6 +10,10 @@ and the following patent application
 
 >Improved methods for detecting abnormalities in soft tissue using magnetic resonance imaging (MRI),USSN 61/437,587
 
+For application see:
+
+Yeatman JD,Wandell BA,Mezer A. Lifespan maturation and degeneration of human brain white matter. Nature Communications ,2014. http://www.nature.com/ncomms/2014/140917/ncomms5932/abs/ncomms5932.html
+
 For more information please contact
 
 >avivmezer@gmail.com

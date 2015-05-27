@@ -1,4 +1,4 @@
-function [M01, t1, BM1,boxSize, skip , Segmask,meanVal, XX, YY, ZZ]= mrQ_GetM0_boxData(opt,T1,M0,BM,fb,smoothkernel,seg)
+function [M01, t1, BM1,boxSize, skip , Segmask,meanVal, XX, YY, ZZ]= mrQ_GetM0_boxData(opt,T1,M0,BM,fb,smoothkernel,seg,Inclusion_Criteria)
 % Load  data from the M0 and T1 file for a box cdefined by fb and opt
 %
 %   [M01, t1, boxSize, meanVal]= mrQ_GetM0_boxData(opt,T1,M0,fb,smoothkernel)
@@ -21,6 +21,11 @@ if ~notDefined('smoothkernel')
     end
     end
 end
+
+if notDefined('Inclusion_Criteria') 
+Inclusion_Criteria=[0.8 200];
+end
+
 XX(1)=opt.X(fb(1),fb(2),fb(3))-opt.HboxS(1);
 XX(2)=opt.X(fb(1),fb(2),fb(3))+opt.HboxS(1);
 YY(1)=opt.Y(fb(1),fb(2),fb(3))-opt.HboxS(2);
@@ -62,16 +67,16 @@ Segmask=zeros(size(seg));
        skip=1;
    end
    
+end   
    %% if R1 values are worng we will skip the voxels
        R1=1./t1;
     Bad=isnan(R1) | isinf(R1) | R1==0;
         BM1(Bad)=0;
    
-   
-end
-if length(find(BM1))<length(BM1(:))*0.8 ||  length(find(BM1))<200  % not enghf voxels
+
+
+if length(find(BM1))<length(BM1(:))*Inclusion_Criteria(1) ||  length(find(BM1))<Inclusion_Criteria(2)  % not enghf voxels
     skip=1;
 end
     
 
-end

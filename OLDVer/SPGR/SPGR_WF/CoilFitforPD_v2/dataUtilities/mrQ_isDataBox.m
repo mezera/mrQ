@@ -1,4 +1,4 @@
-function [empty] = mrQ_isDataBox(opt,brainMask,fb)
+function [empty] = mrQ_isDataBox(opt,brainMask,fb,Inclusion_Criteria)
 % 
 % [empty,Avmap] = mrQ_isDataBox(opt,brainMask,fb)
 % 
@@ -44,6 +44,12 @@ else
     box=brainMask(Xx(1):Xx(2),Yy(1):Yy(2),Zz(1):Zz(2));
 end
 
+if notDefined('Inclusion_Criteria') 
+Inclusion_Criteria=[0.05 200];
+
+
+end
+
 % if (60> Xx(1) &&  60< Xx(2)  && 176> Yy(1) &&  176< Yy(2) && 100> Zz(1) &&  100< Zz(2)   )
 %     c=1;
 % end
@@ -51,7 +57,7 @@ end
 cutT=length(box(:)).*0.05; % we will work only with boxes that have data on at least 5% of it. and at least 200 voxels
 
 %check it's not almost empty from mask voxel
-if (length(find(box))>cutT && length(find(box))>200)
+if (length(find(box))>=length(box(:)).*Inclusion_Criteria(1) && length(find(box))>Inclusion_Criteria(2))
     empty=0;
   
     

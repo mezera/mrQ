@@ -18,12 +18,12 @@ function mrQ_runNIMS(dir,useSUNGRID,refFile,outDir,UnderDevelop)
 %            mrQ = mrQ_Set(mrQ,'sub',num2str(ii));
             
             if notDefined('useSUNGRID')
-                mrQ = mrQ_Set(mrQ,'sungrid',false);
+                mrQ = mrQ_Set(mrQ,'proclus',false);
             else
-                mrQ = mrQ_Set(mrQ,'sungrid',useSUNGRID);
+                mrQ = mrQ_Set(mrQ,'proclus',useSUNGRID);
             end
             
-%             mrQ = mrQ_Set(mrQ,'sungrid',1);
+            mrQ = mrQ_Set(mrQ,'sungrid',1);
             mrQ = mrQ_Set(mrQ,'fieldstrength',3);
 
       

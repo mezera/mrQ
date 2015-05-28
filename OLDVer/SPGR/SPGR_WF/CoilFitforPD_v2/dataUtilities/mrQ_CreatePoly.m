@@ -31,10 +31,13 @@ if notDefined('sDim'), sDim = 3; end
 if notDefined('BasisFlag'), BasisFlag = false; end
 
 nSamples=floor(boxS/2);
-spatialSamplesX = -nSamples(1):nSamples(1);
-spatialSamplesY = -nSamples(2):nSamples(2);
-spatialSamplesZ = -nSamples(3):nSamples(3);
-
+spatialSamplesX = -nSamples(1):nSamples(1); % 1D
+if length(nSamples)>1
+spatialSamplesY = -nSamples(2):nSamples(2); % 2D
+end
+if length(nSamples)>2
+spatialSamplesZ = -nSamples(3):nSamples(3); % 3D
+end
 %%
 switch pOrder
     case 1  % 1st order polynomial

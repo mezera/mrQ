@@ -28,7 +28,7 @@ if ed > length(opt.wh)
 end;
 
 a=version('-date');
-if str2num(a(end-3:end))==2012
+if str2num(a(end-3:end))>=2012
     options = optimset('Algorithm', 'levenberg-marquardt','Display', 'off','Tolx',1e-12);
 else
     options =  optimset('LevenbergMarquardt','on','Display', 'off','Tolx',1e-12);%'TolF',1e-12

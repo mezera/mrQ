@@ -6,10 +6,12 @@ function mrQ_runNIMS(dir,Callproclus,refFile,outDir,UnderDevelop)
 %outDir  where the output will be saved (defult is: pwd/mrQ)
 
    % Create the initial structure
-   if notDefined('outDir')
+   if notDefined('outDir') 
             outDir = fullfile(dir,'mrQ');
-   end
-            if ~exist(outDir,'dir'); mkdir(outDir); end
+   end %creates the name of the output directory
+   
+   if ~exist(outDir,'dir'); mkdir(outDir); end
+   
             mrQ = mrQ_Create(dir,[],outDir);
 
             % Set other parameters

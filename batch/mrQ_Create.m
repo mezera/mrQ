@@ -111,7 +111,7 @@ if setDefault
     
     %% fit PD
     mrQ.calM0_done=0;
-    SPGR_PDfit_done=0; %   <------------ should this be inside the mrQ structure?
+    mrQ.SPGR_PDfit_done=0; %   <------------ should this be inside the mrQ structure?
     mrQ.SPGR_PDBuild_done=0;
     
     mrQ.PolyDeg=3;

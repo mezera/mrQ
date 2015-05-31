@@ -1,7 +1,8 @@
 function mrQ_runNIMS(dir,useSUNGRID,refFile,outDir,inputData_spgr,inputData_seir)
+% mrQ_runNIMS(dir,useSUNGRID,refFile,outDir,inputData_spgr,inputData_seir)
 %mrQ_runNIMS(dir,Callproclus,refFile,outDir)
 %dir - where the nifti from NIMS are.
-%Callproclus use 1 when using proclus (stanfrod computing cluster)
+% % % % %Callproclus use 1 when using proclus (stanfrod computing cluster)
 %refFile a path to a reference image (nii.gz)
 %outDir  where the output will be saved (defult is: pwd/mrQ)
 

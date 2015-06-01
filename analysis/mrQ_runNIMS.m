@@ -30,12 +30,14 @@ mrQ = mrQ_Set(mrQ,'fieldstrength',3);
 
 
 % Specific arrange function for nimsfs
-
+if isfield(mrQ,'Arange_Date');
+else
 if (~notDefined('inputData_spgr') &&  ~notDefined('inputData_seir'))
     mrQ = mrQ_arrangeData_nimsfs(mrQ,inputData_spgr,inputData_seir);
 else
     mrQ = mrQ_arrangeData_nimsfs(mrQ);
     
+end
 end
 
 if ~notDefined('refFile')
@@ -45,7 +47,7 @@ else
     % New input to automatically acpc align
     mrQ = mrQ_Set(mrQ,'autoacpc',1);
 end
-return
+
 
 % RUN IT
 if notDefined('UnderDevelop')

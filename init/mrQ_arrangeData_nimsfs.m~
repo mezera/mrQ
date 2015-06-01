@@ -94,10 +94,10 @@ if (mrQ.MakeNewSPGRRDir==1)
     end
     
     mrQ.SPGR = SPGRDir;
-%     mrQ.SPGR_T1fit = 0;
-%     mrQ.SPGR_init = 0;
-%     mrQ.SPGR_PDfit = 0;
-%     mrQ.SPGR_PDBuild = 0;
+    mrQ.SPGR_T1fit = 0;
+    mrQ.SPGR_init = 0;
+    mrQ.SPGR_PDfit = 0;
+    mrQ.SPGR_PDBuild = 0;
     
 end
 

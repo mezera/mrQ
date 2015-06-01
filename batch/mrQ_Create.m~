@@ -110,15 +110,15 @@ if setDefault
     mrQ.LW=true;  %or the WL fits
     
     %% Segmentation
-    mrQ.segmentaion=false;
-    mrQ.runfreesurfer=false; % the defult is FSL
+    mrQ.segmentaion=0;
+    mrQ.runfreesurfer=0;
     
     %% fit PD
     mrQ.calM0_done=false;
     mrQ.SPGR_PDfit_done=false; %   
     mrQ.SPGR_PDBuild_done=false;
     
-    mrQ.PolyDeg=3; 
+    mrQ.PolyDeg=3;
     mrQ.SunGrid=false;
     
    % mrQ.proclus=1;

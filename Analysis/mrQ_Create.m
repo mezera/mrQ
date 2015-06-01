@@ -66,9 +66,9 @@ if setDefault
         mrQ.alignFlag=true;
 
     mrQ.SEIR_done=false;
-    mrQ.complexFlag=false;
+  %  mrQ.complexFlag=false;
     % for complex data that we do not use for now.
-    mrQ.useAbs=false;
+   % mrQ.useAbs=false;
     % for complex data that we'd like to use as magnitude data. Use 1
    
     % Create a cell array to hold the SEIR series numbers:

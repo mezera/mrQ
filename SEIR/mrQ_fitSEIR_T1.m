@@ -1,6 +1,6 @@
-function [mrQ]= mrQ_fitSEIR_T1(SEIRdir,complexFlag,outDir,checkData,mrQ)
+function [mrQ]= mrQ_fitSEIR_T1(SEIRdir,outDir,checkData,mrQ)
 % 
-%  [mrQ]=mrQ_fitSEIR_T1(SEIRdir,complexFlag,outDir,[checkData=1])
+%  [mrQ]=mrQ_fitSEIR_T1(SEIRdir,outDir,[checkData=1])
 % 
 % Loads SEIR_Dat.mat file from the directory 'data' in the SEIRdir, and
 % performs T1 mapping, also displays the results for the user to check if
@@ -10,8 +10,7 @@ function [mrQ]= mrQ_fitSEIR_T1(SEIRdir,complexFlag,outDir,checkData,mrQ)
 % INPUTS:
 %   SEIRdir -     Path to your desired T1 image. Use the same path as in
 %                 getSEIR.
-%   complexFlag - this should be 1 if the data is complex (recommended for
-%                 T1 fits). The default is zero.
+
 %   checkData -   If you want to visually check the data leave empty or set
 %                 to 1. To not check data set to 0.
 %   mrQ      -     information structure
@@ -54,27 +53,21 @@ end
 
 if ~exist(outDir,'dir'), mkdir(outDir); end
 
-if notDefined('complexFlag')   
-    complexFlag = 0; % 1: complex data; 0: magnitude data
-end
 
 if notDefined('checkData') || isempty(checkData) || checkData > 1
     checkData = 1;
 end
 
-% Which algorithm to use
-if  complexFlag 
-	method = 'NLS'; % complex data
-else
-	method = 'NLSPR'; % magnitude data
-end
+% Which algorithm to use: real
+
+method = 'NLSPR'; % magnitude data
 
 close all
 
 
 %% Load the data file (this will load 'data', 'xform', and 'extra')
 
-% This file should be pointed to - not the directory. File names
+% We should now be pointed to this file, and not to the directory. File names
 % are much easier to work with instead of directories. 
 filename = 'SEIR_Dat';
 loadStr = fullfile(seirDataDir, filename);
@@ -86,15 +79,9 @@ saveStr = fullfile(outDir, outName);
 %% Perform T1 fits 
 
 % Estimates T1 together with:
-%   NLS:   a and b parameters to fit the data to a + b*exp(-TI/T1)
-%   NLSPR: a and b parameters to fit the data to |a + b*exp(-TI/T1)
+%   NLSPR: a and b parameters to fit the data to |a + b*exp(-TI/T1)|
 T1FitExperimentData(loadStr, saveStr, method, checkData);
 
-% A simple segmentation method is used to get WM and GM peak values and
-% those values are displayed in a whole-brain histogram.
-T1FitDisplayBrain(loadStr, saveStr, method);
-
-% T1FitDisplayPhantom(loadStr, saveStr, method);
 
 % Load the fitted data ** This would not have to be done this way if
 % T1FitExperimentData returned the data. 

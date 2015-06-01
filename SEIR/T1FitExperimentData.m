@@ -1,12 +1,12 @@
 function T1FitExperimentData(loadStr, saveStr, method, checkData)
-% 
+%
 % T1FitExperimentData(loadStr, saveStr, method,[checkData=1])
-% 
+%
 % loadStr:    Data file to be loaded
 % saveStr:    Where results of the fit will be saved along with filename
 % method:     What fitting method to use: NLS or NLSPR
 % checkData:  If you want to visually check the data leave empty or set to
-%             1. To not check data set to 0. 
+%             1. To not check data set to 0.
 %
 % Estimates T1 together with:
 %   NLS:   a and b parameters to fit the data to a + b*exp(-TI/T1)
@@ -29,11 +29,11 @@ if notDefined('checkData') || isempty(checkData) || checkData > 1
 end
 
 % Hardcode the saving of the fit data. We could return what we need and
-% make this an option. 
-savefitdata = 1; 
+% make this an option.
+savefitdata = 1;
 
- 
-%% Load the data and setup the commands that will perform the fit 
+
+%% Load the data and setup the commands that will perform the fit
 
 % (see getSEIR.m mrQ_getSEIR.m) This file (SEIR_Dat.mat) file contains
 % all the DICOM image data in the variable 'data' (4-D double) as well as
@@ -42,32 +42,24 @@ savefitdata = 1;
 % the inversion times for each series (N) and 'T1Vec' - [1:5000].
 load(loadStr);
 
-switch method
-  case {'NLS','NLSPR'}
-    nlsS = getNLSStruct(extra,1); %#ok<NASGU>
-end
 
-switch method
-    case {'NLS'}
-        nbrOfFitParams = 4; % Number of output arguments for the fit
-        fitStr   = ['[T1Est bEst aEst res] = T1Fit' method '(data(jj,:),nlsS);'];
-        storeStr = 'll_T1(jj,:) = [T1Est bEst aEst res];';
-        clearStr = 'clear jj T1Est bEst aEst res';
-    case {'NLSPR'}
-        % We're only working with the magnitude data
-        data = abs(data); %#ok<NODEF>
-        nbrOfFitParams = 4; % Number of output arguments for the fit
-        fitStr   = ['[T1Est bMagEst aMagEst res] = T1Fit' method '(data(jj,:),nlsS);'];
-        storeStr = 'll_T1(jj,:) = [T1Est bMagEst aMagEst res];';
-        clearStr = 'clear jj T1Est bMagEst aMagEst res';
-end
+nlsS = getNLSStruct(extra,1); %#ok<NASGU>
+
+
+% We're only working with the magnitude data
+data = abs(data); %#ok<NODEF>
+nbrOfFitParams = 4; % Number of output arguments for the fit
+fitStr   = ['[T1Est bMagEst aMagEst res] = T1Fit' method '(data(jj,:),nlsS);'];
+storeStr = 'll_T1(jj,:) = [T1Est bMagEst aMagEst res];';
+clearStr = 'clear jj T1Est bMagEst aMagEst res';
+
 
 dims  = size(data);
 nbrow = size(data,1);
 nbcol = size(data,2);
 
 if numel(dims) > 3
-    nbslice = dims(3); % Check number of slices 
+    nbslice = dims(3); % Check number of slices
 else
     nbslice = 1;
     tmpData(:,:,1,:) = data; % Make data a 4-D array regardless of number of slices
@@ -122,51 +114,51 @@ dataOriginal = data;
 
 %% Mask the background
 
-% For each slice we mask points dimmer than maskFactor*the brightest point. 
+% For each slice we mask points dimmer than maskFactor*the brightest point.
 mesures=size(data,4);
 maskFactor = 0.03;
 mask = zeros(nbrow, nbcol, nbslice,mesures);
 
 %[u,v] = max(extra.tVec); %#ok<ASGLU>
-% The intensity mask is taken with respect to the image with the largest TI, 
-% where we expect the magnetization to have almost fully recovered. 
+% The intensity mask is taken with respect to the image with the largest TI,
+% where we expect the magnetization to have almost fully recovered.
 for v=1:size(data,4)
-for kk = 1:nbslice
-	maskTmp = mask(:,:,kk);
-	%maskTmp = medfilt2(maskTmp); % remove salt and pepper noise
-	maskThreshold = maskFactor * max(max(abs(data(:,:,kk,v))));
-    maskTmp=logical(abs(data(:,:,kk,v))>maskThreshold);
-	maskTmp(find(abs(data(:,:,kk,v)) > maskThreshold)) = 1; %#ok<FNDSB>
-	mask(:,:,kk,v) = maskTmp;
-	clear maskTmp
-end
+    for kk = 1:nbslice
+        maskTmp = mask(:,:,kk);
+        %maskTmp = medfilt2(maskTmp); % remove salt and pepper noise
+        maskThreshold = maskFactor * max(max(abs(data(:,:,kk,v))));
+        maskTmp=logical(abs(data(:,:,kk,v))>maskThreshold);
+        maskTmp(find(abs(data(:,:,kk,v)) > maskThreshold)) = 1; %#ok<FNDSB>
+        mask(:,:,kk,v) = maskTmp;
+        clear maskTmp
+    end
 end
 mask=(sum(mask,4));
 mask=logical(mask==mesures);
 %let fit also around the mask so we won't have holes (that can help registration to the SPGR)
 D3=size(mask,3);
 if D3>1
-mask1=logical(smooth3(mask));%,'box',[5 5 5]
+    mask1=logical(smooth3(mask));%,'box',[5 5 5]
 else
     mask1=mask;
 end
-   
 
-    
- for i=1:size(mask1,3)
- mask1(:,:,i)=imfill(mask1(:,:,i),'holes');
- end;
- mask=double(mask1);
+
+
+for i=1:size(mask1,3)
+    mask1(:,:,i)=imfill(mask1(:,:,i),'holes');
+end;
+mask=double(mask1);
 % but exclude zeros nan and inf voxels
- for i=1:length(extra.tVec);
-     tmp=data(:,:,:,i);
-     mask(isnan(tmp))=0;
-     mask(isinf(tmp))=0;
-      mask(tmp<0)=0;
- end
+for i=1:length(extra.tVec);
+    tmp=data(:,:,:,i);
+    mask(isnan(tmp))=0;
+    mask(isinf(tmp))=0;
+    mask(tmp<0)=0;
+end
 
 
-maskInds = find(mask);    
+maskInds = find(mask);
 
 
 %% Check Data: Mask inspection
@@ -189,8 +181,8 @@ end
 
 % How many voxels to process before printing out status data
 nVoxAll            = length(maskInds);
-numVoxelsPerUpdate = min(floor(nVoxAll/10),1000); 
-						   
+numVoxelsPerUpdate = min(floor(nVoxAll/10),1000);
+
 ll_T1  = zeros(nVoxAll, nbrOfFitParams);
 nSteps = ceil(nVoxAll/numVoxelsPerUpdate); % Number of status reports
 
@@ -205,21 +197,21 @@ clear tmpData;
 
 startTime = cputime;
 fprintf('Processing %d voxels.\n', nVoxAll);
-h = waitbar(0, sprintf('Processing %d voxels', nVoxAll)); 
+h = waitbar(0, sprintf('Processing %d voxels', nVoxAll));
 
 for ii=1:nSteps
-  curInd = (ii-1)*numVoxelsPerUpdate+1;
-  endInd = min(curInd+numVoxelsPerUpdate,nVoxAll);
-  
-  for jj = curInd:endInd
+    curInd = (ii-1)*numVoxelsPerUpdate+1;
+    endInd = min(curInd+numVoxelsPerUpdate,nVoxAll);
     
-    eval(fitStr)    % Do the fit
+    for jj = curInd:endInd
+        
+        eval(fitStr)    % Do the fit
+        
+        eval(storeStr); % Store the data
+        
+    end
     
-    eval(storeStr); % Store the data
-    
-  end
-  
-  waitbar(ii/nSteps, h, sprintf('Processing %d voxels, %g percent done...\n',nVoxAll,round(endInd/nVoxAll*100)));
+    waitbar(ii/nSteps, h, sprintf('Processing %d voxels, %g percent done...\n',nVoxAll,round(endInd/nVoxAll*100)));
 end
 
 % Clean up
@@ -242,13 +234,13 @@ ll_T1 = T1;
 
 %% Store ll_T1 and mask in saveStr
 % ll_T1 has four parameters for each voxel, namely:
-% (1) T1 
-% (2) 'b' parameter from the model 
+% (1) T1
+% (2) 'b' parameter from the model
 % (3) 'a' parameter
 % (4) residual from the fit
 
 if (savefitdata)
-	save(saveStr,'ll_T1','mask','nlsS')
+    save(saveStr,'ll_T1','mask','nlsS')
 end
 
 

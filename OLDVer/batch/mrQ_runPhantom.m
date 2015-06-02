@@ -183,7 +183,7 @@ end
 if (mrQ.SEIR_done==0);
     
     %keep track of the variable we use  for detail see inside the function
-    [~, ~, ~, mrQ.SEIRsaveData]=mrQ_initSEIR(mrQ,mrQ.SEIRepiDir,mrQ.alignFlag,mrQ.complexFlag,mrQ.useAbs);
+    [~, ~, ~, mrQ.SEIRsaveData]=mrQ_initSEIR_ver2(mrQ,mrQ.SEIRepiDir,mrQ.alignFlag,mrQ.complexFlag,mrQ.useAbs);
     
     [mrQ]=mrQ_fitSEIR_T1(mrQ.SEIRepiDir,[],[],0,mrQ);
     mrQ.SEIR_done=1;

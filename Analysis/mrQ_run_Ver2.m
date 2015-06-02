@@ -81,5 +81,27 @@ if notDefined('B1file')
     
 end
     
-    %%
     
+%% intiate and  Align SPGR
+%  param for Align SPGR
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%load(name);
+
+if isfield(mrQ,'SPGR_init_done');
+else
+    mrQ.SPGR_init_done=0;
+end
+
+if     mrQ.SPGR_init_done==0
+    
+    %keep track of the variable we use  for detail see inside the function
+    [~, ~, ~,~,~, mrQ]=mrQ_initSPGR_ver2(mrQ.SPGR,mrQ.refIm,mrQ.mmPerVox,mrQ.interp,mrQ.skip,[],mrQ);
+    mrQ.SPGR_init_done=1;
+    
+    save(mrQ.name,'mrQ');
+    fprintf('\n  init SPGR - done!           \n');
+else
+    fprintf(' \n load init SPGR data            \n');
+    
+end

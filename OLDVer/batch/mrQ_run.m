@@ -211,7 +211,7 @@ end
 if     mrQ.SPGR_init_done==0
     
     %keep track of the variable we use  for detail see inside the function
-    [~, ~, ~,~,~, mrQ]=mrQ_initSPGR(mrQ.SPGR,mrQ.refIm,mrQ.mmPerVox,mrQ.interp,mrQ.skip,[],mrQ);
+    [~, ~, ~,~,~, mrQ]=mrQ_initSPGR_ver2(mrQ.SPGR,mrQ.refIm,mrQ.mmPerVox,mrQ.interp,mrQ.skip,[],mrQ);
     mrQ.SPGR_init_done=1;
     
     save(mrQ.name,'mrQ');

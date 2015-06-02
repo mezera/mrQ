@@ -88,7 +88,7 @@ mrQ.SPGR_niiFile=niiFiles;
 mrQ.SPGR_niiFile_FA=flipAngles;
 mrQ.SPGR_init_mmPerVox=mmPerVox;
 
-fprintf('mrQ_initSPGR.m - COMPLETE!');
+fprintf('mrQ_initSPGR_ver2.m - COMPLETE!');
 
 return
 

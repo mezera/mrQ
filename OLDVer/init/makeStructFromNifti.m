@@ -21,7 +21,7 @@ function [s coilNum] = makeStructFromNifti(niftiFile,multiChannels,struc,permuti
 %                       that works well with the Align tool. 
 % 
 % SEE ALSO:
-%   mrQ_initSPGR.m
+%   mrQ_initSPGR_ver2.m
 % 
 % 
 % (C) Stanford University, VISTA Lab. 

@@ -7,11 +7,11 @@ function [s2] = mrQ_multicoilWeighting_phantoms(datDir,niiFile,flipAngles,permut
 % 
 % INPUTS:
 %       datDir -    Contains dat_aligned.mat - which is the result of
-%                   running mrQ_initSPGR.m (this function is now called
+%                   running mrQ_initSPGR_ver2.m (this function is now called
 %                   from within that
 % 
 %       niiFile -   A cell array containing the path to each of the nifti
-%                   files produced in mrQ_initSPGR.
+%                   files produced in mrQ_initSPGR_ver2.
 % 
 %       flipAngles- A 1xN vector with one entry for each of the flip
 %                   angles. This is also in dat_aligned.mat (in

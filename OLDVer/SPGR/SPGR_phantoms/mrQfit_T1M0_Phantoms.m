@@ -221,7 +221,7 @@ else
     tr = tr(1);
     
     % Fitting routine from RFD and NS: s2 is the aligned data from
-    % mrQ_initSPGR.m and loaded above in cell II.
+    % mrQ_initSPGR_ver2.m and loaded above in cell II.
     % Using the data from the aligned and aligned best
     % files here and fitting twice. (s and s2).
     [t1,M0]     = relaxFitT1(cat(4,s2(:).imData),flipAngles,tr,B1);

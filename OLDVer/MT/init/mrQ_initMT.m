@@ -2,7 +2,7 @@ function [s,xform,mmPerVox,niiFiles,mrQ] = ...
     mrQ_initMT(spgrDir,refImg,mmPerVox,interp,skip,mtOffset,clobber,mrQ)
 %
 % [s,xform,mmPerVox] = ...
-%   mrQ_initSPGR(spgrDir,[refImg],[mmPerVox],[interp],[skip],[clobber=false])
+%   mrQ_initSPGR_ver2(spgrDir,[refImg],[mmPerVox],[interp],[skip],[clobber=false])
 %
 % Load and align all the SPGR dicoms in the spgrDir. (It won't work
 % for multi-coil data, so take care of that in mrQ_arrangeData.m).
@@ -73,7 +73,7 @@ function [s,xform,mmPerVox,niiFiles,mrQ] = ...
 %       interp   = [];
 %       skip     = [];
 %       clobber  = [];
-%       [s,xform,mmPerVox,niiFiles,flipAngles,mrQ] = mrQ_initSPGR(spgrDir,refImg,mmPerVox,interp,skip,clobber,mrQ);
+%       [s,xform,mmPerVox,niiFiles,flipAngles,mrQ] = mrQ_initSPGR_ver2(spgrDir,refImg,mmPerVox,interp,skip,clobber,mrQ);
 %
 %
 % (C) Stanford University, VISTA Lab

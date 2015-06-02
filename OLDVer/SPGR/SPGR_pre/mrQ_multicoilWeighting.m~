@@ -11,7 +11,7 @@ function [AlingSPGR,s2,mmPerVox,xform] = mrQ_multicoilWeighting(datDir,niiFile,f
 %                   from within that
 % 
 %       niiFile -   A cell array containing the path to each of the nifti
-%                   files produced in mrQ_initSPGR_ver2.
+%                   files produced in mrQ_initSPGR.
 % 
 %       flipAngles- A 1xN vector with one entry for each of the flip
 %                   angles. This is also in dat_aligned.mat (in

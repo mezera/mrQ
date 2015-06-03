@@ -105,3 +105,28 @@ else
     fprintf(' \n load init SPGR data            \n');
     
 end
+%%
+%%  Fit SPGR PD
+
+if isfield(mrQ,'SPGR_T1fit_done');
+else
+    mrQ.SPGR_T1fit_done=0;
+end
+
+%vclover is implamented inside (we canadd rthis to the inputs
+if (mrQ.SPGR_T1fit_done==0);
+     [mrQ]=mrQfit_T1M0_Lin(mrQ);
+%     [mrQ.AnalysisInfo]=mrQfit_T1M0_ver2(mrQ);
+    
+    mrQ.SPGR_T1fit_done=1;
+    
+    save(mrQ.name,'mrQ');
+    fprintf('\n fit T1 SPGR  - done!              \n');
+else
+    fprintf('\n load fited  SPGR T1                \n');
+    
+end
+save(mrQ.name,'mrQ');
+
+
+

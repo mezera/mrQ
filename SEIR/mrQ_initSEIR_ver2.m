@@ -100,12 +100,13 @@ if (alignFlag == 1)
     %Only get the resolution of the first 3 dimensions. The fourth is
     %likely the TR. The align and reslice with spm
             mm = d.mmPerVox; mm = mm(1:3);
-            [d xform] = relaxAlignAll(d, [], mm, false, 1);
+            [dspm xformspm] = relaxAlignAll(d, [], mm, false, 1);
             
     %fsl
-%     Dpath=fullfile(mrQ.SEIRepiDir,'data');
-%     [dfsl, xformFSL]=mrQ_fslAlignCall(Dpath,d);
-%     
+    Dpath=fullfile(mrQ.SEIRepiDir,'data');
+    niilist=mrQ.inputdata_seir.name;
+    [dfsl, xformFSL]=mrQ_fslAlignCall(Dpath,d,niilist);
+    
     
 end
 % Determine number of rows (nRows) number of Columns (nCol) and number of

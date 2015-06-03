@@ -99,7 +99,7 @@ end
 
 % Rerference Image
 if notDefined('refImg') || ~exist(refImg,'file')
- %   fprintf('\nNo reference image selected. ACPC alignemnt will be performed on raw data...\n')
+    %   fprintf('\nNo reference image selected. ACPC alignemnt will be performed on raw data...\n')
 elseif exist(refImg,'file')
     fprintf('Volumes will be aligned to: %s\n',refImg);
 end
@@ -132,13 +132,17 @@ end
 % Get a structure that has the paths to each of the spgr nifti files.
 if isfield(mrQ,'inputdata_spgr') %infut of list of nifti file and the relevant scan parameters
     [s niiFiles]=mrQ_input2Stuck(mrQ.inputdata_spgr,0);
+    
     t1Inds(1:length(s))=1;
     t1Inds=logical(t1Inds);
-      for ii = 1:numel(niiFiles)
+    for ii = 1:numel(niiFiles)
         %  Load data from niftis - reshape and permute data (nifti) if needed
         
-        [s1(ii), mrQ.coilNum(ii)]= makeStructFromNifti(niiFiles{ii},-2,s(ii),mrQ.permution);
+        [s1(ii)]= makeStructFromNifti(niiFiles{ii},-2,s(ii),mrQ.permution);
     end
+    clear s
+    s = s1;
+    clear s1
     
 else
     error('fdfdfdfd;')
@@ -196,24 +200,24 @@ end
 if mrQ.cheack==1
     for f = 1:numel(s(t1Inds)),
         showMontage(s(f).imData,[],[],[],[],10);
-
+        
         an1 = input( ['Does the image  with of ' num2str(s(f).flipAngle) ' is good? Press 1 if yes 0 if no \n'])
-
-         if an1==0
-         t1Inds(f) = 0;
-         end
+        
+        if an1==0
+            t1Inds(f) = 0;
+        end
         close figure 10
     end
-        numData=length(find(t1Inds));
-
+    numData=length(find(t1Inds));
+    
     if length(s)~=numData
-    an = questdlg(['Do you like to continue the process? Are ' num2str(numData) ' scans enough data  ?'],' continue process ','YES','NO','YES');
-    if strcmp('NO',an),
-        error('the user stop the process');
+        an = questdlg(['Do you like to continue the process? Are ' num2str(numData) ' scans enough data  ?'],' continue process ','YES','NO','YES');
+        if strcmp('NO',an),
+            error('the user stop the process');
+        end
+        mrQ.SPGR_Scan_Skiped_Num=find(t1Inds==0);
     end
-    mrQ.SPGR_Scan_Skiped_Num=find(t1Inds==0);
-    end
-
+    
 end
 
 %for f = 1:numel(s(t1Inds)), flipAngles(f) = s(f).flipAngle; end
@@ -225,109 +229,101 @@ mrQ.SPGR_niiFile_FA=flipAngles;
 if ~exist('mmPerVox','var') || isempty(mmPerVox),
     mmPerVox = s(min(find(t1Inds))).mmPerVox(1:3);   %#ok<MXFND>
     mrQ.SPGR_init_mmPerVox=mmPerVox;
-
+    
 end
 %end
 %% ACPC Alignement
-if process
-    outDir = spgrDir;
-    % If the reference image was not passed in then we make the user take one
-    % of the images and choose the acpc landmarks and use the resulting image
-    % as a refernce for alignment.
-    if ~exist('refImg','var') || isempty(refImg)
 
-        for i=1:numel(s),
-            val(i) = 20-s(i).flipAngle; %#ok<AGROW>
-        end
-
-
-        % Take a flip angle (closest to 20 deg) create a nifti image of that
-        % volume and use for acpc marking
-        [~, sec]     = sort(abs(val));
-        fileRaw      = fullfile(outDir,'t1w_raw.nii.gz');
-        t1w_acpcfile = fullfile(outDir,'t1w_acpc.nii.gz');
-        dtiWriteNiftiWrapper(single(s(sec(1)).imData), s(sec(1)).imToScanXform, fileRaw);
-
-        % Decide whether to do manual or automatic alignment
-        if ~exist('autoAcpc','var') || isempty(autoAcpc) || autoAcpc == 0;
-            % Do the acpc alignment - prompt the user to make sure it's good.
-            an = 0;
-            while an ~= 1 || isempty(an)
-                mrAnatAverageAcpcNifti({fileRaw},t1w_acpcfile);
-                an = questdlg('Does the alignment look good?','ACPC ALIGNMENT','YES','NO','YES');
-                if strcmp('YES',an), an = 1; else an = 0; end
-            end
-        else
-            % Automatically identify the ac and pc and mid sage by
-            % computing a spatial normalization
-            ni = readFileNifti(fileRaw);
-            ni = niftiApplyCannonicalXform(ni);
-            template =  fullfile(mrDiffusionDir, 'templates', 'MNI_T1.nii.gz');
-            sn = mrAnatComputeSpmSpatialNorm(ni.data, ni.qto_xyz, template);
-            c = mrAnatGetImageCoordsFromSn(sn, tal2mni([0,0,0; 0,-16,0; 0,-8,40])', true)';
-            mrAnatAverageAcpcNifti(ni, t1w_acpcfile, c, [], [], [], false);
-
-              % The acpc alignment was failing with the following template
-              % - so these next 4 lines were commented out and replaced
-              % with those above from RFD.
-              % template = fullfile(mrQRootPath,'templates','mni_icbm152_nlin_asym_09a_nifti','mni_icbm152_t1_tal_nlin_asym_09a.nii')
-              % sn = mrAnatComputeSpmSpatialNorm(ni.data, ni.qto_xyz, template);
-              % c = mrAnatGetImageCoordsFromSn(sn, tal2mni([0,0,0; 0,-16,0; 0,-8,40])', true)';
-              % mrAnatAverageAcpcNifti(ni,t1w_acpcfile,c);
-        end
-        close all
-        % The refImg is now the acpc aligned image.
-        refImg = t1w_acpcfile;
-        mrQ.SPGR_init_ref_acpc=refImg;
-
-        % [s,xform] = relaxAlignAll(s(find(t1Inds)),[],mmPerVox,false,interp); *** WHAT'S THIS ***
+outDir = spgrDir;
+% If the reference image was not passed in then we make the user take one
+% of the images and choose the acpc landmarks and use the resulting image
+% as a refernce for alignment.
+if ~exist('refImg','var') || isempty(refImg)
+    
+    for i=1:numel(s),
+        val(i) = 20-s(i).flipAngle; 
     end
+    
+    
+    % Take a flip angle (closest to 20 deg) create a nifti image of that
+    % volume and use for acpc marking
+    [~, sec]     = sort(abs(val));
+    fileRaw      = fullfile(outDir,'t1w_raw.nii.gz');
+    t1w_acpcfile = fullfile(outDir,'t1w_acpc.nii.gz');
+    dtiWriteNiftiWrapper(single(s(sec(1)).imData), s(sec(1)).imToScanXform, fileRaw);
+    
+    % Decide whether to do manual or automatic alignment
+    if ~exist('autoAcpc','var') || isempty(autoAcpc) || autoAcpc == 0;
+        % Do the acpc alignment - prompt the user to make sure it's good.
+        an = 0;
+        while an ~= 1 || isempty(an)
+            mrAnatAverageAcpcNifti({fileRaw},t1w_acpcfile);
+            an = questdlg('Does the alignment look good?','ACPC ALIGNMENT','YES','NO','YES');
+            if strcmp('YES',an), an = 1; else an = 0; end
+        end
+    else
+        % Automatically identify the ac and pc and mid sage by
+        % computing a spatial normalization
+        ni = readFileNifti(fileRaw);
+        ni = niftiApplyCannonicalXform(ni);
+        template =  fullfile(mrDiffusionDir, 'templates', 'MNI_T1.nii.gz');
+        sn = mrAnatComputeSpmSpatialNorm(ni.data, ni.qto_xyz, template);
+        c = mrAnatGetImageCoordsFromSn(sn, tal2mni([0,0,0; 0,-16,0; 0,-8,40])', true)';
+        mrAnatAverageAcpcNifti(ni, t1w_acpcfile, c, [], [], [], false);
+        
+       
+    end
+    close all
+    % The refImg is now the acpc aligned image.
+    refImg = t1w_acpcfile;
+    mrQ.SPGR_init_ref_acpc=refImg;
+    
+    % [s,xform] = relaxAlignAll(s(find(t1Inds)),[],mmPerVox,false,interp); *** WHAT'S THIS ***
 end
-
 
 %% ALIGNMENT: Do the alignment of the SPGRs and save out the aligned data
 
-    % Setup the output directory for the aligned data and make it if ~exist
-    outDir = fullfile(spgrDir,['Align_'  num2str(mmPerVox(1)) '_' num2str(mmPerVox(2)) '_'  num2str(mmPerVox(3))]);
-    if(~exist(outDir,'dir')), mkdir(outDir); end
+% Setup the output directory for the aligned data and make it if ~exist
+outDir = fullfile(spgrDir,['Align_'  num2str(mmPerVox(1)) '_' num2str(mmPerVox(2)) '_'  num2str(mmPerVox(3))]);
+if(~exist(outDir,'dir')), mkdir(outDir); end
 
 
-    % Align all the series to this subject's reference volume
-    %% NOTES
-    % originatly we used spm 8 ridge body registration code applayied
-    % by RFD for detail see relaxAlignAll. this was tested and work on
-    % GE data.
-    % this code is not working for our siemens data we there for use
-    % fsl implemntaion for details see mrQ_fslAlignCall. it still to test if all data need to be
-    % use this code.
-    %
+% Align all the series to this subject's reference volume
+%% NOTES
+% originatly we used spm 8 ridge body registration code applayied
+% by RFD for detail see relaxAlignAll. this was tested and work on
+% GE data.
+% this code is not working for our siemens data we there for use
+% fsl implemntaion for details see mrQ_fslAlignCall. it still to test if all data need to be
+% use this code.
+%
 
 
 
-       % if  ~isfield(mrQ,'SPGR_raw_strac')
-            %spm
-        ref       = readFileNifti(refImg);
+% if  ~isfield(mrQ,'SPGR_raw_strac')
+%spm
+ref       = readFileNifti(refImg);
 
-    [s,xform] = relaxAlignAll(s(find(t1Inds)),ref,mmPerVox,true,interp); %#ok<FNDSB>
-        %else
-           %         Dpath=fullfile(mrQ.SPGR,'data');
+[s,xform] = relaxAlignAll(s(find(t1Inds)),ref,mmPerVox,true,interp); %#ok<FNDSB>
+%else
+%         Dpath=fullfile(mrQ.SPGR,'data');
 % make nii from the images
-                    %for ii=1:length(s)
+%for ii=1:length(s)
 
-              %          niilist(ii).name=['T1w_FA' num2str(s(ii).flipAngle) '.nii.gz'];
-                %        savename=fullfile(Dpath,niilist(ii).name);
-                  %  mrQ_makeNiftiFromStruct(s(ii),savename,s(ii).imToScanXform);
-                    %end
-       % [s, xform ]=mrQ_fslAlignCall(Dpath,s,niilist,refImg);
-       % end
+%          niilist(ii).name=['T1w_FA' num2str(s(ii).flipAngle) '.nii.gz'];
+%        savename=fullfile(Dpath,niilist(ii).name);
+%  mrQ_makeNiftiFromStruct(s(ii),savename,s(ii).imToScanXform);
+%end
+% [s, xform ]=mrQ_fslAlignCall(Dpath,s,niilist,refImg);
+% end
 
-    % Save out the aligned data
-    outFile = fullfile(outDir,'dat_aligned.mat');
-    save(outFile,'s', 'xform', 'mmPerVox');
+% Save out the aligned data
+outFile = fullfile(outDir,'dat_aligned.mat');
+save(outFile,'s', 'xform', 'mmPerVox');
 
 
-    mrQ.spgr_initDir=outDir;
-    mrQ.outDir=outDir;
+mrQ.spgr_initDir=outDir;
+mrQ.outDir=outDir;
 
 
 

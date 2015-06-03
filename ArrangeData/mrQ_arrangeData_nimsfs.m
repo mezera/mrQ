@@ -1,40 +1,42 @@
 function mrQ = mrQ_arrangeData_nimsfs(mrQ,inputData_spgr,inputData_seir)
 % 
-%  [mrQ] = mrQ_arrangeData_nimsfs(mrQ,,inputdata_spgr,inputdata_seir)
+%  [mrQ] = mrQ_arrangeData_nimsfs(mrQ,inputData_spgr,inputData_seir)
 %
 % Arrange data from a series of scans gathered at the CNI. This function
 % will take a dataDir (mrQ.RawDir) and organize the data/folders within it
 % based upon the series numbers (SEIR_seriesNumbers & SPGR_seriesNumbers).
 % It will dump all the data to a raw directory (mrQ.outDir).
 % 
-% This should already be done by this point
-% mrQ = mrQ_Create(inputDirectory,[],outputDirectory); 
+%     INPUTS
+% >> mrQ. The mrQ structure, it should already have been created by this 
+%point. mrQ = mrQ_Create(inputDirectory,[],outputDirectory)
+% >> inputData_spgr. The SPGR data.
+% >> inputData_seir. The SEIR data.
 % 
 % 
 % (C) Stanford Univsersity, VISTA Lab [2014]
-% 
+% Edited by Shai Berman and Jonathan Bain, June-02-2015
 
 
 %% Construct the inputData structures for SEIR and SPGR
 
-% Given mrQ.RawDir, the following function will return all the necessarry
+% Given mrQ.RawDir, the following function will return all the necessary
 % paths to required nifti files in the mrQ.inputData_spgr and
-% mrQ.inputData_seir structures (maybe this should be part of mrQ create).
-   if ~notDefined('inputData_seir')
-mrQ=mrQ_Set(mrQ,'inputdata_seir',inputData_seir);
-   end
-   if ~notDefined('inputData_spgr')
-mrQ=mrQ_Set(mrQ,'inputdata_spgr',inputData_spgr);
-   end
+% mrQ.inputData_seir structures.
+if ~notDefined('inputData_seir')
+    mrQ=mrQ_Set(mrQ,'inputdata_seir',inputData_seir);
+end
+if ~notDefined('inputData_spgr')
+    mrQ=mrQ_Set(mrQ,'inputdata_spgr',inputData_spgr);
+end
 %   go to the nifti hdr if needed
-   if ~isfield(mrQ,'inputdata_spgr') || ~isfield(mrQ,'inputdata_seir')
-mrQ = mrQ_initInputData(mrQ);
-   end
+if ~isfield(mrQ,'inputdata_spgr') || ~isfield(mrQ,'inputdata_seir')
+    mrQ = mrQ_initInputData(mrQ);
+end
 
 %% Arrange SEIR data
 
-if isfield(mrQ,'MakeNewSEIRDir');
-else
+if ~isfield(mrQ,'MakeNewSEIRDir');
     mrQ.MakeNewSEIRDir=0;
 end
 
@@ -43,7 +45,8 @@ if (mrQ.MakeNewSEIRDir==1)
     % Initialize counters
     num = 1; ex = 0;
     
-    % Make a SEIR_epi Dir. If there is one already it will make another.
+    % Make a SEIR_epi directory. 
+    % If there is one already, this section will make another.
     while ex == 0
         SEIRepiDir = fullfile(mrQ.outDir,['SEIR_epi_' num2str(num)]);
         
@@ -68,8 +71,7 @@ if (mrQ.MakeNewSEIRDir==1)
 end 
     
 %% Arrange SPGR data
-if isfield(mrQ,'MakeNewSPGRRDir');
-else
+if ~isfield(mrQ,'MakeNewSPGRRDir');
     mrQ.MakeNewSPGRRDir=0;
 end
 
@@ -103,10 +105,10 @@ end
 
 %% Save and return
 
-% This is very important as it will trick the code into no sorting.
+% This is very important, as it will trick the code into no sorting.
 mrQ.Arange_Date = date;
 
-% Save and move on with life
+% Save:
 save(mrQ.name,'mrQ');
 
 return

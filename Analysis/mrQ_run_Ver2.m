@@ -105,28 +105,92 @@ else
     fprintf(' \n load init SPGR data            \n');
     
 end
-%%
+
+
 %%  Fit SPGR PD
 
-if isfield(mrQ,'SPGR_T1fit_done');
-else
+if ~isfield(mrQ,'SPGR_T1fit_done');
+
     mrQ.SPGR_T1fit_done=0;
 end
 
-%vclover is implamented inside (we canadd rthis to the inputs
+% clobber is implemented inside (we can add this to the inputs)
 if (mrQ.SPGR_T1fit_done==0);
-     [mrQ]=mrQfit_T1M0_Lin(mrQ);
+   
+      [mrQ]=mrQfit_T1M0_Lin(mrQ);
 %     [mrQ.AnalysisInfo]=mrQfit_T1M0_ver2(mrQ);
     
     mrQ.SPGR_T1fit_done=1;
     
     save(mrQ.name,'mrQ');
-    fprintf('\n fit T1 SPGR  - done!              \n');
+    fprintf('\n fit linear T1 SPGR  - done!              \n');
 else
-    fprintf('\n load fited  SPGR T1                \n');
+    fprintf('\n load linear fited SPGR T1                \n');
     
 end
-save(mrQ.name,'mrQ');
+
+%%  register high res EPI image to low res aligned T1 image
+
+%mrQ_NLANTS_warp_SPGR2EPI_RB(AnalysisInfo,SET1file,t1fileHM,flipAngles,outDir,AlignFile)
+
+if ~isfield(mrQ,'SPGR_EPI_align_done');
+    mrQ.SPGR_EPI_align_done=0;
+end
+
+if ( mrQ.SPGR_EPI_align_done==0)
+    
+    AlignFile=fullfile(mrQ.spgr_initDir,'SEIRepiSPGRAlign_best_RB.mat');
+    [mrQ.Ants_Info, Res]=mrQ_NLANTS_warp_SPGR2EPI_RB(mrQ.T1file, mrQ.T1_LFit_HM, mrQ.SPGR_niiFile_FA, mrQ.spgr_initDir, AlignFile, mrQ.AligndSPGR);
+    
+    mrQ.SPGR_EPI_align_done=1;
+    
+    save(mrQ.name,'mrQ');
+    fprintf('\n alignment of EPI to T1  - done!              \n');
+else
+    fprintf(['\n using alignment of EPI to T1, precalculated on '    mrQ.Ants_Info. spgr2epi_Align_date           '\n']);
+    
+end
 
 
+%% B1
 
+%% T1 with B1
+
+%%  segmentation needed for PD fit
+%prefer to PD fit 1. get a segmentation (need freesurfer output) 2. get CSF; 3.make a M0 fies for the coils
+
+%%
+
+  % Create the synthetic T1 weighted images and save them to disk
+    [AnalysisInfo.T1wSynthesis,AnalysisInfo.T1wSynthesis1, AnalysisInfo.maskSynthesis]=mrQ_T1wSynthesis(dataDir,B1file,outDir);
+    save(infofile,'AnalysisInfo');
+
+%%
+%. Segmentaion and CSF
+if isfield(mrQ,'segmentaion');
+else
+    mrQ.segmentaion=0;
+end
+
+if mrQ.segmentaion==0;
+    
+    
+    % run Free surfare
+    if (mrQ.runfreesurfer==1) %defult no freesurafre. it is slow and needs exstra defentions.
+        mrQ=mrQ_Complitfreesurfer(mrQ);
+        
+        mrQ.segmentaion=1;
+        % use an uploaded freesurafre nii.zg
+    elseif isfield(mrQ,'freesurfer');
+        [mrQ.AnalysisInfo]=mrQ_CSF(mrQ.spgr_initDir,mrQ.freesurfer,[],mrQ.AnalysisInfo);
+        
+        mrQ.segmentaion=1;
+        
+    else
+        % Segment the T1w by FSL (step 1) and get the tissue mask (CSF WM GM) (step 2)
+        mrQ=mrQ_segmentT1w2tissue(mrQ);
+        mrQ.segmentaion=1;
+        
+    end
+    save(mrQ.name,'mrQ');
+end

@@ -42,32 +42,34 @@ function [AnalysisInfo, Res]=mrQ_NLANTS_warp_SPGR2EPI_RB(SET1file,t1fileHM,flipA
 
 
 %% we first need make matlab work with the bachrc we have this is
-% unfortunate complexity
-
-orig_path = getenv('LD_LIBRARY_PATH');
-
-colon_idx = strfind(orig_path, ':');
-
-matlab_path = [];
-other_path = [];
-
-for i=1:(length(colon_idx)-1)
-
-   this_path = orig_path(colon_idx(i):colon_idx(i+1));
-   % This is part of the matlab path:
-   if strfind(this_path, 'matlab')
-       matlab_path = [matlab_path, ':', this_path];
-
-   % Should go before the matlab bit of the path (all the rest):
-   else
-       other_path = [other_path, ':', this_path];
-
-   end
-end
-
-new_path = [other_path, ':', matlab_path];
-
-setenv('LD_LIBRARY_PATH', new_path)
+% this was found to be unnecessary, but if ANTS doesn't seem to work -  
+% uncomment this section to add it to the path, don't forget to uncomment 
+% the path reset at the end of the scroipt:
+% 
+% orig_path = getenv('LD_LIBRARY_PATH');
+% 
+% colon_idx = strfind(orig_path, ':');
+% 
+% matlab_path = [];
+% other_path = [];
+% 
+% for i=1:(length(colon_idx)-1)
+% 
+%    this_path = orig_path(colon_idx(i):colon_idx(i+1));
+%    % This is part of the matlab path:
+%    if strfind(this_path, 'matlab')
+%        matlab_path = [matlab_path, ':', this_path];
+% 
+%    % Should go before the matlab bit of the path (all the rest):
+%    else
+%        other_path = [other_path, ':', this_path];
+% 
+%    end
+% end
+% 
+% new_path = [other_path, ':', matlab_path];
+% 
+% setenv('LD_LIBRARY_PATH', new_path)
 
  %% run ANTS non linear parameter to register SPGR to epi
 
@@ -155,10 +157,11 @@ end;
 infofile=fullfile(outDir,'AnalysisInfo.mat');
 save(infofile,'AnalysisInfo');
     save(AlignFile,'Res');
-    
-    % Reset the ld_path:
-setenv('LD_LIBRARY_PATH', orig_path)
-%saved the update the analysis info file
+%     
+%     % Reset the ld_path (unnecessary, see explanation at top of function)
+% 
+% setenv('LD_LIBRARY_PATH', orig_path)
+% %saved the update the analysis info file
 
 
    %document  and done

@@ -7,11 +7,11 @@ function mrQ = mrQ_arrangeData_nimsfs(mrQ,inputData_spgr,inputData_seir)
 % based upon the series numbers (SEIR_seriesNumbers & SPGR_seriesNumbers).
 % It will dump all the data to a raw directory (mrQ.outDir).
 % 
-%     INPUTS
-% >> mrQ. The mrQ structure, it should already have been created by this 
-%point. mrQ = mrQ_Create(inputDirectory,[],outputDirectory)
-% >> inputData_spgr. The SPGR data.
-% >> inputData_seir. The SEIR data.
+%     INPUTS:
+%      
+%       inputData_spgr:     The SPGR data.
+% 
+%       inputData_seir:     The SEIR data.
 % 
 % 
 % (C) Stanford Univsersity, VISTA Lab [2014]

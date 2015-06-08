@@ -1,9 +1,9 @@
 function [s,xform,mmPerVox,niiFiles,flipAngles,mrQ] = ...
     mrQ_initSPGR_ver2(spgrDir,refImg,mmPerVox,interp,skip,clobber,mrQ)
 %
-% [s,xform,mmPerVox] = ...
-%   mrQ_initSPGR(spgrDir,[refImg],[mmPerVox],[interp],[skip],[clobber=false])
-%
+% s,xform,mmPerVox,niiFiles,flipAngles,mrQ] = ...
+%     mrQ_initSPGR_ver2(spgrDir,refImg,mmPerVox,interp,skip,clobber,mrQ)
+% 
 % Load and align all the SPGR dicoms in the spgrDir. (It won't work
 % for multi-coil data, so take care of that in mrQ_arrangeData.m).
 %
@@ -84,9 +84,10 @@ function [s,xform,mmPerVox,niiFiles,flipAngles,mrQ] = ...
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% To Do:
-%if there are no niffti we need to make them from the dicom and not work with the dicoms after that
-%    that wiil be more compatible with the rest of the function!!! in the
-%    CNi we always have dicom so it not a big problem for now
+%    If there are no niftis we need to make them from the dicoms, and use
+%    them (and not with the dicoms), as the niftis are more compatible with
+%    the rest of the function!!! in the CNi we always have dicom so it not
+%    a big problem for now
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Check INPUTS
@@ -127,11 +128,11 @@ else
 end
 
 
-%
 %%  Get paths to nifti SPGR data (get niiFiles)
 % Get a structure that has the paths to each of the spgr nifti files.
+
 if isfield(mrQ,'inputdata_spgr') %infut of list of nifti file and the relevant scan parameters
-    [s niiFiles]=mrQ_input2Stuck(mrQ.inputdata_spgr,0);
+    [s, niiFiles]=mrQ_input2Stuck(mrQ.inputdata_spgr,0);
     
     t1Inds(1:length(s))=1;
     t1Inds=logical(t1Inds);
@@ -145,7 +146,7 @@ if isfield(mrQ,'inputdata_spgr') %infut of list of nifti file and the relevant s
     clear s1
     
 else
-    error('fdfdfdfd;')
+    error('mrQ.inputdata_spgr does not exist! please dedine the list of nifti file and the relevant scan parameters ')
 end
 
 
@@ -225,6 +226,7 @@ niiFiles=niiFiles(t1Inds);
 mrQ.SPGR_niiFile=niiFiles;
 flipAngles=[s(t1Inds).flipAngle];
 mrQ.SPGR_niiFile_FA=flipAngles;
+
 % Set the resolution if it was not passed in
 if ~exist('mmPerVox','var') || isempty(mmPerVox),
     mmPerVox = s(min(find(t1Inds))).mmPerVox(1:3);   %#ok<MXFND>
@@ -232,6 +234,7 @@ if ~exist('mmPerVox','var') || isempty(mmPerVox),
     
 end
 %end
+
 %% ACPC Alignement
 
 outDir = spgrDir;
@@ -273,7 +276,9 @@ if ~exist('refImg','var') || isempty(refImg)
         
        
     end
+    
     close all
+    
     % The refImg is now the acpc aligned image.
     refImg = t1w_acpcfile;
     mrQ.SPGR_init_ref_acpc=refImg;
@@ -291,28 +296,29 @@ if(~exist(outDir,'dir')), mkdir(outDir); end
 % Align all the series to this subject's reference volume
 %% NOTES
 % originatly we used spm 8 ridge body registration code applayied
-% by RFD for detail see relaxAlignAll. this was tested and work on
+% by RFD for detail see relaxAlignAll. this was tested and it works on
 % GE data.
 % this code is not working for our siemens data we there for use
-% fsl implemntaion for details see mrQ_fslAlignCall. it still to test if all data need to be
-% use this code.
+% fsl implemntaion for details see mrQ_fslAlignCall. 
+% it still needs to be tested for data of other kinds. 
 %
 
 
 
 % if  ~isfield(mrQ,'SPGR_raw_strac')
+
 %spm
 ref       = readFileNifti(refImg);
-
 [s,xform] = relaxAlignAll(s(find(t1Inds)),ref,mmPerVox,true,interp); %#ok<FNDSB>
+
 %else
 %         Dpath=fullfile(mrQ.SPGR,'data');
 % make nii from the images
 %for ii=1:length(s)
 
 %          niilist(ii).name=['T1w_FA' num2str(s(ii).flipAngle) '.nii.gz'];
-%        savename=fullfile(Dpath,niilist(ii).name);
-%  mrQ_makeNiftiFromStruct(s(ii),savename,s(ii).imToScanXform);
+%          savename=fullfile(Dpath,niilist(ii).name);
+%          mrQ_makeNiftiFromStruct(s(ii),savename,s(ii).imToScanXform);
 %end
 % [s, xform ]=mrQ_fslAlignCall(Dpath,s,niilist,refImg);
 % end
@@ -322,9 +328,16 @@ outFile = fullfile(outDir,'dat_aligned.mat');
 save(outFile,'s', 'xform', 'mmPerVox');
 
 
-mrQ.spgr_initDir=outDir;
-mrQ.outDir=outDir;
+ mrQ.spgr_initDir=outDir;
 
+
+% save the aligned images in the mrQ struct
+for j=1:length(s)
+    ref   = fullfile(outDir,['Align' num2str(flipAngles(j)) 'deg']);
+    dtiWriteNiftiWrapper(single(s(j).imData), xform,ref);
+    mrQ.AligndSPGR{j}=ref;
+    
+end
 
 
 %% Sanity check: make sure that the order in niiFiles matches s.flipAngles

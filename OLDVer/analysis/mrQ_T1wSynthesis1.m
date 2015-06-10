@@ -1,4 +1,4 @@
-function [saveName,saveName1] =mrQ_T1wSynthesis1(mrQ,WFfile,T1file,BMfile,symTR,symFA, saveName,saveName1,FullBMfile)
+function [saveName,saveName1] =mrQ_T1wSynthesis1(mrQ,WFfile,T1file,BMfile,outDir,symTR,symFA, saveName,saveName1,FullBMfile)
 % 
 % mrQ_T1wSynthesis1(dataDir,B1file,outDir,trIn,flipAngleIn)
 % 
@@ -31,26 +31,39 @@ if(exist('T1file','var') && ~isempty(T1file))
     disp(['Loading T1 data from ' T1file '...']);
 else
     T1file=mrQ_getT1file(mrQ);
+    % %%%%%%%%%%%NOTE %%%%%%%%%%%%%%%       we probably need to edit mrQ_getT1file with our new mrQ version
+    % convention. %%%%%%%%%%%%%%%%%%%%%%%NOTE %%%%%%%%%%%%%%%%%
   %  T1file= fullfile(mrQ.spgr_initDir,'T1_map_lin.nii.gz');
 end
 t1=readFileNifti(T1file);t1=t1.data;
 
 if(exist('WFfile','var') && ~isempty(WFfile))
     disp(['Loading PD data from ' WFfile '...']);
-else
+elseif isfield(mrQ,'maps')
     WFfile=mrQ.maps.WFpath;
-    
+else
+    %if there is no water fraction map, default will take the linearly fitted
+    %M0 map made in the function mrQfit_T1M0_Lin
+    WFfile=mrQ.M0_LFit_HM;
+    % % %%%%%%%%%%%NOTE %%%%%%%%%%%%%%%  let's write function that finds
+    % the best WF file % %%%%%%%%%%%NOTE %%%%%%%%%%%%%%% 
 end
 PD=readFileNifti(WFfile);PD=PD.data;
 
 
+if notDefined('outDir')
+    outDir=mrQ.outDir;
+end
 
+if ~exist(fullfile(outDir,'SyntheticT1w'),'dir')
+    mkdir(fullfile(outDir,'SyntheticT1w'));
+end
 if (~exist('saveName','var') || isempty(saveName)),
-saveName=fullfile(mrQ.OutPutNiiDir,'T1w','T1w.nii.gz');
+saveName=fullfile(outDir,'SyntheticT1w','T1w.nii.gz');
 end
 if (~exist('saveName1','var') || isempty(saveName1)),
 
-saveName1=fullfile(mrQ.OutPutNiiDir,'T1w','T1w1.nii.gz');
+saveName1=fullfile(outDir,'SyntheticT1w','T1w1.nii.gz');
 
 end
 
@@ -80,19 +93,15 @@ end
 if (~exist('FullBMfile','var') || isempty(FullBMfile)),
     % Look for and load the brain mask - create one if necessary
     
-    if isfield(mrQ.AnalysisInfo,'maskSynthesis')
-        FullBMfile = mrQ.AnalysisInfo.maskSynthesis;
-    else
+    
         FullBMfile=BMfile;
-    end
+   
 end
 
  mask=readFileNifti(FullBMfile);
  mask=mask.data;
 
 %% III. Calculate the synthetic t1 images
-
-
 
 t1w = zeros(size(t1));
 
@@ -163,7 +172,7 @@ dwon=max(0,M-3*S);
 %% IV. Save out the resulting nifti files
 
 % Write them to disk
-disp('2.  saving a syntetic T1w images');
+disp('2.  saving a synthetic T1w images');
 dtiWriteNiftiWrapper(single(t1w), xform, saveName);
 dtiWriteNiftiWrapper(single(t1ww), xform, saveName1);
 

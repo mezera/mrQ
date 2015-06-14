@@ -339,11 +339,11 @@ end
 
 %% Sanity check: make sure that the order in niiFiles matches s.flipAngles
 
-% Make sure that niiFiles match up with s(n).flipAngle
+% Make sure that niiFiles matches up with s(n).flipAngle
 % Check that the numel are the same.
 % fprintf('Verifying flipAngle ordering ...');
 %
-% % I decided not to use this check for now
+% % i deside not to use this cheack for now
 % load (outFile)
 %
 % for nn=1:numel(s)

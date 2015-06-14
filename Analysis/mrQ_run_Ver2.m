@@ -50,15 +50,14 @@ if ~isfield(mrQ,'Arange_Date');
         
     end
 else
-    fprintf('data was allready arrange at %s \n',mrQ.Arange_Date)
+    fprintf('data was already arranged at %s \n',mrQ.Arange_Date)
 end
-%%
+%% fit SEIR   
+
 if notDefined('B1file') 
     % check if B1 was defined by the user. if not we will use the SEIR data
     % to map it.
-    
-    %% fit SEIR    
-    
+
     if isfield(mrQ,'SEIR_done');
     else
         mrQ.SEIR_done=0;
@@ -70,6 +69,7 @@ if notDefined('B1file')
         [~, ~, ~, mrQ.SEIRsaveData]=mrQ_initSEIR_ver2(mrQ,mrQ.SEIRepiDir,mrQ.alignFlag);
         
         [mrQ]=mrQ_fitSEIR_T1(mrQ.SEIRepiDir,[],0,mrQ);
+        
         mrQ.SEIR_done=1;
         save(mrQ.name,'mrQ');
         fprintf('fit SEIR  - done!');
@@ -123,9 +123,10 @@ if (mrQ.SPGR_T1fit_done==0);
     mrQ.SPGR_T1fit_done=1;
     
     save(mrQ.name,'mrQ');
+    
     fprintf('\n fit linear T1 SPGR  - done!              \n');
 else
-    fprintf('\n load linear fited SPGR T1                \n');
+    fprintf('\n load linearly fitted SPGR T1                \n');
     
 end
 
@@ -193,7 +194,10 @@ if mrQ.segmentaion==0;
     %     default- fsl segmentation
     if (mrQ.runfreesurfer==0 && ~isfield(mrQ,'freesurfer'))
         % Segment the T1w by FSL (step 1) and get the tissue mask (CSF WM GM) (step 2)
-        mrQ=mrQ_segmentT1w2tissue(mrQ);
+%         mrQ=mrQ_segmentT1w2tissue(mrQ,BMfile,T1file,t1wfile,outDir,csffile,boxsize)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% this doesn't work yet because the function is
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% calling non existent fields and files
+        mrQ=mrQ_segmentT1w2tissue(mrQ,[],mrQ.SegInfo.T1wSynthesis_T1);
         mrQ.segmentaion=1;
         
         %      run FreeSurfer : it is slow and needs extra defintions.
@@ -210,7 +214,7 @@ if mrQ.segmentaion==0;
     save(mrQ.name,'mrQ');
     fprintf('\n segmentation and CSF  - done!              \n');
 else
-    fprintf('\n using previously sgmented data              \n');
+    fprintf('\n using previously segmented data              \n');
     
     
 end

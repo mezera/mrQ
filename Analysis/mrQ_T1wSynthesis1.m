@@ -39,8 +39,10 @@ t1=readFileNifti(T1file);t1=t1.data;
 
 if(exist('WFfile','var') && ~isempty(WFfile))
     disp(['Loading PD data from ' WFfile '...']);
+    
 elseif isfield(mrQ,'maps')
     WFfile=mrQ.maps.WFpath;
+    
 else
     %if there is no water fraction map, default will take the linearly fitted
     %M0 map made in the function mrQfit_T1M0_Lin

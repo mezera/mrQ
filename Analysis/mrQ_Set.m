@@ -9,7 +9,9 @@ function mrQ = mrQ_Set(mrQ,param,varargin,saveflag)
 % parameter are described below.  mrQ_Set always returns the modified mrQ
 % structure and save it unless saveflag=0.  The structure is created with defult values with mrQ_Create
 % or in the first call.
+
 %See also:  mrQ_Create
+
 % Parameter list and associated arguments:
 % saveflag          - the defult is yes; for no save make it 0
 % param             - varargin the key parameters are

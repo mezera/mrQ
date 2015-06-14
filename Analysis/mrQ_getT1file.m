@@ -40,7 +40,7 @@ end
    T1file = mrvSelectFile('r','*.nii.gz','Select T1 fit file',mrQ.spgr_initDir);
    end
    
-%% Last stll can't find it an error
+%% Last still can't find it an error
 
 if isempty(T1file)
     error('Can not find the T1file')

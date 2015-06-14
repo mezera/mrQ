@@ -1,4 +1,5 @@
-function mrQ=mrQ_segmentT1w2tissue(mrQ,BMfile,T1file,t1wfile,csffile,boxsize)
+function mrQ=mrQ_segmentT1w2tissue(mrQ,BMfile,T1file,t1wfile,outDir,csffile,boxsize)
+% mrQ=mrQ_segmentT1w2tissue(mrQ,[],mrQ.SegInfo.T1wSynthesis_T1);
 % 
 % The function segment by FSL to three tissue take the CSF tissue restrict
 % it by the T1 values the CSF is also restricted to be in the center of the
@@ -6,7 +7,10 @@ function mrQ=mrQ_segmentT1w2tissue(mrQ,BMfile,T1file,t1wfile,csffile,boxsize)
 % where the ventrical are.
 % 
 % 
-outDir = mrQ.AnalysisInfo.outDir;
+if~exist('outDir')
+outDir = mrQ.spgr_initDir; %>>>>>>>>>>>>.shai
+% outDir = mrQ.AnalysisInfo.outDir;
+end
 
 if ~exist('T1file','var') || isempty(T1file)
     T1file = mrQ_getT1file(mrQ); 
@@ -39,7 +43,7 @@ end
 
 
 if notDefined('t1wfile')
-    t1wfile=mrQ.AnalysisInfo.T1wSynthesis;
+    t1wfile=mrQ.SegInfo.T1wSynthesis_T1;
     if ~exist(t1wfile,'file')
         t1wfile = mrvSelectFile('r','Select the T1 wight image');
     end

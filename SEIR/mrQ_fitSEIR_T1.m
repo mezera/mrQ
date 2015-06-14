@@ -10,13 +10,14 @@ function [mrQ]= mrQ_fitSEIR_T1(SEIRdir,outDir,checkData,mrQ)
 % INPUTS:
 %   SEIRdir -     Path to your desired T1 image. Use the same path as in
 %                 getSEIR.
-
+% 
 %   checkData -   If you want to visually check the data leave empty or set
 %                 to 1. To not check data set to 0.
 %   mrQ      -     information structure
 % 
 % OUTPUTS:
 %     mrQ      -    information structure, updated
+%   
 %   This function will save the fitted images in a new directory called
 %   "fitT1_GS" under the SEIRdir. the name of the saved files in  the
 %   output strctures
@@ -36,10 +37,9 @@ function [mrQ]= mrQ_fitSEIR_T1(SEIRdir,outDir,checkData,mrQ)
 
 %% Check INPUTS
 
-% This makes many assumtions about the paths. This should be flexible.
-% All we need is the data - they should just point us to that. We
-% can then move one directory up from there and create the fit* 
-% directory. 
+% This makes many assumptions about the paths. This should be flexible. All
+% we need is the data - the input should just point to that. The function
+% can then move one directory up from there and create the fit* directory.
 
 if notDefined('SEIRdir') || ~exist(SEIRdir,'dir')
     SEIRdir = uigetdir(pwd,'Select your SEIR base data directory');
@@ -58,7 +58,8 @@ if notDefined('checkData') || isempty(checkData) || checkData > 1
     checkData = 1;
 end
 
-% Which algorithm to use: real
+% Which algorithm to use: real 
+% nonlinear least squares polarity restoration. 
 
 method = 'NLSPR'; % magnitude data
 
@@ -67,8 +68,8 @@ close all
 
 %% Load the data file (this will load 'data', 'xform', and 'extra')
 
-% We should now be pointed to this file, and not to the directory. File names
-% are much easier to work with instead of directories. 
+% We should now be pointed to this file, and not to the directory. It is
+% much easier to work with filenames than with directories.
 filename = 'SEIR_Dat';
 loadStr = fullfile(seirDataDir, filename);
 
@@ -83,8 +84,9 @@ saveStr = fullfile(outDir, outName);
 T1FitExperimentData(loadStr, saveStr, method, checkData);
 
 
-% Load the fitted data ** This would not have to be done this way if
-% T1FitExperimentData returned the data. 
+% Load the fitted data 
+% ** We have to do it this way because T1FitExperimentData does not return
+% the data as desired.
 load(saveStr)
 load(loadStr)
 

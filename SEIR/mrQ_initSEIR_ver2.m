@@ -1,6 +1,6 @@
 function [data, extra, xform, saveName] = mrQ_initSEIR_ver2(mrQ,SEIRdir,alignFlag)
 %
-% [data extra xform saveName] = mrQ_initSEIR(mrQ,SEIRdir,alignFlag)
+% [data extra xform saveName] = mrQ_initSEIR_ver2(mrQ,SEIRdir,alignFlag)
 %
 % Loads all dicom data found within 'SEIRdir' into a single matrix
 % ('data'), aligns each series to the first, rearranges the 'data' matrix
@@ -88,23 +88,23 @@ d=mrQ_input2Stuck(mrQ.inputdata_seir);
 % Align & ~Complex
 if (alignFlag == 1) 
     %% NOTES
-    % originatly we used spm 8 ridge body registration code applied
-    % by RFD for detail see relaxAlignAll. this was tested and work on
-    % GE data.
-    % this code is not working for our siemens data we there for use
-    % fsl implemntaion for details see mrQ_fslAlignCall. it still to test if all data need to be
-    % use this code.
+    % Originally we used spm 8 rigid body registration code applied by RFD;
+    % for detail see relaxAlignAll. This was tested, and worked on GE data.
+    % This code is not working for our Siemens data; we therefore use fsl
+    % implementation (for details, see mrQ_fslAlignCall). It is still to be
+    % tested if all data need to be analyzed using this code.
     %
     
     %    SPM
     %Only get the resolution of the first 3 dimensions. The fourth is
     %likely the TR. The align and reslice with spm
+    
             mm = d.mmPerVox; mm = mm(1:3);
             [d xform] = relaxAlignAll(d, [], mm, false, 1);
             
 %     %fsl
-%       this another option to get alignment. it probably doesn't work
-%       well with different contrasts. check before using it!
+%       This is another option to get alignment. It probably doesn't work
+%       well with different contrasts -- check before using it!
 
 %     Dpath=fullfile(mrQ.SEIRepiDir,'data');
 %     niilist=mrQ.inputdata_seir.name;

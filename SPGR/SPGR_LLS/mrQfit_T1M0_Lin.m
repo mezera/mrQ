@@ -1,5 +1,5 @@
 function [mrQ]=mrQfit_T1M0_Lin(mrQ,B1File,MaskFile,outDir,dataDir,clobber)
-%[mrQ]=mrQfit_T1M0_Lin(mrQ,B1File,MaskFile,clobber)
+%  [mrQ]=mrQfit_T1M0_Lin(mrQ,B1File,MaskFile,outDir,dataDir,clobber)
 %
 % INPUT:
 %       mrQ:        the mrQ structure. 
@@ -11,9 +11,11 @@ function [mrQ]=mrQfit_T1M0_Lin(mrQ,B1File,MaskFile,outDir,dataDir,clobber)
 %       clobber: 
 % 
 % OUTPUT:
-%       	the output will be in the form of the nifti files,
-%       	saved in the outDir. this function will create niftis for the
-%       	(if don't exist): headmask, brainmask, and linearly fitted T1.
+%                   the function creates nifti filesin the outDir, and saves their
+%                   location in the mrQ sructure which is the output of the
+%                   function. this function will create niftis for the (if
+%                   don't exist): headmask, brainmask, and linearly fitted
+%                   T1.
 % 
 % WEB RESOURCES
 %       http://white.stanford.edu/newlm/index.php/Quantitative_Imaging

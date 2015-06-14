@@ -1,6 +1,6 @@
 function [AnalysisInfo, Res]=mrQ_NLANTS_warp_SPGR2EPI_RB(SET1file,t1fileHM,flipAngles,outDir,AlignFile,AligndSPGR)
 %
-%mrQ_NLANTS_warp_SPGR2EPI_RB(AnalysisInfo,SET1file,t1fileHM,flipAngles,outDir,AlignFile)
+%  [AnalysisInfo, Res]=mrQ_NLANTS_warp_SPGR2EPI_RB(SET1file,t1fileHM,flipAngles,outDir,AlignFile,AligndSPGR)
 %
 % # this function evaluate the ANTS affine linear reistration from spgr to epi.
 %the ANTS will register the spgr T1 to the SEIR epi T1 using unixs functions. the code esume ANTS and ITK code are part of the computer unix sell path (./bachrc).

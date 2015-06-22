@@ -1,4 +1,4 @@
-function GridFit_done=mrQ_Gridcheack(opt_Log_name,SunGrid,proclus,CallType)
+function GridFit_done=mrQ_Gridcheack(opt_Log_name,SunGrid,CallType)
 %%
 % This loop checks if all the outputs have been saved or waits until
 % they are all done, if needed it will run again job that are missing
@@ -13,7 +13,6 @@ end
 
 
 if notDefined('SunGrid');SunGrid=0;end
-if notDefined('proclus');proclus=0;end
 if notDefined('CallType');CallType=1;end
 
 GridFit_done=false;
@@ -49,14 +48,14 @@ while GridFit_done~=true
             RunSelectedJob=true;
             if CallType==1
                 if isfield(opt,'Reg') % ALWO DIFFERNT FITS METHODS
-                    mrQ_fitM0boxesCall_Multi(opt_Log_name,SunGrid,proclus,RunSelectedJob)
+                    mrQ_fitM0boxesCall_Multi(opt_Log_name,SunGrid,RunSelectedJob)
                 else
-                    mrQ_fitM0boxesCall(opt_Log_name,SunGrid,proclus,RunSelectedJob)
+                    mrQ_fitM0boxesCall(opt_Log_name,SunGrid,RunSelectedJob)
                 end
             elseif CallType==2
-                mrQ_fitB1boxesCall(opt_Log_name,SunGrid,proclus,RunSelectedJob);
+                mrQ_fitB1boxesCall(opt_Log_name,SunGrid,RunSelectedJob);
             elseif CallType==3
-                mrQ_fitB1LR_Call(opt_Log_name,SunGrid,proclus,RunSelectedJob);
+                mrQ_fitB1LR_Call(opt_Log_name,SunGrid,RunSelectedJob);
             end
         end
         

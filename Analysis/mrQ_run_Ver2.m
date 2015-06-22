@@ -140,8 +140,8 @@ end
 
 if ( mrQ.SPGR_EPI_align_done==0)
     
-    AlignFile=fullfile(mrQ.spgr_initDir,'SEIRepiSPGRAlign_best_RB.mat');
-    [mrQ.Ants_Info, Res]=mrQ_NLANTS_warp_SPGR2EPI_RB(mrQ.T1file, mrQ.T1_LFit_HM, mrQ.SPGR_niiFile_FA, mrQ.spgr_initDir, AlignFile, mrQ.AligndSPGR);
+    mrQ.spgr2epiAlignFile=fullfile(mrQ.spgr_initDir,'SEIRepiSPGRAlign_best_RB.mat');
+    [mrQ.Ants_Info, Res]=mrQ_NLANTS_warp_SPGR2EPI_RB(mrQ.SEIR_epi_T1file, mrQ.T1_LFit_HM, mrQ.SPGR_niiFile_FA, mrQ.spgr_initDir, mrQ.spgr2epiAlignFile, mrQ.AligndSPGR);
     
     mrQ.SPGR_EPI_align_done=1;
     
@@ -154,7 +154,22 @@ end
 
 
 %% B1
+if ~isfield(mrQ,'B1Build_done');
+    mrQ.B1Build_done=0;
+end
 
+if ( mrQ.B1Build_done==0)
+    
+
+ mrQ=mrQ_B1_LR(mrQ);
+
+    else
+        fprintf(['Using the  B1  map  file '   mrQ.B1FileName        '  \n');
+        
+    end
+    
+
+% 
 %% T1 with B1
 
 %%  segmentation needed for PD fit

@@ -109,18 +109,18 @@ end
 
 %%  Fit SPGR PD
 
-if ~isfield(mrQ,'SPGR_T1fit_done');
+if ~isfield(mrQ,'SPGR_LinearT1fit_done');
 
-    mrQ.SPGR_T1fit_done=0;
+    mrQ.SPGR_LinearT1fit_done=0;
 end
 
 % clobber is implemented inside (we can add this to the inputs)
-if (mrQ.SPGR_T1fit_done==0);
+if (mrQ.SPGR_LinearT1fit_done==0);
    
       [mrQ]=mrQfit_T1M0_Lin(mrQ);
 %     [mrQ.AnalysisInfo]=mrQfit_T1M0_ver2(mrQ);
     
-    mrQ.SPGR_T1fit_done=1;
+    mrQ.SPGR_LinearT1fit_done=1;
     
     save(mrQ.name,'mrQ');
     
@@ -170,7 +170,23 @@ if ( mrQ.B1Build_done==0)
     
 
 % 
-%% T1 with B1
+%% T1M0 fit with B1
+if ~isfield(mrQ,'SPGR_T1fit_done');
+    mrQ.SPGR_T1fit_done=0;
+end
+
+if ( mrQ.SPGR_T1fit_done==0)
+    
+    
+    mrQ=mrQ_T1M0_Fit(mrQ);
+    mrQ.SPGR_T1fit_done=true;
+    fprintf('\n fit  T1 SPGR  - done!              \n');
+    
+else
+    
+    fprintf('\n load  fitted SPGR T1                \n');
+    
+end
 
 %%  segmentation needed for PD fit
 %prefer to PD fit 1. get a segmentation (need freesurfer output) 2. get CSF; 3.make a M0 fies for the coils
@@ -233,3 +249,40 @@ else
     
     
 end
+
+%% fitting PD from M0
+
+M0file=WEneedAFunction;
+
+
+% set parameters for the fit
+[mrQ.opt_logname]=mrQ_PD_multicoil_RgXv_GridCall_Fittesting(mrQ.spgr_initDir,mrQ.sub,mrQ.PolyDeg,M0file,T1file,BMfile,[],[],[],Coilsinfo,Reg,Init,[],mrQ);
+
+
+%%
+%%
+% calculate VIP TV and SIR
+
+if (mrQ.SPGR_PDBuild_done==1)
+    fprintf('\n calculate VIP TV SIR form T1 and WF maps               \n');
+    
+    [mrQ.AnalysisInfo] = mrQ_VIP(mrQ);
+    save(mrQ.name,'mrQ');
+end
+
+
+
+
+
+%% Organize the OutPut  directory
+mrQ=mrQ_arangeOutPutDir(mrQ);
+
+%%  Create a series of synthetic T1w images
+
+ [mrQ.T1w_file,mrQ.T1w_file1] =mrQ_T1wSynthesis1(mrQ);
+%done
+mrQ.AnalysisDone=1;
+mrQ.AnalysisDoneDate=date;
+%save
+save(mrQ.name,'mrQ');
+fprintf('\n done !!! \n')

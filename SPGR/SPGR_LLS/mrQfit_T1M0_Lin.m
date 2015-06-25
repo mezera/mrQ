@@ -8,6 +8,7 @@ function [mrQ]=mrQfit_T1M0_Lin(mrQ,B1File,MaskFile,outDir,dataDir,clobber)
 %       MaskFile:   nifti file of brain mask if not defined it will be
 %                   created using mrAnatExtractBrain, and folowed by some
 %                   corections. 
+
 %       clobber: 
 % 
 % OUTPUT:
@@ -136,9 +137,8 @@ if~( exist(t1file,'file') &&  exist(M0file,'file')  && ~clobber),
     t1_copy=t1;M0_copy=M0; % make a copy
     
     if notDefined('MaskFile')
-        HMfile   = fullfile(outDir,'HeadMask.nii.gz');
-        BMfile   = fullfile(outDir,'brainMask.nii.gz');
-        
+        HMfile   = fullfile(outDir,'HeadMask.nii.gz');  % brain mask
+        BMfile   = fullfile(outDir,'brainMask.nii.gz'); %head mask
         % Create the brain mask
         [brainMask,checkSlices] = mrAnatExtractBrain(M0, mmPerVox, 0.5,outDir);
       %  eval(['! rm ' outDir '/bet* '])
@@ -200,15 +200,16 @@ if~( exist(t1file,'file') &&  exist(M0file,'file')  && ~clobber),
     
     
     if ~notDefined('HMfile')
-        t1_copy(~HM) = 0;
-        M0_copy(~HM) = 0;
+        t1=t1_copy; M0=M0_copy;
+        t1(~HM) = 0; 
+        M0(~HM) = 0;
         
         t1fileHM = fullfile(outDir,['T1_LFit_HM.nii.gz']);
         M0fileHM = fullfile(outDir,'M0_LFit_HM.nii.gz');
         
         
-        dtiWriteNiftiWrapper(single(t1_copy), xform, t1fileHM);
-        dtiWriteNiftiWrapper(single(M0_copy), xform, M0fileHM);
+        dtiWriteNiftiWrapper(single(t1), xform, t1fileHM);
+        dtiWriteNiftiWrapper(single(M0), xform, M0fileHM);
         mrQ.T1_LFit_HM=t1fileHM;
         mrQ.M0_LFit_HM=M0fileHM;
     
@@ -217,3 +218,6 @@ if~( exist(t1file,'file') &&  exist(M0file,'file')  && ~clobber),
 end;
 
 
+
+
+    

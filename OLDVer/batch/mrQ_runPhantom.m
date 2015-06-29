@@ -146,20 +146,20 @@ sub = mrQ.sub;
 
 
 
-%% arange data form the magnet
+%% Arrange data form the magnet
 
 % most subject have this allready, we need to check before we run it should
 % come form the user
 
 
-if isfield(mrQ,'Arange_Date') && ~isempty(mrQ.Arange_Date)
+if isfield(mrQ,'Arrange_Date') && ~isempty(mrQ.Arrange_Date)
     
-    fprintf([ '\n  using data intiate at ' mrQ.Arange_Date ' !  \n']);
+    fprintf([ '\n  using data intiate at ' mrQ.Arrange_Date ' !  \n']);
     
 else
     fprintf('\n  Arranging the data ...\n  ')
     [mrQ]=  mrQ_arrangeData(mrQ.RawDir,mrQ.arrangeRawFlag,mrQ.SEIR_seriesNumbers,mrQ.SPGR_seriesNumbers,mrQ.channels,mrQ.useNiftiFlag,mrQ);
-    fprintf('arange data is done!\n');
+    fprintf('Arrange data is done!\n');
     save(mrQ.name,'mrQ');
 end
 

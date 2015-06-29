@@ -15,7 +15,7 @@ function [mrQ]=mrQ_arrangeData(dataDir,arrangeRawFlag,SEIR_seriesNumbers,SPGR_se
 %
 % INPUT VARIABLES:
 %   dataDir           - The path of the directory containing the raw MR
-%                       data. the function assume the data are arange in
+%                       data. the function assume the data are Arrange in
 %                       the way the Stanford CNI. the data should be saved
 %                       as niifti files and a dicom directory with dicom
 %                       are also exsist.
@@ -344,7 +344,7 @@ end
 
 %  Save out the variables and the directories so we can feed this stuff
 %  into the next functions in the pipeline.
-mrQ.Arange_Date=date;
+mrQ.Arrange_Date=date;
 
 save(mrQ.name,'mrQ');
 return

@@ -12,8 +12,18 @@ function mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_sei
 %       inputData_spgr:
 %       inputData_seir:
 %       B1file:
-%
-
+% 
+%   OUPUT:
+%       This function creates and saves the mrQ strucure to the subject’s directory.
+%       New directories will be created, including directories for data and quantitative fits.
+%       Images will be register to each other.
+%       SEIR-EPI T1 will be computed (low resultion)
+%       SPGR T1, M0, B1 maps, and a synthetic T1-weighted image, will be computed.
+%       T1-weighted and quantitative T1 images will be combined to segment the brain tissue.
+%`      PD and coil gain will be fit from the M0 image.
+%       Biophysical model will be applied to calculate VIP and SIR maps.
+% %
+% 
 
 %% Create the initial structure
 
@@ -48,7 +58,7 @@ end
 %% arrange data
 % Specific arrange function for nimsfs nifti or using input for user
 
-if ~isfield(mrQ,'Arange_Date');
+if ~isfield(mrQ,'Arrange_Date');
     
     if (~notDefined('inputData_spgr') &&  ~notDefined('inputData_seir'))
         mrQ = mrQ_arrangeData_nimsfs(mrQ,inputData_spgr,inputData_seir);
@@ -57,7 +67,7 @@ if ~isfield(mrQ,'Arange_Date');
         
     end
 else
-    fprintf('data was already arranged at %s \n',mrQ.Arange_Date)
+    fprintf('data was already arranged at %s \n',mrQ.Arrange_Date)
 end
 %% fit SEIR
 

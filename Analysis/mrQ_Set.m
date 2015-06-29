@@ -103,8 +103,8 @@ switch(param)
         mrQ.siemens=varargin;
     case {'siemensdicom'}
         mrQ.SiemensDicom=varargin;
-    case {'permution'}
-        mrQ.permution=varargin;
+    case {'permutation'}
+        mrQ.permutation=varargin;
     case {'inputdata_seir'}
         mrQ.inputdata_seir=varargin;
     case {'inputdata_spgr'}

@@ -94,7 +94,7 @@ if setDefault
     mrQ.refIm=[];
     mrQ.skip=[];
     
-    mrQ.permution=false;
+    mrQ.permutation=false;
     % Create a cell array for the SPGR series numbers:
     mrQ.SPGR_seriesNumbers = {};
     

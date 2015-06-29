@@ -245,7 +245,7 @@ if  (mrQ.coilWeights==1 && mrQ.coilNum(1)>8  && mrQ.SPGR_coilWeight_done==0)
     
     fprintf('\n Determining optimal coil weighting...\n');
     % Should this return the new structure with the weighting applied?
- mrQ_multicoilWeighting_phantoms(mrQ.spgr_initDir,mrQ.SPGR_niiFile,mrQ.SPGR_niiFile_FA,mrQ.permution)
+ mrQ_multicoilWeighting_phantoms(mrQ.spgr_initDir,mrQ.SPGR_niiFile,mrQ.SPGR_niiFile_FA,mrQ.permutation)
 
     mrQ.SPGR_coilWeight_done=1;
     fprintf('\n SPGR  coil weighting - done!               \n');

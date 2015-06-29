@@ -99,7 +99,7 @@ for j=1:numel(FAU)
     refIM = readFileNifti(ref);
     
     % niifile here is the raw image???
-    s1 = makeStructFromNifti(niifile{nk},-1,[],mrQ.permution);
+    s1 = makeStructFromNifti(niifile{nk},-1,[],mrQ.permutation);
 
     channels = length(s1)-1;
     [s11,xform1 s1] = relaxAlignAll_multichanels(s1(channels+1), refIM, mmPerVox, true, 1,s1(1:channels));

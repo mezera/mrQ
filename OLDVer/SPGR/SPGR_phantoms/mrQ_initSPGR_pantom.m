@@ -44,7 +44,7 @@ s = dicomLoadAllSeries(dicomDir);
 % Loop over niiFiles to get the data from the nifti and combine
 % with the dicom info - reshape and permute.
 for ii = 1:numel(niiFiles)
-    [ s1(ii)  mrQ.coilNum(ii)]= makeStructFromNifti(niiFiles{ii},-2,s(ii),mrQ.permution);
+    [ s1(ii)  mrQ.coilNum(ii)]= makeStructFromNifti(niiFiles{ii},-2,s(ii),mrQ.permutation);
     s1(ii).imData=double(s1(ii).imData);
     
     % consider add those for canonical corditate space
@@ -80,7 +80,7 @@ fprintf('\nDetermining optimal coil weighting...\n');
 % Should this return the new structure with the weighting applied?
 
 %% i need to this in manual or no alignment way ...
-%     mrQ_multicoilWeighting_phantoms(outDir,niiFiles,flipAngles,permution);
+%     mrQ_multicoilWeighting_phantoms(outDir,niiFiles,flipAngles,permutation);
 
 
 mrQ.spgr_initDir=outDir;

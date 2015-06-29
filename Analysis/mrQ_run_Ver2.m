@@ -41,6 +41,7 @@ end
 
 %% arrange data
 % Specific arrange function for nimsfs nifti or using input for user
+
 if ~isfield(mrQ,'Arange_Date');
     
     if (~notDefined('inputData_spgr') &&  ~notDefined('inputData_seir'))
@@ -55,8 +56,8 @@ end
 %% fit SEIR   
 
 if notDefined('B1file') 
-    % check if B1 was defined by the user. if not we will use the SEIR data
-    % to map it.
+    % checks if B1 was defined by the user.
+%     if not we will use the SEIR data to map it.
 
     if isfield(mrQ,'SEIR_done');
     else
@@ -65,7 +66,7 @@ if notDefined('B1file')
     
     if (mrQ.SEIR_done==0);
         
-        %keep track of the variable we use  for detail see inside the function
+        % keeps track of the variables we use  for detail see inside the function
         [~, ~, ~, mrQ.SEIRsaveData]=mrQ_initSEIR_ver2(mrQ,mrQ.SEIRepiDir,mrQ.alignFlag);
         
         [mrQ]=mrQ_fitSEIR_T1(mrQ.SEIRepiDir,[],0,mrQ);

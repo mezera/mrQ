@@ -37,7 +37,7 @@ function mrQ = mrQ_Set(mrQ,param,varargin,saveflag)
 % spgr_pdfit_done                     1 to skip PD fit0 to redo it
 %spgr_pdbuild_done                1 to skip PD fit0 to redo it
 %
-% ...                  - cheack code for others
+% ...                  - check code for others
 %
 % example:
 % mrQ = mrQ_Set(mrQ,,'raw','/biac2/wandell2/data/WMDevo/ambliopia/sub7/QuantativeImaging/20121102_3488')
@@ -83,8 +83,8 @@ switch(param)
         mrQ.mmPerVox=varargin;
     case {'skip'}
         mrQ.skip=varargin;
-    case {'cheack','check'}
-        mrQ.cheack=varargin;
+    case {'check'}
+        mrQ.check=varargin;
     case {'lsq', 'lsqfit'}
         mrQ.lsq=varargin;
     case {'runfreesurfer' }

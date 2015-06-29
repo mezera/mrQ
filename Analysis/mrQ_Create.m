@@ -100,7 +100,7 @@ if setDefault
     
     %% for debugging
     % brake and checks
-%     mrQ.cheack=0;
+%     mrQ.check=0;
 %     mrQ.brakeAfterVisualization=0;
 %     mrQ.brakeAfterT1=0;
 %     mrQ.viewbrake=0;

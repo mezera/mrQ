@@ -39,7 +39,7 @@ j=0;
 st=1 +(jobindex-1)*jumpindex;
 ed=st+jumpindex-1;
 
-%cheack that this box have brain data
+%check that this box have brain data
 if ed>length(opt.wh), ed=length(opt.wh);end;
 
 nIteration=ed-st+1;

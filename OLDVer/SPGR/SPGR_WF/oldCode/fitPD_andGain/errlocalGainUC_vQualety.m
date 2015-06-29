@@ -58,7 +58,7 @@ coils=length(find(nopossible==0));
 %we mesure the error
 err1=(((Val - repmat(mean(Val,2),1,coils)) )./repmat(mean(Val,2),1,coils));
 
-%cheack the mean and std
+%check the mean and std
 stds=std(err1);
 Mstd=median(stds);
 % is a coil is off then this is a bad fit

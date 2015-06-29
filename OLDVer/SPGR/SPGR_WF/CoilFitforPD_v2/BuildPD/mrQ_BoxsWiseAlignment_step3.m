@@ -88,7 +88,7 @@ while any (ToDo==1)
     clear MMi
     %avrage the estimations
     Im=nanmedian(MMii,2);
-    % cheack that the estimation are not wildly different
+    % check that the estimation are not wildly different
     ImS=nanstd(MMii,[],2);
     good=(ImS./Im)<errTres;
     Im=Im(good);
@@ -97,7 +97,7 @@ while any (ToDo==1)
     VxUsed(DoNow,1)=length(use);
     
     % add the new voxel to the great M0 image
-    if doneSt==0 % cheack if this is the first time we addthe  voxels
+    if doneSt==0 % check if this is the first time we addthe  voxels
         doneSt=1;
         M0(use)=Im;
         Wait(use)=1;

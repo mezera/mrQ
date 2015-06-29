@@ -497,7 +497,7 @@ PDcombineInfo.meadianFile=PDfile2;
 %              [M0f errVal controlmask donemask Avmap1 skipf]=InitializeBoxfit(controlmask1,controlmask,donemask,M,opt,Fits,CoilsList,coils,sqrtF);
 % if skipf==0
 %              
-%  %       cheack=errVal/errVal1;
+%  %       check=errVal/errVal1;
 % 
 %     wh1=find(M0ft>0);
 %     wh0=find(M0f>0);

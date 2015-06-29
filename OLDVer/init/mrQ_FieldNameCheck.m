@@ -1,5 +1,5 @@
 function mrQ=mrQ_FieldNameCheck(mrQ)
-% this function cheack competability of the mrQ stracturte. some feilled
+% this function check competability of the mrQ stracturte. some feilled
 % name change and this is a fix to the old starctures;
 
 if (~isfield(mrQ,'SPGR_init_done')) && isfield(mrQ,'SPGR_init') 

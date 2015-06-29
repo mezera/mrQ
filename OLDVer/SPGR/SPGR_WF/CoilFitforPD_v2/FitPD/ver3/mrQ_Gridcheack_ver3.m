@@ -1,4 +1,4 @@
-function PDGridFit_done=mrQ_Gridcheack_ver3(opt_Log_name,SunGrid,proclus)
+function PDGridFit_done=mrQ_Gridcheck_ver3(opt_Log_name,SunGrid,proclus)
 %%
 % This loop checks if all the outputs have been saved or waits until
 % they are all done, it it's too long run again
@@ -32,12 +32,12 @@ while PDGridFit_done~=true
         % Once we have collected all the nodes we delete the sge outpust
         eval(['!rm -f ~/sgeoutput/*' sgename '*'])
     else
-        % cheack if ther are jobs on the sun grid que list
+        % check if ther are jobs on the sun grid que list
         qStatCommand    = [' qstat | grep -i  job_' sgename(1:6)];
         [status result] = system(qStatCommand);
         tt=toc;
         if (isempty(result) && tt>60)
-            % cheack if 1 min pass and there are no job waiting to be finish (and we don't have all the jobdone)
+            % check if 1 min pass and there are no job waiting to be finish (and we don't have all the jobdone)
             %then we will need to re run it.
             
             RunSelectedJob=true;

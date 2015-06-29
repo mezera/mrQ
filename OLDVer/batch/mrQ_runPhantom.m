@@ -12,7 +12,7 @@ function mrQ_runPhantom(mrQfileName,clobber)
 %                       data.the function assume the data are arrange in the same way as it is in the Stanford CNI magnet.
 %                       the data should be saved as niifti files and a dicom directory with dicom are also exist.
 %                       This convention may be different for each scanner.
-%                       It is good idea to cheack this and maybe arrange the data with this conventions or edit the first function that call the raw directory ( mrQ_arrangeData.m)
+%                       It is good idea to check this and maybe arrange the data with this conventions or edit the first function that call the raw directory ( mrQ_arrangeData.m)
 %
 %   arangeRawFlag     - Needs to be 1 to move every file from the original
 %                       magnet directory (dataDir) to a raw directory
@@ -45,7 +45,7 @@ function mrQ_runPhantom(mrQfileName,clobber)
 %                       nii.gz format. if this is not provied then freesurfer segmentation on a
 %                       syntetic T1w image that we will calculate from the data. or on the refImg if it been provided. the freesurfer
 %                       segmentation may take 24 hours. freesurfer segmentation may failed and
-%                       the user need to cheack if it is.
+%                       the user need to check if it is.
 %
 %   channels          - A 1xN array (where N is the number of series). If
 %                       any of the SPGR data has multi-channel dicoms make

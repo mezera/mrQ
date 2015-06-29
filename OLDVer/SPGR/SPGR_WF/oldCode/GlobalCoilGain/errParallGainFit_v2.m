@@ -122,7 +122,7 @@ err22 = (abs(err22))*correlationPenalty;
 %err = err1*(1+err2);
 %err = err1*(1+err22);
 
-%% cheack for crazy fit
+%% check for crazy fit
 %let not alow minos brain!!!
 err3=0;
 if find(box<0) ; err3=mean(box(box<0));

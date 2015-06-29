@@ -189,15 +189,15 @@ if ~all(te == te(1))
 end
 
 
-if ~isfield(mrQ,'cheack')
-    mrQ.cheack=0;
+if ~isfield(mrQ,'check')
+    mrQ.check=0;
 end
 
 if exist('skip','var')
     t1Inds(skip) = 0;
 end
 
-if mrQ.cheack==1
+if mrQ.check==1
     for f = 1:numel(s(t1Inds)),
         showMontage(s(f).imData,[],[],[],[],10);
         

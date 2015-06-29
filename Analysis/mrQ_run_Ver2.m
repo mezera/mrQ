@@ -1,16 +1,32 @@
 function mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_seir,B1file)
-% mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_seir)
-%mrQ_runNIMS(dir,Callproclus,refFile,outDir)
-%dir - where the nifti from NIMS are.
-% % % % %Callproclus use 1 when using proclus (stanfrod computing cluster)
-%refFile a path to a reference image (nii.gz)
-%outDir  where the output will be saved (defult is: pwd/mrQ)
-
+%  mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_seir,B1file)
+%  this is an improved version of: mrQ_runNIMS(dir,Callproclus,refFile,outDir)
 %
+%    INPUT:
+%
+%       dir:     where the nifti from NIMS are.
+%       outDir:  where the output will be saved (defult is: pwd/mrQ)
+%       useSUNGRID:
+%       % %%% Callproclus use 1 when using proclus (stanfrod computing cluster)
+%       refFile: path to a reference image (nii.gz)
+%       inputData_spgr:
+%       inputData_seir:
+%       B1file:
+% 
+%   OUPUT:
+%       This function creates and saves the mrQ strucure to the subject???s directory.
+%       New directories will be created, including directories for data and quantitative fits.
+%       Images will be register to each other.
+%       SEIR-EPI T1 will be computed (low resultion)
+%       SPGR T1, M0, B1 maps, and a synthetic T1-weighted image, will be computed.
+%       T1-weighted and quantitative T1 images will be combined to segment the brain tissue.
+%`      PD and coil gain will be fit from the M0 image.
+%       Biophysical model will be applied to calculate VIP and SIR maps.
+% %
+% 
 
+%% Create the initial structure
 
-%%
-% Create the initial structure
 if notDefined('outDir')
     outDir = fullfile(dir,'mrQ');
 end %creates the name of the output directory
@@ -41,7 +57,8 @@ end
 
 %% arrange data
 % Specific arrange function for nimsfs nifti or using input for user
-if ~isfield(mrQ,'Arange_Date');
+
+if ~isfield(mrQ,'Arrange_Date');
     
     if (~notDefined('inputData_spgr') &&  ~notDefined('inputData_seir'))
         mrQ = mrQ_arrangeData_nimsfs(mrQ,inputData_spgr,inputData_seir);
@@ -50,14 +67,14 @@ if ~isfield(mrQ,'Arange_Date');
         
     end
 else
-    fprintf('data was already arranged at %s \n',mrQ.Arange_Date)
+    fprintf('data was already arranged at %s \n',mrQ.Arrange_Date)
 end
-%% fit SEIR   
+%% fit SEIR
 
-if notDefined('B1file') 
-    % check if B1 was defined by the user. if not we will use the SEIR data
-    % to map it.
-
+if notDefined('B1file')
+    % checks if B1 was defined by the user.
+    %     if not we will use the SEIR data to map it.
+    
     if isfield(mrQ,'SEIR_done');
     else
         mrQ.SEIR_done=0;
@@ -65,7 +82,7 @@ if notDefined('B1file')
     
     if (mrQ.SEIR_done==0);
         
-        %keep track of the variable we use  for detail see inside the function
+        % keeps track of the variables we use  for detail see inside the function
         [~, ~, ~, mrQ.SEIRsaveData]=mrQ_initSEIR_ver2(mrQ,mrQ.SEIRepiDir,mrQ.alignFlag);
         
         [mrQ]=mrQ_fitSEIR_T1(mrQ.SEIRepiDir,[],0,mrQ);
@@ -80,8 +97,8 @@ if notDefined('B1file')
     end
     
 end
-    
-    
+
+
 %% intiate and  Align SPGR
 %  param for Align SPGR
 
@@ -110,7 +127,7 @@ end
 %%  Fit SPGR PD
 
 if ~isfield(mrQ,'SPGR_LinearT1fit_done');
-
+    
     mrQ.SPGR_LinearT1fit_done=0;
 end
 
@@ -118,7 +135,7 @@ end
 if (mrQ.SPGR_LinearT1fit_done==0);
    
       [mrQ]=mrQfit_T1M0_Lin(mrQ);
-    
+
     mrQ.SPGR_LinearT1fit_done=1;
     
     save(mrQ.name,'mrQ');
@@ -159,16 +176,16 @@ end
 
 if ( mrQ.B1Build_done==0)
     
-
- mrQ=mrQ_B1_LR(mrQ);
-
-    else
-        fprintf(['Using the  B1  map  file '   mrQ.B1FileName        '  \n');
-        
-    end
     
+    mrQ=mrQ_B1_LR(mrQ);
+    
+else
+    fprintf(['Using the  B1  map  file '   mrQ.B1FileName        '  \n']);
+    
+end
 
-% 
+
+%
 %% T1M0 fit with B1
 if ~isfield(mrQ,'SPGR_T1fit_done');
     mrQ.SPGR_T1fit_done=0;
@@ -198,15 +215,15 @@ if ~isfield(mrQ,'synthesis')
     mrQ.synthesis=0;
 end
 if mrQ.synthesis==0
-
+    
     % [mrQ.SegInfo.T1wSynthesis,mrQ.SegInfo.T1wSynthesis1] =mrQ_T1wSynthesis1(mrQ,mrQ.WFfile,mrQ.T1file,mrQ.BrainMask);
-[mrQ.SegInfo.T1wSynthesis_MOT1,mrQ.SegInfo.T1wSynthesis_T1] =mrQ_T1wSynthesis1(mrQ,mrQ.M0_LFit_HM,mrQ.T1_LFit_HM,mrQ.HeadMask,mrQ.spgr_initDir);
-
-mrQ.synthesis=1;
-save(mrQ.name, 'mrQ')
-
-fprintf('\n Synthesis of T1  - done!              \n');
-else 
+    [mrQ.SegInfo.T1wSynthesis_MOT1,mrQ.SegInfo.T1wSynthesis_T1] =mrQ_T1wSynthesis1(mrQ,mrQ.M0_LFit_HM,mrQ.T1_LFit_HM,mrQ.HeadMask,mrQ.spgr_initDir);
+    
+    mrQ.synthesis=1;
+    save(mrQ.name, 'mrQ')
+    
+    fprintf('\n Synthesis of T1  - done!              \n');
+else
     fprintf('\n using previously synthesized T1              \n');
 end
 
@@ -214,31 +231,31 @@ end
 % save(infofile,'AnalysisInfo');
 
 %%
-%. Segmentaion and CSF
-if ~isfield(mrQ,'segmentaion');
-    mrQ.segmentaion=0;
+%. Segmentation and CSF
+if ~isfield(mrQ,'segmentation');
+    mrQ.segmentation=0;
 end
 
-if mrQ.segmentaion==0;
+if mrQ.segmentation==0;
     
     %     default- fsl segmentation
     if (mrQ.runfreesurfer==0 && ~isfield(mrQ,'freesurfer'))
         % Segment the T1w by FSL (step 1) and get the tissue mask (CSF WM GM) (step 2)
-%         mrQ=mrQ_segmentT1w2tissue(mrQ,BMfile,T1file,t1wfile,outDir,csffile,boxsize)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%% this doesn't work yet because the function is
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%% calling non existent fields and files
+        %         mrQ=mrQ_segmentT1w2tissue(mrQ,BMfile,T1file,t1wfile,outDir,csffile,boxsize)
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%% this doesn't work yet because the function is
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%% calling non existent fields and files
         mrQ=mrQ_segmentT1w2tissue(mrQ,[],mrQ.SegInfo.T1wSynthesis_T1);
-        mrQ.segmentaion=1;
+        mrQ.segmentation=1;
         
         %      run FreeSurfer : it is slow and needs extra defintions.
     elseif (mrQ.runfreesurfer==1)
         mrQ=mrQ_Complitfreesurfer(mrQ);
-        mrQ.segmentaion=1;
+        mrQ.segmentation=1;
         
         %      use an uploaded freesurfer nii.zg
     elseif   isfield(mrQ,'freesurfer');
         [mrQ.SegInfo]=mrQ_CSF(mrQ.spgr_initDir,mrQ.freesurfer,[],mrQ.AnalysisInfo);
-        mrQ.segmentaion=1;
+        mrQ.segmentation=1;
         
     end
     save(mrQ.name,'mrQ');
@@ -268,11 +285,11 @@ end
 
 
 %% Organize the OutPut  directory
-mrQ=mrQ_arangeOutPutDir(mrQ);
+mrQ=mrQ_arrangeOutPutDir(mrQ);
 
 %%  Create a series of synthetic T1w images
 
- [mrQ.T1w_file,mrQ.T1w_file1] =mrQ_T1wSynthesis1(mrQ);
+[mrQ.T1w_file,mrQ.T1w_file1] =mrQ_T1wSynthesis1(mrQ);
 %done
 mrQ.AnalysisDone=1;
 mrQ.AnalysisDoneDate=date;

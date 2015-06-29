@@ -204,14 +204,6 @@ mrQ = mrQ_arrangeData_nimsfs(mrQ,inputData_spgr,inputData_seir);
 mrQ_run(mrQ.name)
 ```
 
-##### visualization #####
-To interactively watch the data, after it's been aligned, define a *check* field and set it to 1. 
-(It will activate the interaction in mrQ_initSPGR_ver2.m)
-
-##### alignment #####
-The default alignment of the images is an automatic acpc alignment. 
-It can be semi-mannual or non-acpc. Settings can be changes when calling mrQ_run or by changing the settings later with mrQ_set.
-
 ##Versions##
 Version 1 (v.1) is the code to replicate that was used in Nature medicine mezer at. el. 2013 article: https://github.com/mezera/mrQ/tree/v1.0
 

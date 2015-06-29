@@ -5,9 +5,9 @@ if isfield(mrQ,'freesurfer')
     fprintf('\n load freesurfer seqmwntation file                \n ');
     
     
-else %we need to get the freesufer segmentaion here or to run it now
+else %we need to get the freesufer segmentation here or to run it now
     c=clock;
-    fprintf(['\n' date  ' ' num2str(c(4)) ':'  num2str(c(5))  ' working to get  the freesurfer segmentaion; this can take time               \n'  ])
+    fprintf(['\n' date  ' ' num2str(c(4)) ':'  num2str(c(5))  ' working to get  the freesurfer segmentation; this can take time               \n'  ])
     subjID=['freesufer_' mrQ.AnalysisInfo.sub];
     
     if isfield(mrQ.AnalysisInfo,'freeSufer_subdir')  %freesurfer of the syntetic T1w image (was was start  inside mrQfit_T1M0_ver2.m)
@@ -72,7 +72,7 @@ end
 if (mrQ.FITCSF==0);
     fprintf('finding the CSF               ');
     
-    % use thefreesurfer  segmentaion
+    % use thefreesurfer  segmentation
     [mrQ.AnalysisInfo]=mrQ_CSF(mrQ.spgr_initDir,mrQ.freesurfer);
     mrQ.FITCSF=1;
     save(mrQ.name,'mrQ');

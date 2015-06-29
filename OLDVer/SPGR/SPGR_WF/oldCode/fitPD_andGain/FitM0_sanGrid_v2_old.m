@@ -40,7 +40,7 @@ j=0;
 st=1 +(jobindex-1)*jumpindex;
 ed=st+jumpindex-1;
 
-%cheack that this box have brain data
+%check that this box have brain data
 if ed>length(opt{1}.wh), ed=length(opt{1}.wh);end;
 
 %load the multi coil information
@@ -88,7 +88,7 @@ for i= st:ed,
     % get all the relevant box information raday to be fitted
     [x01,inDat1,bm1,szB,skip(nn) coils_list]= mrQM0fitini_Param_v(opt{1},fb(i,:),M,coils);
     
-    %cheack that there is usabale coils information if not we won't fit this box 
+    %check that there is usabale coils information if not we won't fit this box 
     if (size(inDat1,2))<4 
         skip(nn)=1;
         %no point to try; there is no data to even try to fit (less then 4 coil usefull data).
@@ -121,7 +121,7 @@ for i= st:ed,
                 next=next+1;
             end;
             
-                %cheack again that there is usabale coils information if not we won't fit this box 
+                %check again that there is usabale coils information if not we won't fit this box 
             if length(use)>=4 
                 useOLD=use;
                         %Fit the data this with  a nested function (below)

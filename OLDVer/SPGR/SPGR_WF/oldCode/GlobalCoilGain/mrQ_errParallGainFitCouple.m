@@ -104,7 +104,7 @@ err2 = abs(err2)*correlationPenalty;
 % Could be err1 + correlationPenalty*err2  
 err = err1*(1+err2);
 
-%% cheack for crazy fit
+%% check for crazy fit
 %let not alow minos brain!!!
 err3=0;
 if find(box<0) ; err3=mean(box(box<0));end

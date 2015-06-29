@@ -65,13 +65,13 @@ for ii=BoxesToUse
     %if it less then Zerow it is just wrong
     mask=PD>0; 
     
-    % cheack that the between coil error is minimal
+    % check that the between coil error is minimal
     PDC=M0_v(:,Clist)./G;
     EstimateErr=std(PDC./repmat(mean(PDC,2),1,size(PDC,2)),[],2);
     mask=mask & EstimateErr<0.08;
     
            PDSTD=std(PD(mask));
-% cheack that there is no outlayer voxels
+% check that there is no outlayer voxels
     mask=mask & PD<PD+3*PDSTD & PD>PD-3*PDSTD ;
     
   
@@ -94,7 +94,7 @@ for ii=BoxesToUse
     Boxes(ii).XX=XX;
     Boxes(ii).YY=YY;
     Boxes(ii).ZZ=ZZ;
-    % cheack for coralation role
+    % check for coralation role
     if length(SZ)==4
     Mc=corrcoef(M0_v(:,Clist));Gc=corrcoef(G(:,Clist));
     Bad= find(Mc<Gc);
@@ -102,7 +102,7 @@ for ii=BoxesToUse
         Bad=[];
     end
     
-    %% cheack for STD error
+    %% check for STD error
     if length(SZ)==4
     W=mean(M0_v(mask,useCoil),2)./Ncoils;
     Dat=sum(M0_v(mask,useCoil).*repmat(W,1,Ncoils),2);
@@ -114,7 +114,7 @@ if DatSTD*1.1<PDSTD,UnSTDBoxs(ii)=1;end
     UnSTDBoxs(ii)=0;    
     end
     
-    %cheack for bad solotion negative PD. 
+    %check for bad solotion negative PD. 
     if     length(find(mask))/length(mask)<0.5 
 %        if there 50% negative value it clearly a wrong solotion
          Boxes(ii).NegativeBad=1;
@@ -132,7 +132,7 @@ if DatSTD*1.1<PDSTD,UnSTDBoxs(ii)=1;end
           
     end
     
-    % cheack if the M0 vector are more colralated the the G. they must be
+    % check if the M0 vector are more colralated the the G. they must be
     % or the sulotion is wrong
     if isempty(Bad)
         Boxes(ii).Corgood=1;

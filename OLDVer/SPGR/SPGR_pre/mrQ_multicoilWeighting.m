@@ -104,7 +104,7 @@ for j=1:numel( FAU)
         
         % Get the data from the nifti into a struct- (s1) Now the data will be
         % in a structure with separate entries for each channel (-1 flag).
-        s1 = makeStructFromNifti(niiFile{nk},-1,[],mrQ.permution);
+        s1 = makeStructFromNifti(niiFile{nk},-1,[],mrQ.permutation);
          
         % The number of channels in the coil (It comes up +1 why?) --> becouse
         % the scanner save also the combine image

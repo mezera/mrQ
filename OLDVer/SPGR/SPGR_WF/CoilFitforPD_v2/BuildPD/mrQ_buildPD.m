@@ -3,7 +3,7 @@ function opt=mrQ_buildPD(opt_Log_name,csffile,segfile,RepErrTreshold,PrcCutOff,E
 %and join them back to a PD map and calculate the WF map. Strfilenameis the log file of the parralel fits.
 %   opt=mrQ_buildPD(opt_Log_name,csffile,segfile)
 % building the WF is done is 6 steps:
-% step 0: loop and load all the fitted data of the different boses. and cheack which of them have data
+% step 0: loop and load all the fitted data of the different boses. and check which of them have data
 % step 1- get the x,y,z and pd values of the boxes.        --> mrQ_CalBoxPD_step1.m
 % step 2 - % find the scaler btween each boxes PD      --> mrQ_ScaleBoxes_step2.m
 % step 3 - join the boxes to an PD image.                     --> mrQ_BoxsWiseAlignment_step3.m

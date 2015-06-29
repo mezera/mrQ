@@ -32,12 +32,12 @@ function mrQ = mrQ_Set(mrQ,param,varargin,saveflag)
 % spgr_init_done                      1 to skip the spgr init stepor 0 to redo it
 % spgr_coilweight_done           1 to skip wighting 0 to redo it
 % spgr_t1fit_done                      1 to skip T1 fit SPGR 0 to redo it
-% segmentaion                            1 to skip segmentaion 0 to redo it
+% segmentation                            1 to skip segmentation 0 to redo it
 %  calm0_done                           1 to skip M0 claculation 0 to redo it
 % spgr_pdfit_done                     1 to skip PD fit0 to redo it
 %spgr_pdbuild_done                1 to skip PD fit0 to redo it
 %
-% ...                  - cheack code for others
+% ...                  - check code for others
 %
 % example:
 % mrQ = mrQ_Set(mrQ,,'raw','/biac2/wandell2/data/WMDevo/ambliopia/sub7/QuantativeImaging/20121102_3488')
@@ -83,8 +83,8 @@ switch(param)
         mrQ.mmPerVox=varargin;
     case {'skip'}
         mrQ.skip=varargin;
-    case {'cheack','check'}
-        mrQ.cheack=varargin;
+    case {'check'}
+        mrQ.check=varargin;
     case {'lsq', 'lsqfit'}
         mrQ.lsq=varargin;
     case {'runfreesurfer' }
@@ -103,8 +103,8 @@ switch(param)
         mrQ.siemens=varargin;
     case {'siemensdicom'}
         mrQ.SiemensDicom=varargin;
-    case {'permution'}
-        mrQ.permution=varargin;
+    case {'permutation'}
+        mrQ.permutation=varargin;
     case {'inputdata_seir'}
         mrQ.inputdata_seir=varargin;
     case {'inputdata_spgr'}
@@ -117,8 +117,8 @@ switch(param)
         mrQ.SPGR_coilWeight_done=varargin;
     case{ 'spgr_t1fit_done'}
         mrQ.SPGR_T1fit_done=varargin;
-    case{ 'segmentaion','seg'}
-        mrQ.segmentaion=varargin;
+    case{ 'segmentation','seg'}
+        mrQ.segmentation=varargin;
     case{ 'calm0_done'}
         mrQ.calM0_done=varargin;
     case{ 'spgr_pdfit_done'}

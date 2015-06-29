@@ -94,13 +94,13 @@ if setDefault
     mrQ.refIm=[];
     mrQ.skip=[];
     
-    mrQ.permution=false;
+    mrQ.permutation=false;
     % Create a cell array for the SPGR series numbers:
     mrQ.SPGR_seriesNumbers = {};
     
     %% for debugging
     % brake and checks
-%     mrQ.cheack=0;
+%     mrQ.check=0;
 %     mrQ.brakeAfterVisualization=0;
 %     mrQ.brakeAfterT1=0;
 %     mrQ.viewbrake=0;
@@ -110,7 +110,7 @@ if setDefault
     mrQ.LW=true;  %or the WL fits
     
     %% Segmentation
-    mrQ.segmentaion=false;
+    mrQ.segmentation=false;
     mrQ.runfreesurfer=false; % the defult is FSL
     
     %% fit PD

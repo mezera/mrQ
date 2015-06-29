@@ -11,7 +11,7 @@ function mrQ_runMT(mrQ)
 %                       data.the function assume the data are arrange in the same way as it is in the Stanford CNI magnet.
 %                       the data should be saved as niifti files and a dicom directory with dicom are also exist.
 %                       This convention may be different for each scanner.
-%                       It is good idea to cheack this and maybe arrange the data with this conventions or edit the first function that call the raw directory ( mrQ_arrangeData.m)
+%                       It is good idea to check this and maybe arrange the data with this conventions or edit the first function that call the raw directory ( mrQ_arrangeData.m)
 %
 %   arangeRawFlag     - Needs to be 1 to move every file from the original
 %                       magnet directory (dataDir) to a raw directory

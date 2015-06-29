@@ -140,7 +140,7 @@ if isfield(mrQ,'inputdata_spgr') %input of list of nifti file and the relevant s
     for ii = 1:numel(niiFiles)
         %  Load data from niftis - reshape and permute data (nifti) if needed
         
-        [s1(ii)]= makeStructFromNifti(niiFiles{ii},-2,s(ii),mrQ.permution);
+        [s1(ii)]= makeStructFromNifti(niiFiles{ii},-2,s(ii),mrQ.permutation);
     end
     clear s
     s = s1;
@@ -189,15 +189,15 @@ if ~all(te == te(1))
 end
 
 
-if ~isfield(mrQ,'cheack')
-    mrQ.cheack=0;
+if ~isfield(mrQ,'check')
+    mrQ.check=0;
 end
 
 if exist('skip','var')
     t1Inds(skip) = 0;
 end
 
-if mrQ.cheack==1
+if mrQ.check==1
     for f = 1:numel(s(t1Inds)),
         showMontage(s(f).imData,[],[],[],[],10);
         

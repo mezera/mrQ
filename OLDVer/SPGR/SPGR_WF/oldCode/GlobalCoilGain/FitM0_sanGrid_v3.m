@@ -41,7 +41,7 @@ j=0;
 st=1 +(jobindex-1)*jumpindex;
 ed=st+jumpindex-1;
 
-%cheack that this box have brain data
+%check that this box have brain data
 if ed>length(opt{1}.wh), ed=length(opt{1}.wh);end;
 
 %intilazie parameters and saved outputs

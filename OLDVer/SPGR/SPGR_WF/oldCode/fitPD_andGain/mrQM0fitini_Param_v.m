@@ -126,7 +126,7 @@ for i=1:outcoils,
 end;
 
 
-%cheack that we still have voxel to work with
+%check that we still have voxel to work with
 if (length(find(bm))<200 | outcoils==0) ;
     x0=0;known=0;inDat=0;bm=0;szB=0;skip=1;
     return
@@ -227,7 +227,7 @@ else
     cut=0.95;
 end
 
-%1. cheack for M0 coil coralation in the box
+%1. check for M0 coil coralation in the box
 % if the input are too corralate we don't won't them this is not adding
 % information but may add biases.
 
@@ -277,7 +277,7 @@ end
 % we avaluate the std of the fit small std mean easy to fir fit
 Mstd=median(stdC(logical(posible)));
 
-%no we go over coils and cheack
+%no we go over coils and check
 for i=1:outcoils;
  % no nuns please
     if (find(isnan(x0(i,:))))

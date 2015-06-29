@@ -276,7 +276,7 @@ clear inDat
 
 %ResVal=mean(Val,4);
 
-%cheack for variation in pd (some time we get crazy high or low values this
+%check for variation in pd (some time we get crazy high or low values this
 %then std is high and we don't want the box or at list the few voxel in it
 c=((std(Val,[],4)));
 box.Val=ResVal(bm);
@@ -343,7 +343,7 @@ function [mat err matdc]=mrQ_AvrageBox(boxs,mat,err,boxlist,matdc)
 %idea the box(i) -box(j)*scaler equal 0. we will build this eqation for all
 %the overlap boxes and solve them thogther in the end. (out side of this
 %function)
-%we will cheack that the align error after alignment with the scaler.
+%we will check that the align error after alignment with the scaler.
 %(big error mean bad aligment and therefor bad fit of one of the boxes). this is saved in an err
 %matrix that is in the same size of mat. the term err(i,j) is the error
 %between box i and j after the scaler alignment

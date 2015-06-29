@@ -81,11 +81,11 @@ for ii=BoxesToUse
     Boxes(ii).XX=XX;
     Boxes(ii).YY=YY;
     Boxes(ii).ZZ=ZZ;
-    % cheack for coralation role
+    % check for coralation role
     Mc=corrcoef(M0_v(:,useCoil));Gc=corrcoef(G);
     Bad= find(Mc<Gc);
     
-    %cheack for bad solotion negative PD. 
+    %check for bad solotion negative PD. 
     if     length(find(mask))/length(mask)<0.5 
 %        if there 50% negative value it clearly a wrong solotion
          Boxes(ii).NegativeBad=1;
@@ -94,7 +94,7 @@ for ii=BoxesToUse
          PositiveBoxs(ii)=1;
     end
     
-    % cheack if the M0 vector are more colralated the the G. they must be
+    % check if the M0 vector are more colralated the the G. they must be
     % or the sulotion is wrong
     if isempty(Bad)
         Boxes(ii).Corgood=1;

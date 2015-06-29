@@ -1,6 +1,6 @@
 function opt=mrQ_PD2WF_step5(opt,csffile,segfile)
 % opt=mrQ_PD2WF_step5(opt,csffile,segfile)
-% calculate Water fraction map from unclaibrated PD map using the segmentaion images
+% calculate Water fraction map from unclaibrated PD map using the segmentation images
 %
 % AM (C) Stanford University, VISTA
 

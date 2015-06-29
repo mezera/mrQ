@@ -81,7 +81,7 @@ for j=1:length(flip_Angles)
     end
   
     % niifile here is the raw image???
-    s1 = makeStructFromNifti(niifile{j},-1,[],mrQ.permution);
+    s1 = makeStructFromNifti(niifile{j},-1,[],mrQ.permutation);
     
    channels = length(s1)-1;
     

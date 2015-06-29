@@ -335,7 +335,7 @@ end
 % Check that the numel are the same.
 % fprintf('Verifying flipAngle ordering ...');
 %    
-% % i deside not to use this cheack for now
+% % i deside not to use this check for now
 % load (outFile)
 % 
 % for nn=1:numel(s)

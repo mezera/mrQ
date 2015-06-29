@@ -110,7 +110,7 @@ if setDefault
     mrQ.LW=true;  %or the WL fits
     
     %% Segmentation
-    mrQ.segmentaion=false;
+    mrQ.segmentation=false;
     mrQ.runfreesurfer=false; % the defult is FSL
     
     %% fit PD

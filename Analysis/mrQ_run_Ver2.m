@@ -165,7 +165,7 @@ if ( mrQ.B1Build_done==0)
  mrQ=mrQ_B1_LR(mrQ);
 
     else
-        fprintf(['Using the  B1  map  file '   mrQ.B1FileName        '  \n');
+        fprintf(['Using the  B1  map  file '   mrQ.B1FileName        '  \n']);
         
     end
     
@@ -216,12 +216,12 @@ end
 % save(infofile,'AnalysisInfo');
 
 %%
-%. Segmentaion and CSF
-if ~isfield(mrQ,'segmentaion');
-    mrQ.segmentaion=0;
+%. Segmentation and CSF
+if ~isfield(mrQ,'segmentation');
+    mrQ.segmentation=0;
 end
 
-if mrQ.segmentaion==0;
+if mrQ.segmentation==0;
     
     %     default- fsl segmentation
     if (mrQ.runfreesurfer==0 && ~isfield(mrQ,'freesurfer'))
@@ -230,17 +230,17 @@ if mrQ.segmentaion==0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% this doesn't work yet because the function is
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% calling non existent fields and files
         mrQ=mrQ_segmentT1w2tissue(mrQ,[],mrQ.SegInfo.T1wSynthesis_T1);
-        mrQ.segmentaion=1;
+        mrQ.segmentation=1;
         
         %      run FreeSurfer : it is slow and needs extra defintions.
     elseif (mrQ.runfreesurfer==1)
         mrQ=mrQ_Complitfreesurfer(mrQ);
-        mrQ.segmentaion=1;
+        mrQ.segmentation=1;
         
         %      use an uploaded freesurfer nii.zg
     elseif   isfield(mrQ,'freesurfer');
         [mrQ.SegInfo]=mrQ_CSF(mrQ.spgr_initDir,mrQ.freesurfer,[],mrQ.AnalysisInfo);
-        mrQ.segmentaion=1;
+        mrQ.segmentation=1;
         
     end
     save(mrQ.name,'mrQ');

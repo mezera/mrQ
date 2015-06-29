@@ -32,7 +32,7 @@ function mrQ = mrQ_Set(mrQ,param,varargin,saveflag)
 % spgr_init_done                      1 to skip the spgr init stepor 0 to redo it
 % spgr_coilweight_done           1 to skip wighting 0 to redo it
 % spgr_t1fit_done                      1 to skip T1 fit SPGR 0 to redo it
-% segmentaion                            1 to skip segmentaion 0 to redo it
+% segmentation                            1 to skip segmentation 0 to redo it
 %  calm0_done                           1 to skip M0 claculation 0 to redo it
 % spgr_pdfit_done                     1 to skip PD fit0 to redo it
 %spgr_pdbuild_done                1 to skip PD fit0 to redo it
@@ -117,8 +117,8 @@ switch(param)
         mrQ.SPGR_coilWeight_done=varargin;
     case{ 'spgr_t1fit_done'}
         mrQ.SPGR_T1fit_done=varargin;
-    case{ 'segmentaion','seg'}
-        mrQ.segmentaion=varargin;
+    case{ 'segmentation','seg'}
+        mrQ.segmentation=varargin;
     case{ 'calm0_done'}
         mrQ.calM0_done=varargin;
     case{ 'spgr_pdfit_done'}

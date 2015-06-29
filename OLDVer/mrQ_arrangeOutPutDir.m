@@ -1,5 +1,5 @@
-function mrQ=mrQ_arangeOutPutDir(mrQ)
-fprintf('\n orgenized the output directory                \n');
+function mrQ=mrQ_arrangeOutPutDir(mrQ)
+fprintf('\n organized the output directory                \n');
 
 upDir=fileparts(mrQ.name);
 OutPutNiiDirName=fullfile(upDir,'OutPutFiles');
@@ -22,7 +22,7 @@ end
 
 
 %%  orgnized the brain maps in a directory named maps
-fprintf('\n orgenized the maps in a maps directory                \n');
+fprintf('\n organized the maps in a maps directory                \n');
 mapDir=fullfile(mrQ.OutPutNiiDir,'BrainMaps');
 
 % if we redo it and maps dir is already exsist we will saved

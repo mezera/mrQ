@@ -118,7 +118,6 @@ end
 if (mrQ.SPGR_LinearT1fit_done==0);
    
       [mrQ]=mrQfit_T1M0_Lin(mrQ);
-%     [mrQ.AnalysisInfo]=mrQfit_T1M0_ver2(mrQ);
     
     mrQ.SPGR_LinearT1fit_done=1;
     
@@ -251,12 +250,6 @@ else
 end
 
 %% fitting PD from M0
-
-M0file=WEneedAFunction;
-
-
-% set parameters for the fit
-[mrQ.opt_logname]=mrQ_PD_multicoil_RgXv_GridCall_Fittesting(mrQ.spgr_initDir,mrQ.sub,mrQ.PolyDeg,M0file,T1file,BMfile,[],[],[],Coilsinfo,Reg,Init,[],mrQ);
 
 
 %%

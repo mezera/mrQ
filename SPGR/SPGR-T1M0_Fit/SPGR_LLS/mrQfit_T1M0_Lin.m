@@ -195,7 +195,7 @@ if~( exist(t1file,'file') &&  exist(M0file,'file')  && ~clobber),
     dtiWriteNiftiWrapper(single(M0), xform, M0file);
     
     mrQ.T1_LFit=t1file;
-    mrQ.M0_LFit_HM=M0file;
+    mrQ.M0_LFit=M0file;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     

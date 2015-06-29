@@ -101,9 +101,9 @@ resnormfile=[saveStr '_T1FitResid.nii.gz'];
 dtiWriteNiftiWrapper(single(ll_T1(:,:,:,1)), xform, T1file); %#ok<NODEF>
 dtiWriteNiftiWrapper(single(ll_T1(:,:,:,4)), xform, resnormfile);
 
-mrQ.T1file=T1file;
-mrQ.resnormfile=resnormfile;
-mrQ.saveStr=saveStr;
+mrQ.SEIR_epi_T1file=T1file;
+mrQ.SEIR_epi_resnormfile=resnormfile;
+mrQ.SEIR_epi_fitFile=saveStr;
 
 
 return

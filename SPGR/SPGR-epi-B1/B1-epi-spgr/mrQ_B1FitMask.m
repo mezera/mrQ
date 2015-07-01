@@ -28,6 +28,7 @@ clear ll_T1
 %the mask need to be without outlaier in SEIR fit.
 % here we remove the voxels with big residual in SEIR fit
 brainMask=~isinf(SEIRResid) & SEIRResid>0 & brainMask;
+brainMask_copy=brainMask;
 brainMask=brainMask & SEIRResid<prctile(SEIRResid(brainMask),95) ;
 
 %% MAASK BY registration qulaty and warp values
@@ -59,8 +60,8 @@ WarpZ=fullfile(dirAnts,'WARP_SPGR_EPI_RBWarpzvec.nii.gz');WarpZ=readFileNifti(Wa
 end
     
 %% mask by warp   
-brainMask=tt   & b_fitparam>prctile(b_fitparam(tt),5) &a_fitparam<prctile(a_fitparam(tt),95)& a_fitparam>prctile(a_fitparam(tt),5) &b_fitparam<prctile(b_fitparam(tt),95) & ...
-    WarpZ< prctile(WarpZ(tt),98) & WarpZ> prctile(WarpZ(tt),2) & WarpY< prctile(WarpY(tt),98) & WarpY> prctile(WarpY(tt),2)  & WarpX< prctile(WarpX(tt),98) & WarpX> prctile(WarpX(tt),2)  ;
+brainMask=brainMask   & b_fitparam>prctile(b_fitparam(brainMask_copy),5) &a_fitparam<prctile(a_fitparam(brainMask_copy),95)& a_fitparam>prctile(a_fitparam(brainMask_copy),5) &b_fitparam<prctile(b_fitparam(brainMask_copy),95) & ...
+    WarpZ< prctile(WarpZ(brainMask_copy),98) & WarpZ> prctile(WarpZ(brainMask_copy),2) & WarpY< prctile(WarpY(brainMask_copy),98) & WarpY> prctile(WarpY(brainMask_copy),2)  & WarpX< prctile(WarpX(brainMask_copy),98) & WarpX> prctile(WarpX(brainMask_copy),2)  ;
 
 %% SAVE
 if notDefined('outDir')

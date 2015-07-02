@@ -32,7 +32,7 @@ if ( mrQ.B1fit_done==0)
     
     
     %check that the fit is done (for SGE )  before you move on (while loop)
-    mrQ. B1fit_done=mrQ_Gridcheack(mrQ.B1.logname,mrQ.SunGrid,3);
+    mrQ. B1fit_done=mrQ_Gridcheck(mrQ.B1.logname,mrQ.SunGrid,3);
     
     save(mrQ.name,'mrQ');
     

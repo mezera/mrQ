@@ -17,7 +17,10 @@ if ( mrQ.B1fit_done==0)
     
     
     % we build a mask for the voxel we like to fit with in epi space
-[mrQ.maskepi_File] = mrQ_B1FitMask(mrQ.Ants_Info.dirAnts,mrQ.spgr2epiAlignFile,mrQ.SEIR_epi_fitFile,mrQ.spgr_initDir);
+% [mrQ.maskepi_File] = mrQ_B1FitMask(mrQ.Ants_Info.dirAnts,mrQ.spgr2epiAlignFile,mrQ.SEIR_epi_fitFile,mrQ.spgr_initDir);
+% shai : there is not DirAnts in the Ants_Info, looks like you meant te
+% directory where the aligned and warped files are.. 
+[mrQ.maskepi_File] = mrQ_B1FitMask(mrQ.spgr_initDir,mrQ.spgr2epiAlignFile,mrQ.SEIR_epi_fitFile,mrQ.spgr_initDir);
 
     
     %define the fit parameters

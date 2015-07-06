@@ -10,16 +10,16 @@ pixdim=B1.pixdim;   xform=B1.qto_xyz;
 B1=double(B1.data);
 
 resnormMap=readFileNifti(mrQ.B1.resnormFileName);   resnormMap=double(resnormMap.data);
-UseVoxNMap=readFileNifti(AmrQ.B1.NvoxFileName);     UseVoxNMap=double(UseVoxNMap.data);
+UseVoxNMap=readFileNifti(mrQ.B1.NvoxFileName);     UseVoxNMap=double(UseVoxNMap.data);
 
 
 %% we will smooth and interpulate/exstapulate the values to have solution in every location
-%the fit error rensorm (sum of error) devided by number of voxels
+%the fit error resnorm (sum of error) devided by number of voxels
 errMap=(resnormMap./UseVoxNMap);
 
-tisuuemask=resnormMap>0;
+tissuemask=resnormMap>0;
 % don't use the misfit location
-tisuuemask=tisuuemask & errMap< prctile(errMap(tisuuemask),95);
+tissuemask=tissuemask & errMap< prctile(errMap(tissuemask),95);
 
 
 
@@ -30,21 +30,21 @@ tisuuemask=tisuuemask & errMap< prctile(errMap(tisuuemask),95);
 %(<45% ) of the area under the filter
 %local information
 
-%2. we fit  the others that are posible but with less confidance with
-%more smooth (biger filter
+%2. we fit  the others that are possible but with less confidence with
+%more smooth (bigger filter)
 
 %3. the one that are out of reach for local regration will be fitted by
 %global polynomyial along the full B1 space (like a fillter along the all B1 map)
 
-B1Fit=zeros(size(tisuuemask));
+B1Fit=zeros(size(tissuemask));
 
 
-sz=size(tisuuemask);
+sz=size(tissuemask);
 tt=ones(sz);
 
 %%%
-%1. we check the local information by compareing to covariance of
-%the filter with a all ones imgage (full information).
+%1. we check the local information by comparing to covariance of
+%the filter with a all ones image (full information).
 
 area=0.45;
 %filter size
@@ -52,26 +52,26 @@ FS=30;
 filter1=FS./pixdim;
 [f1] = makegaussian3d(filter1,[0.5 0.5 0.5],[0.25 0.25 0.25]);
 
-%define the avilable caverage
-C1 = convn(tisuuemask,f1,'same');
+%define the available coverage
+C1 = convn(tissuemask,f1,'same');
 
-%define the maxsimal caverage
+%define the maximal caverage
 CC1=convn(tt,f1,'same');
 
 %the voxel that we will use
-tisuuemask1=C1>max(CC1(:)).*area;
+tissuemask1=C1>max(CC1(:)).*area;
 
 %where there are B1 estimation (x,y,z location)
-[x y z]=ind2sub(size(tisuuemask),find(tisuuemask));
+[x y z]=ind2sub(size(tissuemask),find(tissuemask));
 
-%were we will find the smooth B1  estimation (x,y,z location)
-[x0 y0 z0]=ind2sub(size(tisuuemask),find(tisuuemask1));
+%where we will find the smooth B1  estimation (x,y,z location)
+[x0 y0 z0]=ind2sub(size(tissuemask),find(tissuemask1));
 
-%local regrision
-w1 = localregression3d(x,y,z,B1(find(tisuuemask)),(x0),(y0),(z0),[],[],filter1,[]);
+%local regression
+w1 = localregression3d(x,y,z,B1(find(tissuemask)),(x0),(y0),(z0),[],[],filter1,[]);
 
 %save the result
-B1Fit(find(tisuuemask1))=w1;
+B1Fit(find(tissuemask1))=w1;
 
 
 
@@ -99,7 +99,7 @@ for  jj=1:size(B1Fit,3)
         %find location of data
         [x,y] = ind2sub(size(tmp),wh);
         z=double(tmp(wh));
-        % estimate a smooth vertion of the data in the slice for original code see:
+        % estimate a smooth version of the data in the slice for original code see:
         % Moterdaeme et.al. Phys. Med. Biol. 54 3474-89 (2009)
         
         [zg,xg,yg]= gridfit(x,y,z,1:2:size(tmp,1),1:2:size(tmp,2),'smoothness',smoothnessVal);
@@ -133,7 +133,7 @@ for  jj=1:size(B1Fit_S,1)
         %find location of data
         [x,y] = ind2sub(size(tmp),wh);
         z=double(tmp(wh));
-        % estimate a smooth vertion of the data in the slice for original code see:
+        % estimate a smooth version of the data in the slice for original code see:
         % Moterdaeme et.al. Phys. Med. Biol. 54 3474-89 (2009)
         
         [zg,xg,yg]= gridfit(x,y,z,1:2:size(tmp,1),1:2:size(tmp,2),'smoothness',smoothnessVal);
@@ -166,7 +166,7 @@ for  jj=1:size(B1Fit_S,2)
         %find location of data
         [x,y] = ind2sub(size(tmp),wh);
         z=double(tmp(wh));
-        % estimate a smooth vertion of the data in the slice for original code see:
+        % estimate a smooth version of the data in the slice for original code see:
         % Moterdaeme et.al. Phys. Med. Biol. 54 3474-89 (2009)
         
         [zg,xg,yg]= gridfit(x,y,z,1:2:size(tmp,1),1:2:size(tmp,2),'smoothness',smoothnessVal);
@@ -183,15 +183,15 @@ end;
 B1Fit_S(B1Fit_S<0)=0;
 
 
-%% calculate if the smoothding intruduce a constant bais, and correct for it.
+%% calculate if the smoothing intruduce a constant bias, and correct for it.
 
-Cal=median(B1(tisuuemask)./B1Fit_S(tisuuemask));
+Cal=median(B1(tissuemask)./B1Fit_S(tissuemask));
 B1Fit_S=B1Fit_S.*Cal;
 
 %% SAVE the result smooth B1 map
 outDir = mrQ.spgr_initDir; % check that this is right
 
-B1epiFileName=fullfile(AnalysisInfo.outDir,['B1epi_map.nii.gz']);
+B1epiFileName=fullfile(outDir,['B1epi_map.nii.gz']);
 dtiWriteNiftiWrapper(single(B1Fit_S),xform,B1epiFileName);
 
 mrQ.B1.epiFileName=B1epiFileName;

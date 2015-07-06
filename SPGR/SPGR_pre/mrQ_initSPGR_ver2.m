@@ -226,6 +226,12 @@ mrQ.SPGR_niiFile=niiFiles;
 flipAngles=[s(t1Inds).flipAngle];
 mrQ.SPGR_niiFile_FA=flipAngles;
 
+te = [s(t1Inds).TE];
+tr = [s(t1Inds).TR];
+mrQ.SPGR_niiFile_TR=tr;
+mrQ.SPGR_niiFile_TE=te;
+
+
 % Set the resolution if it was not passed in
 if ~exist('mmPerVox','var') || isempty(mmPerVox),
     mmPerVox = s(min(find(t1Inds))).mmPerVox(1:3);   %#ok<MXFND>
@@ -327,6 +333,7 @@ save(outFile,'s', 'xform', 'mmPerVox');
 
  mrQ.spgr_initDir=outDir;
 
+ mrQ.xform=xform;
 
 % save the aligned images in the mrQ struct
 for j=1:length(s)

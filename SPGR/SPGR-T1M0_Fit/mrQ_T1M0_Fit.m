@@ -77,9 +77,6 @@ load(outFile);
 
 
 
-
-
-
 %%
 % LINEAR FITTING  Linear fit is used to calculate T1 and M0
 % (Linear fitting can bias the fit but it's very fast)
@@ -96,16 +93,17 @@ if (exist( T1LFfile,'file') && exist( M0LFfile,'file')  && exist( MaskFile,'file
     disp(['loading exsisting T1 and M0 linear fit'])
     T1L=readFileNifti(T1LFfile);
     M0L=readFileNifti(M0LFfile);
-    Mask=readFileNifti(MaskFile);
+    HeadMask=readFileNifti(MaskFile);
     
     T1L=double(T1L.data);
     M0L=double(M0L.data);
-    Mask=logical(Mask.data);
+    HeadMask=logical(HeadMask.data);
+    
     
 else
     
     disp('Performing linear fit of T1 and M0...');
-    flipAngles = [s2(:).flipAngle];
+    flipAngles = [s(:).flipAngle];
     tr = [s(:).TR];
     
     % Check that all TRs are the same across all the scans in S
@@ -185,7 +183,7 @@ end
 
 
 if LWfit==1
-    %% Weited linear Fit
+    %% Weighted linear Fit
     disp([' linear fits of T1 and PD !!!'] );
     T1WLFfile= fullfile(outDir,['T1_map_Wlin.nii.gz']);
     T1LFfile= fullfile(outDir,['T1_map_lin.nii.gz']);
@@ -203,8 +201,8 @@ if LWfit==1
         
     else
         
-        disp('Performing weighted linear fit of T1 and M0...');
-        flipAngles = [s2(:).flipAngle];
+        disp('Performing weighted linear fit of T1 and M0 with B1 correction...');
+        flipAngles = [s(:).flipAngle];
         tr = [s(:).TR];
         
         % Check that all TRs are the same across all the scans in S
@@ -216,16 +214,16 @@ if LWfit==1
         
         Gain=double(HeadMask);
         
-        [T1w, T1,M0w, MO] = mrQ_T1M0_LWFit(s,HeadMask,tr,flipAngles,Gain,B1,outDir,xform,SunGrid,[],sub,mrQ.proclus);
+%         [T1w, T1,M0w, MO] = mrQ_T1M0_LWFit(s,HeadMask,tr,flipAngles,Gain,B1,outDir,xform,SunGrid,[],sub,mrQ.proclus);
         
+        [T1w, T1,M0w, M0] = mrQ_T1M0_LWFit(s,HeadMask,tr,flipAngles,Gain,B1,outDir,xform,mrQ.SunGrid);
+
         % Save the T1 and PD data
         dtiWriteNiftiWrapper(single(T1), xform,T1LFfile);
         dtiWriteNiftiWrapper(single(M0), xform, M0LFfile);
         dtiWriteNiftiWrapper(single(T1w), xform,T1WLFfile);
         dtiWriteNiftiWrapper(single(M0w), xform, M0WLFfile);
-        
-        
-        
+              
         
         
         mrQ.T1_B1_LWFit=T1WLFfile;
@@ -240,34 +238,34 @@ end
 
 
 function [mask, mrQ]=CalculateFullMask(mrQ,t1,M0,outDir)
-%% one more mask anywere we have signal
-
-HM = readFileNifti(mrQ.HMfile);HM=HM.logical(HM.data);
-
-BM=  readFileNifti(mrQ.BrainMask); BM=BM.logical(BM.data);
+%% one more mask anywhere we have signal
 
 
-M=mean(t1(BM));
-S=std(t1(BM));
+HM = readFileNifti(mrQ.HeadMask);     HM=logical(HM.data);
+BM=  readFileNifti(mrQ.BrainMask); BM=logical(BM.data);
 
-up=min(10000,M+3*S);
-dwon=max(0,M-3*S);
-t1(t1<dwon)=dwon;
-t1(t1>up)=up;
-
-t1(isnan(t1))=dwon;
-
-t1(isinf(t1))=up;
-
-mask1=t1>prctile(t1(BM),0.1) & t1<up;
-[mask1] = ordfilt3D(mask1,6);
-for i=1:size(mask1,3)
-    mask1(:,:,i)=imfill(mask1(:,:,i),'holes');
-end;
-%%%%
+% M=mean(t1(BM));
+% S=std(t1(BM));
+% 
+% up=min(10000,M+2*S);
+% down=max(0,M-2*S);
+% t1(t1<down)=down;
+% t1(t1>up)=up;
+% 
+% t1(isnan(t1))=down;
+% 
+% t1(isinf(t1))=up;
+% 
+% mask1=t1>prctile(t1(BM),0.1) & t1<up;
+% [mask1] = ordfilt3D(mask1,6);
+% for i=1:size(mask1,3)
+%     mask1(:,:,i)=imfill(mask1(:,:,i),'holes');
+% end;
+% %%%%
 % Create a white-matter mask using a range of t1 values within the original
 % brain mask
-wmmask    = brainMask & t1>0.850 & t1<1.050;
+
+wmmask    = BM & t1>0.850 & t1<1.050;
 
 % Perform 3-D order-statistic filtering on M0
 [wmmask1] = ordfilt3D(wmmask,6);
@@ -276,7 +274,7 @@ wmmask    = wmmask & wmmask1; clear wmmask1;
 [params1,gains,rs] = fit3dpolynomialmodel(M0,wmmask==1,2);
 wmmask             = logical(wmmask);
 
-Imsz = size(brainMask);
+ Imsz = size(BM);
 
 % Construct a three-dimenstional polynomial matrix - KNK code
 [Poly,str] = constructpolynomialmatrix3d(Imsz,find(ones(Imsz)),2);
@@ -302,11 +300,11 @@ M=mean(M0(BM));
 S=std(M0(BM));
 
 up=min(10000,M+3*S);
-dwon=max(0,M-3*S);
-M0(M0<dwon)=dwon;
+down=max(0,M-3*S);
+M0(M0<down)=down;
 M0(M0>up)=up;
 
-M0(isnan(M0))=dwon;
+M0(isnan(M0))=down;
 
 M0(isinf(M0))=up;
 
@@ -322,6 +320,6 @@ mask=logical(mask1+mask +HM+BM);
 % make a head mask that include for sure the brain mask
 
 FullMaskFile= fullfile(outDir,'FullMask.nii.gz');
-dtiWriteNiftiWrapper(single(mask), xform,FullMaskFile);
+dtiWriteNiftiWrapper(single(mask), mrQ.xform,FullMaskFile);
 mrQ.FullMaskFile=FullMaskFile;
 

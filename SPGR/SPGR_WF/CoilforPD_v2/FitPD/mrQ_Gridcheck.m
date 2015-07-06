@@ -34,7 +34,7 @@ while GridFit_done~=true
     % all the nodes and move on.
     if length(regexp(list, '.mat'))>=fNum,
         GridFit_done=true;
-        % Once we have collected all the nodes we delete the sge outpust
+        % Once we have collected all the nodes we delete the sge output
         eval(['!rm -f ~/sgeoutput/*' sgename '*'])
     else
         % check if ther are jobs on the sun grid que list

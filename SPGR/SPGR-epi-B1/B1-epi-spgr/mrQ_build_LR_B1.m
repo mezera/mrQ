@@ -17,7 +17,7 @@ function mrQ=mrQ_build_LR_B1(mrQ)
     BM=logical(ones(size(BM)));
 
  loc=find(BM);
-%% loop over voxels load the fited values
+%% loop over voxels load the fitted values
 
 jumpindex=opt.jumpindex; % number of voxel in each file
 jobindexs=1:ceil(opt.N_Vox2Fit/jumpindex);  % the numbers of saved file each with jumpindex 

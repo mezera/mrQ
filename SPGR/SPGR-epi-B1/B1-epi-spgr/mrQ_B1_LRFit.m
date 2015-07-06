@@ -1,4 +1,4 @@
-function mrQ_B1_LRFit(opt,jumpindex,jobindex)
+function mrQ_B1_LRFit(optName,jumpindex,jobindex)
 %
 % mrQ_B1_gridFit(opt,jumpindex,jobindex)
 %  this function call by the sun grid it load the relavant data and fit the
@@ -23,7 +23,7 @@ function mrQ_B1_LRFit(opt,jumpindex,jobindex)
 %% I. Initialization
 
 
-
+load(optName);
 %find the box to work on
 j=0;
 st=1 +(jobindex-1)*jumpindex;
@@ -65,15 +65,14 @@ BM=logical(BM.data);
     ratios=nchoosek(1:N_Measure,2);
 
 
-
-loc=find(SigMask);
+    loc=find(SigMask);
 %%  II. go over the box the boxs
-       
+   tic    ;
 for ii= st:ed,
     %run over the box you like to fit
    % clear parameters
     Iter= Iter+1;
-    tic
+   
    
     if ~(ii>length(loc))
           [S, t1, BM1,SZ, UseVoxN(Iter), skip(Iter), f ]=  mrQ_GetB1_LR_Data(opt,Res,BM,loc(ii));
@@ -103,8 +102,9 @@ for ii= st:ed,
  
      end
      
-toc
+
         end; 
+        toc
         %%  X-Validation Fit we can save some of the ratio and corrsvalidate the poly degree or  box size .
        
         %
@@ -124,8 +124,8 @@ function [tr, flipAngles,Res]=epiParams(opt)
 
   % load infoormation
     load (opt.AlignFile);
-flipAngles=ResInfo.flipAngles;
-tr=ResInfo.tr;
+flipAngles=opt.FlipAngle;
+tr=opt.TR;
 end
 
 

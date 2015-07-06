@@ -1,7 +1,7 @@
-function logname=mrQ_PD_LRB1SPGR_GridParams(mrQ,FilterSize,pracent_coverage)
+function logname=mrQ_PD_LRB1SPGR_GridParams(mrQ,FilterSize,percent_coverage)
 %%  logname=mrQ_PD_LRB1SPGR_GridParams(mrQ,AnalysisInfo,FilterSize,pracent_coverage)
 
-% we building a stracture opt that will be used to fit B1   
+% we are building a structure opt that will be used to fit B1   
 
 
 
@@ -18,24 +18,27 @@ if notDefined('FilterSize')
     FilterSize =6;
    
 end
-if notDefined('pracent_coverage')
-    pracent_coverage =0.33;
+if notDefined('percent_coverage')
+    percent_coverage =0.33;
 end
 
-opt.pracent_coverage=pracent_coverage;
+
+
+opt.percent_coverage=percent_coverage;
 opt.FilterSize=FilterSize;
 
+ opt.AlignFile=mrQ.spgr2epiAlignFile;
 
 
  opt.tisuuemaskFile=mrQ.maskepi_File;
  BM=readFileNifti(mrQ.maskepi_File);opt.pixdim=BM.pixdim;
  BM=logical(ones(size(BM.data)));
- opt.AlignFile=mrQ.spgr2epiAlignFile;
-
 
 
 % use the mask where we will like to have a B1 mask
  opt.N_Vox2Fit=length(find(BM));
+opt.TR=mrQ.SPGR_niiFile_TR;
+opt.FlipAngle=mrQ.SPGR_niiFile_FA;
 
 
 
@@ -60,8 +63,3 @@ opt.logname=logname;
 save(opt.logname,'opt');
 
 
-if clobber && (exist(dirname,'dir'))
-    % in the case we start over and there are  old fits, so we will
-    % deleat them
-    eval(['! rm -r ' dirname]);
-end

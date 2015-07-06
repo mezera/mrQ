@@ -69,7 +69,7 @@ outDir=fileparts(AlignFile);
 end
 maskepi_File=fullfile(outDir,['maskepiF.nii.gz']);
 
-dtiWriteNiftiWrapper(single(brainMask), ResInfo.xform, maskepi_File);
+dtiWriteNiftiWrapper(single(brainMask), Res{1}.xform, maskepi_File);
 
 
 %%

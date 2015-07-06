@@ -135,9 +135,8 @@ end
 % Cal=median(B1(tissuemask)./B1Fit_S(tissuemask));
 % B1Fit_S=B1Fit_S.*Cal;
 
-Cal=median(B1./B1Fit_S);
+Cal=median(B1()./B1Fit_S(tissuemask));
 B1Fit_S=B1Fit_S.*Cal;        
-
         %% save
 outDir = mrQ.spgr_initDir; 
 

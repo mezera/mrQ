@@ -140,6 +140,7 @@ AnalysisInfo.T1_spgr_epi_RB=fullfile(outDir,'Warp_T1_SPGRT2EPI_RB.nii.gz');
 t1seir=readFileNifti(SET1file);
 Res{1}.im=t1seir.data;
 Res{1}.name='t1SEIRepi';
+Res{1}.xform=t1seir.qto_xyz;
 clear t1seir
 t1spgr=readFileNifti(AnalysisInfo.T1_spgr_epi_RB);
 Res{2}.im=t1spgr.data;
@@ -154,8 +155,7 @@ end;
 
 
 %save the strucute
-infofile=fullfile(outDir,'AnalysisInfo.mat');
-save(infofile,'AnalysisInfo');
+
     save(AlignFile,'Res');
 %     
 %     % Reset the ld_path (unnecessary, see explanation at top of function)

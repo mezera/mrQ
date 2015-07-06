@@ -1,7 +1,7 @@
-function mrQ_fitB1LR_Call(opt_logname,SunGrid,RunSelectedJob)
+function mrQ_fitB1LR_Call(opt_logname,SunGrid,RunSelectedJob,clobber)
 % this function load the opt straction that have all the fit information
 % and send it in to the computer grid if one is defined (SunGrid and/or
-% proclass).  If not it will send it to local compoter solver ( sge is
+% proclass).  If not it will send it to local computer solver ( sge is
 % faster but it is working fine with out it as well
 %
 
@@ -14,7 +14,19 @@ sgename=opt.SGE;
 jumpindex=opt.jumpindex ;
 
 
+if notDefined('clobber')
+    clobber =false;
+end
 
+if clobber && (exist(dirname,'dir'))
+    % in the case we start over and there are  old fits, so we will
+    % deleat them
+    eval(['! rm -r ' dirname]);
+end
+
+if (~exist(dirname,'dir')),
+        mkdir(dirname);
+end 
 %%   Perform the gain fits
 % Perform the fits for each box using the Sun Grid Engine
 if SunGrid==1;
@@ -23,33 +35,31 @@ if SunGrid==1;
     
     % Check to see if there is an existing SGE job that can be
     % restarted. If not start the job, if yes prompt the user.
-    if (~exist(dirname,'dir')),
-        mkdir(dirname);
-    end
+    
     
     % should we control the sgeoutput clear it before we start?
     %    eval(['!rm -f ~/sgeoutput/*' sgename '*'])
         %    sgerun2('mrQ_B1_LRFit(opt,jumpindex,jobindex);',sgename,1,1:ceil(opt.N_Vox2Fit/jumpindex),[],[],5000);
         
-            sgerun('mrQ_B1_LRFit(opt,jumpindex,jobindex);',sgename,1,1:ceil(opt.N_Vox2Fit/jumpindex),[],[],5000);
+            sgerun('mrQ_B1_LRFit(opt_logname,jumpindex,jobindex);',sgename,1,1:ceil(opt.N_Vox2Fit/jumpindex),[],[],5000);
      else
          % run only the selected jobs this 
                       MissingFileNumber=mrQ_multiFit_HowIsMissing( dirname,N_Vox2Fit,jumpindex); % the job to  run
-                   sgerun('mrQ_B1_LRFit(opt,jumpindex,jobindex);',sgename,1,MissingFileNumber,[],[],5000);
-                   % we can also had an interactive call. the code for that
+                   sgerun('mrQ_B1_LRFit(opt_logname,jumpindex,jobindex);',sgename,1,MissingFileNumber,[],[],5000);
+                   % we can also add an interactive call. the code for that
                    % is commented below.
      end
           
     
 else
     % with out grid call that will take very long
-    disp(  'No parallre computation grid is used to fit PD. Using the local machin instaed , this may take  long time !!!');
+    disp(  'No parallel computation grid is used to fit PD. Using the local machine instead , this may take a long time !!!');
     % in this case the jumpindex is the number of voxel to fit (no jumps , only one job)
     jumpindex=   opt.N_Vox2Fit;
     opt.jumpindex=jumpindex;
-    
-    mrQ_B1_LRFit(opt,jumpindex,1);
-        save(opt.logname,'opt');
+           save(opt.logname,'opt');
+    mrQ_B1_LRFit(opt_logname,jumpindex,1);
+ 
 
     
     

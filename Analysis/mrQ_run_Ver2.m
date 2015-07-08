@@ -12,7 +12,7 @@ function mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_sei
 %       inputData_spgr:
 %       inputData_seir:
 %       B1file:
-% 
+%
 %   OUPUT:
 %       This function creates and saves the mrQ strucure to the subject???s directory.
 %       New directories will be created, including directories for data and quantitative fits.
@@ -23,7 +23,7 @@ function mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_sei
 %`      PD and coil gain will be fit from the M0 image.
 %       Biophysical model will be applied to calculate VIP and SIR maps.
 % %
-% 
+%
 
 %% Create the initial structure
 
@@ -133,9 +133,9 @@ end
 
 % clobber is implemented inside (we can add this to the inputs)
 if (mrQ.SPGR_LinearT1fit_done==0);
-   
-      [mrQ]=mrQfit_T1M0_Lin(mrQ);
-
+    
+    [mrQ]=mrQfit_T1M0_Lin(mrQ);
+    
     mrQ.SPGR_LinearT1fit_done=1;
     
     save(mrQ.name,'mrQ');
@@ -178,10 +178,13 @@ if ( mrQ.B1Build_done==0)
     
     
     mrQ=mrQ_B1_LR(mrQ);
-        save(mrQ.name,'mrQ');
-
+    
+    mrQ.B1Build_done=1;
+    save(mrQ.name,'mrQ');
+      fprintf('\n Building B1 - done!       \n');
+    
 else
-    fprintf(['Using the  B1  map  file '   mrQ.B1FileName        '  \n']);
+    fprintf(['Using existing  B1  map  file '   mrQ.B1FileName        '  \n']);
     
 end
 
@@ -197,13 +200,13 @@ if ( mrQ.SPGR_T1fit_done==0)
     
     mrQ=mrQ_T1M0_Fit(mrQ);
     mrQ.SPGR_T1fit_done=true;
-       save(mrQ.name,'mrQ');
- 
+    save(mrQ.name,'mrQ');
+    
     fprintf('\n fit  T1 SPGR  - done!              \n');
     
 else
     
-    fprintf('\n load  fitted SPGR T1                \n');
+    fprintf('\n using previously fitted SPGR T1                \n');
     
 end
 
@@ -219,9 +222,8 @@ if ~isfield(mrQ,'synthesis')
 end
 if mrQ.synthesis==0
     
-    % [mrQ.SegInfo.T1wSynthesis,mrQ.SegInfo.T1wSynthesis1] =mrQ_T1wSynthesis1(mrQ,mrQ.WFfile,mrQ.T1file,mrQ.BrainMask);
     [mrQ.SegInfo.T1wSynthesis_MOT1,mrQ.SegInfo.T1wSynthesis_T1] =mrQ_T1wSynthesis1(mrQ);
-
+    
     mrQ.synthesis=1;
     save(mrQ.name, 'mrQ')
     
@@ -242,10 +244,8 @@ if mrQ.segmentation==0;
     %     default- fsl segmentation
     if (mrQ.runfreesurfer==0 && ~isfield(mrQ,'freesurfer'))
         % Segment the T1w by FSL (step 1) and get the tissue mask (CSF WM GM) (step 2)
-        %         mrQ=mrQ_segmentT1w2tissue(mrQ,BMfile,T1file,t1wfile,outDir,csffile,boxsize)
 
-%         mrQ=mrQ_segmentT1w2tissue(mrQ,[],mrQ.SegInfo.T1wSynthesis_T1);
-mrQ=mrQ_segmentT1w2tissue(mrQ);
+        mrQ=mrQ_segmentT1w2tissue(mrQ);
         mrQ.segmentation=1;
         
         %      run FreeSurfer : it is slow and needs extra defintions.
@@ -270,9 +270,23 @@ end
 %% fitting PD from M0
 
 
-%%
-%%
-% calculate VIP TV and SIR
+if ~isfield(mrQ,'PDdone')
+    mrQ.PDdone=0;
+end
+if mrQ.PDdone==0
+    
+   mrQ=mrQ_M0_ToPD(mrQ);
+    
+    save(mrQ.name, 'mrQ')
+    mrQ.PDdone=1;
+    fprintf('\n Calculation od PD from M0  - done!              \n');
+else
+    fprintf('\n using previously calculated PD              \n');
+end
+
+
+
+%%   calculate VIP TV and SIR
 
 if (mrQ.SPGR_PDBuild_done==1)
     fprintf('\n calculate VIP TV SIR form T1 and WF maps               \n');

@@ -1,4 +1,4 @@
-function mrQ_M0_ToPD(mrQ)
+function [mrQ]=mrQ_M0_ToPD(mrQ)
 
 %1. Define inputs
 
@@ -7,12 +7,12 @@ function mrQ_M0_ToPD(mrQ)
 %% What method of fit we will use? Will we use multi coil data?
 
 
-if isfield(mrQ,'PDfit_Method');
+if ~isfield(mrQ,'PDfit_Method');
     
-    mrQ.PDfit_Method=1; % 1. will use only T1 to fit (defult); 2. Will use only multi coils to fit; 3. Will use both multi coils and T1 to fit;
+    mrQ.PDfit_Method=1; % 1. will use only T1 to fit (default); 2. Will use only multi coils to fit; 3. Will use both multi coils and T1 to fit;
 end
 
-if mrQ.PDfit_Method=~1
+if mrQ.PDfit_Method~=1
     
     if isfield(mrQ,'calM0_done');
     else
@@ -46,8 +46,7 @@ save(mrQ.name,'mrQ');
 %%
 %3 fit
 
-if isfield(mrQ,'SPGR_PDfit_done');
-else
+if ~isfield(mrQ,'SPGR_PDfit_done');
     mrQ.SPGR_PDfit_done=0;
 end
 
@@ -56,7 +55,7 @@ end
 
 if mrQ.PDfit_Method==1
   %Note fit each local M0 area (with T1 input). this is fast. We don't need the
-% grid we can exspedite it with parloop  
+% grid we can expedite it with parloop  
     mrQ_fitM0boxesCall_T1PD(mrQ.opt_logname);
 elseif mrQ.PDfit_Method==2 ||  mrQ.PDfit_Method==3
     % multi coil fit, this will be better with parallel computing like
@@ -68,11 +67,11 @@ end
 
 
     
-    %%
-    %% Build the local fits
-    %Join the local overlap area to one PD image.
-    
-    mrQ.opt=mrQ_buildPD_ver2(mrQ.opt_logname,0,[],[],[],0.01);
-    %
-    
-    %4 build
+
+%% Build the local fits
+%Join the local overlap area to one PD image.
+
+mrQ.opt=mrQ_buildPD_ver2(mrQ.opt_logname,0,[],[],[],0.01);
+%
+
+%4 build

@@ -41,6 +41,7 @@ if notDefined('BMfile')
         BMfile = mrvSelectFile('r','Select the Brain Mask');
     end
 end
+BM = readFileNifti(BMfile); BM=BM.data;
 
 
 if notDefined('t1wfile')
@@ -97,9 +98,21 @@ fprintf('\n T1 map and ventrical location restrictions... \n');
 
 % T1 cliping of csf
 seg=readFileNifti(segfile);
-k= 
-CSF1=zeros(size(T1));CSF1(seg.data==3)=1;
 
+%check if fsl conventions correspond predictions regarding segmented T1
+%  seg(GM)=1, seg(WM)=2, seg(CSF)=3
+tmpseg=seg.data; tmpseg(~logical(BM))=0;
+clus1=mode(T1(tmpseg==1)); clus2=mode(T1(tmpseg==2)); clus3=mode(T1(tmpseg==3));
+csfClus=find([clus1,clus2,clus3]==max([clus1,clus2,clus3]));
+WMClus=find([clus1,clus2,clus3]==min([clus1,clus2,clus3]));
+GMClus=find([clus1,clus2,clus3]==median([clus1,clus2,clus3]));
+clear tmpseg;
+ if ~(csfClus==3 & GMClus==1 & WMClus==2) 
+     warn=sprintf('The fsl segmentation is possibly false, possibly due to extreme values of T1.\n It is recommended to segment te CSF elsewhere and insert the csf nifti as input.\n Segmentation can be done either mannualy or using freesurfer,\n but this is a very long process that could take up to a day');
+     warning(warn)
+ end
+
+CSF1=zeros(size(T1));CSF1(seg.data==3)=1;
 
 %cliping the center box
 
@@ -144,7 +157,7 @@ CSFtmp= CSFtmp & T1>3;
 csffile1 = fullfile(outDir, 'csf_seg_T1_large.nii.gz');
 dtiWriteNiftiWrapper(single(CSFtmp), xform, csffile1);
 clear CSFtmp
-%%
+%% seg(GM)=1, seg(WM)=2, seg(CSF)=3
 % mask = zeros(size(brainMask));
 mask = zeros(size(T1));
 mask = double(mask);
@@ -153,7 +166,8 @@ mask(find(CSF1)) = 1;
 % Set up the white matter mask fsl
 % wm = zeros(size(brainMask));
 wm = zeros(size(T1));
-wm(seg.data==3)  = 1;
+wm(seg.data==2)  = 1;
+
 wm         = logical(wm);
 [d dd] = ksdensity(T1(wm),(min(T1(wm)):0.01:max(T1(wm))));
 
@@ -167,7 +181,7 @@ mask(find(wm)) = 2;
 % Set up the gray matter mask fsl
 % cortex = zeros(size(brainMask));
 cortex = zeros(size(T1));
-cortex(seg.data==2) =1;
+cortex(seg.data==1) =1;
 cortex         = logical(cortex);
 
 [d dd] = ksdensity(T1(cortex), (min(T1(cortex)):0.01:max(T1(cortex))) );

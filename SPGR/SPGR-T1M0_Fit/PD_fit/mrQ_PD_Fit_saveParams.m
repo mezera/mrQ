@@ -1,4 +1,4 @@
-function [logname]=mrQ_PD_Fit_saveParams(outDir,subName,degrees,M0file,T1file,BMfile,PDfit_Method,mrQ,outMm,boxSize,pracent_overlap,Coilsinfo,Init,clobber,Inclusion_Criteria)
+function [logname]=mrQ_PD_Fit_saveParams(outDir,subName,degrees,M0file,T1file,BMfile,PDfit_Method,mrQ,outMm,boxSize,percent_overlap,Coilsinfo,Init,clobber,Inclusion_Criteria)
 %
 %   [logname]=mrQ_PD_Fit_saveParams(outDir,subName,degrees,M0file,T1file,BMfile,outMm,boxSize,pracent_overlap,Coilsinfo,PDfit_Method,Init,clobber,Inclusion_Criteria,mrQ)
 %
@@ -62,7 +62,7 @@ if(~exist('degrees','var'))
     degrees = 3;
 end
 opt.degrees = degrees;
-% if the M0file is not an input  we load the file that was made by
+% if the M0file is not an input we load the file that was made by
 % mrQ_multicoilM0.m (defult)
 if(~exist('M0file','var') || isempty(M0file))
 [~, M0file,~]=mrQ_get_T1M0_files(mrQ,0,1,0);
@@ -78,11 +78,11 @@ opt.M0file = M0file;
 if notDefined('boxSize')
     boxSize =14;
 end
-if notDefined('pracent_overlap')
-    pracent_overlap =0.5;
+if notDefined('percent_overlap')
+    percent_overlap =0.5;
 end
 
-% In casses of high resltion data we can undersample the data to outMm
+% In cases of high resltion data we can undersample the data to outMm
 % resulotion
 if notDefined('outMm')
     outMm=[2 2 2];
@@ -97,14 +97,15 @@ opt.PDfit_Method=PDfit_Method;
 
 
 if notDefined('Coilsinfo')
-if PDfit_Method~=1;
-
-    % we define the number of coil that will be used to the fit and the
-    % pull of best coil
-    Coilsinfo.maxCoil=4;    Coilsinfo.minCoil=4;  Coilsinfo.useCoil=[1:16];
-else % in case we using only one coil
+    if PDfit_Method~=1;
+        
+        % we define the number of coil that will be used to the fit and the
+        % pull of best coil
+        Coilsinfo.maxCoil=4;    Coilsinfo.minCoil=4;  Coilsinfo.useCoil=[1:16];
+    else % in case we using only one coil
         Coilsinfo.maxCoil=1;Coilsinfo.minCoil=1; Coilsinfo.useCoil=1;
-
+        
+    end
 end
 
     
@@ -116,7 +117,7 @@ end
  
       %end
 
-if ~notDefined('Init')
+if notDefined('Init')
         Init=1;
 end
 opt.Init=Init;
@@ -191,7 +192,7 @@ boxS(even)  = boxS(even)+1;
 opt.boxS = boxS;
 
 % Determine the percentage of pracent_overlap  (0.1, 0.5, 0.7)
-overlap = round(boxS.*pracent_overlap);
+overlap = round(boxS.*percent_overlap);
 
 % Grid of the center of the boxs that will be used to fit
 [opt.X,opt.Y,opt.Z] = meshgrid(round(boxS(1)./2):boxS(1)-overlap(1):sz(1)    ,    round(boxS(2)./2):boxS(2)-overlap(2):sz(2)    , round(boxS(3)./2):boxS(3)-overlap(3):sz(3));

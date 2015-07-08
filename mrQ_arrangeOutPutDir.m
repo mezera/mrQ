@@ -41,8 +41,8 @@ if (exist(mapDir,'dir'))
 end
 
 mkdir(mapDir);
-  T1file=mrQ_getT1file(mrQ);
-  
+[T1file, M0file,BMfile]=mrQ_get_T1M0_files(mrQ,1,1,1);
+
   [d dd ddd]=fileparts(T1file);
  cmd =(['! mv ' T1file ' ' mapDir '/.']);
      eval(cmd);

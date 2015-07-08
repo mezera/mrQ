@@ -8,16 +8,17 @@ function mrQ=mrQ_segmentT1w2tissue(mrQ,BMfile,T1file,t1wfile,outDir,csffile,boxs
 % 
 % 
 if~exist('outDir')
-outDir = mrQ.spgr_initDir; %>>>>>>>>>>>>.shai
-% outDir = mrQ.AnalysisInfo.outDir;
+outDir = mrQ.spgr_initDir;
 end
 
 if ~exist('T1file','var') || isempty(T1file)
-    T1file = mrQ_getT1file(mrQ); 
+   [T1file, ~,~]=mrQ_get_T1M0_files(mrQ,1,0,0);
 end
 
 disp(['Loading T1 data from ' T1file '...']);
 T1 = readFileNifti(T1file);
+xform = T1.qto_xyz;
+mmPerVox = T1.pixdim;
 T1 = double(T1.data);
 
 
@@ -54,6 +55,7 @@ end
 
 %% Load Data
 
+
 % Load the Analysis info file and append it with the info provided
 infofile = fullfile(outDir,'AnalysisInfo.mat');
 load(infofile);
@@ -63,11 +65,11 @@ load(infofile);
 
 
 % Load the brain mask from the outDir
-disp(['Loading brain Mask data from ' BMfile '...']);
-brainMask = readFileNifti(BMfile);
-xform = brainMask.qto_xyz;
-mmPerVox = brainMask.pixdim;
-brainMask = logical(brainMask.data);
+% disp(['Loading brain Mask data from ' BMfile '...']);
+% brainMask = readFileNifti(BMfile);
+% xform = brainMask.qto_xyz;
+% mmPerVox = brainMask.pixdim;
+% brainMask = logical(brainMask.data);
 
 
 %% FSL
@@ -95,7 +97,9 @@ fprintf('\n T1 map and ventrical location restrictions... \n');
 
 % T1 cliping of csf
 seg=readFileNifti(segfile);
-CSF1=zeros(size(T1));CSF1(seg.data==1)=1;
+k= 
+CSF1=zeros(size(T1));CSF1(seg.data==3)=1;
+
 
 %cliping the center box
 
@@ -141,12 +145,14 @@ csffile1 = fullfile(outDir, 'csf_seg_T1_large.nii.gz');
 dtiWriteNiftiWrapper(single(CSFtmp), xform, csffile1);
 clear CSFtmp
 %%
-mask = zeros(size(brainMask));
+% mask = zeros(size(brainMask));
+mask = zeros(size(T1));
 mask = double(mask);
 mask(find(CSF1)) = 1;
 
 % Set up the white matter mask fsl
-wm = zeros(size(brainMask));
+% wm = zeros(size(brainMask));
+wm = zeros(size(T1));
 wm(seg.data==3)  = 1;
 wm         = logical(wm);
 [d dd] = ksdensity(T1(wm),(min(T1(wm)):0.01:max(T1(wm))));
@@ -159,7 +165,8 @@ wm = wm &  T1>(M-0.03) & T1<(M+0.03);
 mask(find(wm)) = 2;
 
 % Set up the gray matter mask fsl
-cortex = zeros(size(brainMask));
+% cortex = zeros(size(brainMask));
+cortex = zeros(size(T1));
 cortex(seg.data==2) =1;
 cortex         = logical(cortex);
 

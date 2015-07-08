@@ -51,7 +51,7 @@ boxSize = size(S);
 
    [f1] = makegaussian3d(boxSize(1:3),[0.5 0.5 0.5],[0.25 0.25 0.25]);
 UseVoxN= length(find(BM1));
-if UseVoxN<length(BM1(:))*opt.pracent_coverage ||  UseVoxN<10  % not enghf voxels
+if UseVoxN<length(BM1(:))*opt.percent_coverage ||  UseVoxN<10  % not enghf voxels
     skip=1;
 end
  end

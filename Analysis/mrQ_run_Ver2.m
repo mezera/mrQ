@@ -178,7 +178,8 @@ if ( mrQ.B1Build_done==0)
     
     
     mrQ=mrQ_B1_LR(mrQ);
-    
+        save(mrQ.name,'mrQ');
+
 else
     fprintf(['Using the  B1  map  file '   mrQ.B1FileName        '  \n']);
     
@@ -196,6 +197,8 @@ if ( mrQ.SPGR_T1fit_done==0)
     
     mrQ=mrQ_T1M0_Fit(mrQ);
     mrQ.SPGR_T1fit_done=true;
+       save(mrQ.name,'mrQ');
+ 
     fprintf('\n fit  T1 SPGR  - done!              \n');
     
 else
@@ -217,8 +220,8 @@ end
 if mrQ.synthesis==0
     
     % [mrQ.SegInfo.T1wSynthesis,mrQ.SegInfo.T1wSynthesis1] =mrQ_T1wSynthesis1(mrQ,mrQ.WFfile,mrQ.T1file,mrQ.BrainMask);
-    [mrQ.SegInfo.T1wSynthesis_MOT1,mrQ.SegInfo.T1wSynthesis_T1] =mrQ_T1wSynthesis1(mrQ,mrQ.M0_LFit_HM,mrQ.T1_LFit_HM,mrQ.HeadMask,mrQ.spgr_initDir);
-    
+    [mrQ.SegInfo.T1wSynthesis_MOT1,mrQ.SegInfo.T1wSynthesis_T1] =mrQ_T1wSynthesis1(mrQ);
+
     mrQ.synthesis=1;
     save(mrQ.name, 'mrQ')
     
@@ -227,8 +230,6 @@ else
     fprintf('\n using previously synthesized T1              \n');
 end
 
-% [mrQ.SegInfo.T1wSynthesis,mrQ.SegInfo.T1wSynthesis1, mrQ.SegInfo.maskSynthesis]=mrQ_T1wSynthesis(dataDir,B1file,outDir);
-% save(infofile,'AnalysisInfo');
 
 %%
 %. Segmentation and CSF
@@ -242,9 +243,9 @@ if mrQ.segmentation==0;
     if (mrQ.runfreesurfer==0 && ~isfield(mrQ,'freesurfer'))
         % Segment the T1w by FSL (step 1) and get the tissue mask (CSF WM GM) (step 2)
         %         mrQ=mrQ_segmentT1w2tissue(mrQ,BMfile,T1file,t1wfile,outDir,csffile,boxsize)
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%% this doesn't work yet because the function is
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%% calling non existent fields and files
-        mrQ=mrQ_segmentT1w2tissue(mrQ,[],mrQ.SegInfo.T1wSynthesis_T1);
+
+%         mrQ=mrQ_segmentT1w2tissue(mrQ,[],mrQ.SegInfo.T1wSynthesis_T1);
+mrQ=mrQ_segmentT1w2tissue(mrQ);
         mrQ.segmentation=1;
         
         %      run FreeSurfer : it is slow and needs extra defintions.

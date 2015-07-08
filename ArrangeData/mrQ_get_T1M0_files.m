@@ -23,21 +23,21 @@ if whT1
     %Find T1
     
     if isfield(mrQ,'T1_LFit')
-        if ( exist(mrQ.T1_LFit,'file') == 0 )
+        if  exist(mrQ.T1_LFit,'file')
             T1file= mrQ.T1_LFit;
         end
     end
     
     %  the same but with larger  mask
     if isfield(mrQ,'T1_LFit_HM')
-        if ( exist(mrQ.T1_LFit_HM,'file') == 0 )
+        if  exist(mrQ.T1_LFit_HM,'file')
             T1file= mrQ.T1_LFit_HM;
         end
     end
     
     %  Maybe after B1 corraction
     if isfield(mrQ,'T1_B1_LFit')
-        if ( exist(mrQ.T1_B1_LFit,'file') == 0 )
+        if exist(mrQ.T1_B1_LFit,'file') 
             T1file= mrQ.T1_B1_LFit;
         end
     end
@@ -68,20 +68,23 @@ if whT1
     if isempty(T1file)
         error('Can not find the T1file')
     end
+else
+    T1file=[];
 end
+
 %% is there an linear fit M0 file?
 %Find M0
 if whM0
     M0file=[];
     if isfield(mrQ,'M0_LFit')
-        if ( exist(mrQ.M0_LFit,'file') == 0 )
+        if  exist(mrQ.M0_LFit,'file') 
             M0file= mrQ.M0_LFit;
         end
     end
     
     %  the same but with larger  mask
     if isfield(mrQ,'M0_LFit_HM')
-        if ( exist(mrQ.M0_LFit_HM,'file') == 0 )
+        if  exist(mrQ.M0_LFit_HM,'file') 
             M0file= mrQ.M0_LFit_HM;
         end
     end
@@ -89,7 +92,7 @@ if whM0
     
     %  Maybe after B1 corraction
     if isfield(mrQ,'M0_B1_LFit')
-        if ( exist(mrQ.M0_B1_LFit,'file') == 0 )
+        if  exist(mrQ.M0_B1_LFit,'file') 
             M0file= mrQ.M0_B1_LFit;
         end
     end
@@ -99,8 +102,8 @@ if whM0
     
     if isfield(mrQ,'M0_B1_LWFit')
         
-        if exist(mrQ.M0WLFfile,'file')
-            M0file= mrQ.M0WLFfile;
+        if exist(mrQ.M0_B1_LWFit,'file')
+            M0file= mrQ.M0_B1_LWFit;
         end
     end
     %% is it an non linear M0 file?
@@ -142,7 +145,10 @@ if whM0
     if isempty(M0file)
         error('Can not find the M0file')
     end
+else
+    M0file=[];
 end
+
 if whBM
     BMfile=[];
     % let's find the most up-to-date / full mask.
@@ -175,6 +181,8 @@ if whBM
     if isempty(BMfile)
         error('Can not find the M0file')
     end
+else
+    BMfile=[];
 end
 
 %% Done

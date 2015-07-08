@@ -115,7 +115,7 @@ else
     [T1L,M0L] = relaxFitT1(cat(4,s(:).imData),flipAngles,tr,B1);
     
     %% let's calculate a new mask 
-    [HeadMask mrQ]=CalculateFullMask(mrQ,T1L,M0L,outDir);
+    [HeadMask, mrQ]=CalculateFullMask(mrQ,T1L,M0L,outDir);
     % Zero-out the values that fall outside of the brain mask
     T1L(~HeadMask) = 0;
     M0L(~HeadMask) = 0;
@@ -130,6 +130,10 @@ else
 end;
 
 
+
+if ~isfield(mrQ,'FullMaskFile')
+        [HeadMask, mrQ]=CalculateFullMask(mrQ,T1L,M0L,outDir);
+end
 
 
 
@@ -235,6 +239,7 @@ if LWfit==1
     end
 end
 
+       save(mrQ.name,'mrQ');
 
 
 function [mask, mrQ]=CalculateFullMask(mrQ,t1,M0,outDir)

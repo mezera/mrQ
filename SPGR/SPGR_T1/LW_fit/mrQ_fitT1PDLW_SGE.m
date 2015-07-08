@@ -10,7 +10,7 @@ function mrQ_fitT1PDLW_SGE(opt,jumpindex,jobindex)
 % See Also:
 %   mrQ_fitT1M0.m, mrQ_fitT1PD_LSQ.m
 %
-
+% Authors: Aviv Mezer and Nikola Stikov date 24.02.2014 
 %%
 
 % Set the maximum number of computational threads avaiable to Matlab
@@ -24,9 +24,10 @@ if ed>length(opt.wh)
     ed = length(opt.wh);
 end
 
-%%
+%% parfor can be used in here
 for i= st:ed,
     j=j+1;
+   
     if (find(isnan(opt.s(i,:))) | find(opt.s(i,:)==0) |   find(isinf(opt.s(i,:))))
         res(1:4,j)=nan;
         

@@ -20,7 +20,7 @@ B1Fit_S=zeros(size(mask));
 B1Fit_S(mask)=B1.data(mask);
 % clear T1 B1 mask;
 
-clear T1 mask;
+clear T1;
 
 
 
@@ -135,7 +135,7 @@ end
 % Cal=median(B1(tissuemask)./B1Fit_S(tissuemask));
 % B1Fit_S=B1Fit_S.*Cal;
 
-Cal=median(B1./B1Fit_S);
+Cal=median(B1.data(mask)./B1Fit_S(mask));
 B1Fit_S=B1Fit_S.*Cal;        
 
         %% save

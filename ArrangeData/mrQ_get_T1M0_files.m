@@ -43,10 +43,10 @@ if whT1
     end
     
     %% is it a wieght linear t1 file
-    if isfield(mrQ,'T1WLFfile')
+    if isfield(mrQ,'T1_B1_LWFit')
         
-        if exist(mrQ.T1WLFfile,'file')
-            T1file= mrQ.T1WLFfile;
+        if exist(mrQ.T1_B1_LWFit,'file')
+            T1file= mrQ.T1_B1_LWFit;
         end
     end
     

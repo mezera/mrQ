@@ -23,7 +23,7 @@ function [logname]=mrQ_PD_Fit_saveParams(outDir,subName,degrees,M0file,T1file,BM
 % boxSize        the box size in mm that are used for the fit
 % pracent_overlap  the overlap between the boxes (defult 0.5  --> 50%)
 % Coilsinfo   coil info a stracture with three filled define the coil to be (used see below)
-% Reg       REgularization approch Reg=1 T1 regularization (defult) , Reg=2 corralation ; Reg=3 ridge
+% PDfit_Method       REgularization approch Reg=1 T1 regularization (defult) , Reg=2 corralation ; Reg=3 ridge
 % Init           approch to init the search  1 defult (SOS) , 2 T1 PD, theortical relations, 3 segmentation 
 %  clobber:     - Overwrite existing data and reprocess. [default = false]
 %
@@ -237,8 +237,9 @@ opt.Kfold=3;   % the cross validation fold ( use split half)
 
 opt.BasisFlag = 'qr'; %ortonormal basis for the coil  polynomyals
 
+
 if opt.PDfit_Method==3
-opt.lambda = [1e4 5e3 1e3 5e2 1e2 5e1 1e1 5  1e0 0.5 1e-1 0] ;%[1e4  1e3 5e2 1e2  1e1  1e0  0] ; %the different wights (lambda) for the T1 regularization we will check the differnt lambda by cross validation.
+opt.lambda = [1e4 5e3 1e3 5e2 1e2 5e1 1e1 5  1e0 0.5 1e-1 0] ;%[1e4  1e3 5e2 1e2  1e1  1e0  0] ; %the different weights (lambda) for the T1 regularization we will check the differnt lambda by cross validation.
 end
 
 

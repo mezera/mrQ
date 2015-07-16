@@ -47,7 +47,7 @@ BM = readFileNifti(BMfile); BM=BM.data;
 if notDefined('t1wfile')
     t1wfile=mrQ.SegInfo.T1wSynthesis_T1;
     if ~exist(t1wfile,'file')
-        t1wfile = mrvSelectFile('r','Select the T1 wight image');
+        t1wfile = mrvSelectFile('r','Select the T1 weighted image');
     end
 end
 
@@ -58,8 +58,8 @@ end
 
 
 % Load the Analysis info file and append it with the info provided
-infofile = fullfile(outDir,'AnalysisInfo.mat');
-load(infofile);
+% infofile = fullfile(outDir,'AnalysisInfo.mat');
+% load(infofile);
 
 % AnalysisInfo.GainPolydegrees = degrees;
 % AnalysisInfo.M0forWF = M0file;
@@ -74,24 +74,28 @@ load(infofile);
 
 
 %% FSL
-% run bet of fsl
-fprintf('\n running fsl bet ...\n');
+% % % run bet of fsl
+% % % fprintf('\n running fsl bet ...\n');
+% % % 
+  t1w1file=mrQ.SegInfo.T1wSynthesis_MOT1;
+segfile=fullfile(outDir,'t1_bet.nii.gz');
+% eval(['! bet ' t1wfile ' ' segfile ' -m -f .4'])
+% % % 
+eval(['! bet ' t1w1file ' ' segfile ' -m -f .4'])
 
-
-segfile=fullfile(outDir,'t1_bet.nii.gz')
-eval(['! bet ' t1wfile ' ' segfile ' -m -f .4'])
 
 fprintf('\n fsl fast ...\n');
+% eval(['! fast '  TforSeg_file ])
 eval(['! fast '  segfile ])
 
+ segfile=fullfile(outDir,'t1_bet_seg.nii.gz');
+%  segfile=fullfile(outDir,'TforSeg_seg.nii.gz');
 
-segfile=fullfile(outDir,'t1_bet_seg.nii.gz');
 
-
-AnalysisInfo.T1forWF        = T1file;
-AnalysisInfo.WFdate         = date;
-AnalysisInfo.T1wSeg         = segfile
-save(infofile,'AnalysisInfo');
+% AnalysisInfo.T1forWF        = T1file;
+% AnalysisInfo.WFdate         = date;
+% AnalysisInfo.T1wSeg         = segfile
+% save(infofile,'AnalysisInfo');
 
 
 fprintf('\n T1 map and ventrical location restrictions... \n');
@@ -108,8 +112,8 @@ WMClus=find([clus1,clus2,clus3]==min([clus1,clus2,clus3]));
 GMClus=find([clus1,clus2,clus3]==median([clus1,clus2,clus3]));
 clear tmpseg;
  if ~(csfClus==3 & GMClus==1 & WMClus==2) 
-     warn=sprintf('The fsl segmentation is possibly false, possibly due to extreme values of T1.\n It is recommended to segment te CSF elsewhere and insert the csf nifti as input.\n Segmentation can be done either mannualy or using freesurfer,\n but this is a very long process that could take up to a day');
-     warning(warn)
+     warn=sprintf('The fsl segmentation is possibly false, possibly due to extreme values of T1.\n It is recommended to segment te CSF elsewhere and insert the csf nifti as input.\n Segmentation can be done either mannualy or using freesurfer.\n ');
+     error(warn)
  end
 
 CSF1=zeros(size(T1));CSF1(seg.data==3)=1;
@@ -197,3 +201,20 @@ mrQ.csf=csffile;
 mrQ.T1w_tissue=filefsl;
 
 
+
+
+
+%% run ANTS segmentation using the brainmask aand the Atropos command
+% %  segfile=fullfile(outDir,'t1_seg.nii.gz');
+% %  seg_prob_file=fullfile(outDir,'t1_seg_prob.nii.gz');
+
+% % cmAtropos=['/home/ANTs-2.1.0-Linux/bin/Atropos -d 3 -a ' t1wfile ' -o [' segfile ' , ' seg_prob_file '] '...
+% % '-c [10,0.001] -m [0.1,1x1x1] -i kmeans[4] -x ' BMfile ];
+% % 
+% % % Run the command in unix and get back status and results: 
+% %     [status, result] = system(cmAtropos); 
+%%or instead of BET USE THE BRAIN maSK
+% TforSeg_file=fullfile(outDir,'TforSeg.nii.gz');
+% TforSeg=readFileNifti(t1wfile); TforSeg=TforSeg.data;
+% TforSeg(BM==0)=0;
+% dtiWriteNiftiWrapper(single(TforSeg),xform,TforSeg_file);

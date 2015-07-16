@@ -5,8 +5,10 @@ function opt=mrQ_PD2WF_step5(opt,csffile,segfile)
 % AM (C) Stanford University, VISTA
 
 %% get the CSF (ventricals) full tissue segmetation and PD maps to calcultate Water fraction (WF)
-if notDefined('csffile');csffile = fullfile(opt.outDir, 'csf_seg_T1.nii.gz');end
-if notDefined('segfile');segfile = fullfile(opt.outDir, 't1_bet_seg.nii.gz');end
+if notDefined('csffile'); %csffile = fullfile(opt.outDir, 'csf_seg_T1.nii.gz');end
+csffile = fullfile(opt.outDir, 'csf_seg_T1.nii.gz');end
+if notDefined('segfile');%segfile = fullfile(opt.outDir, 't1_bet_seg.nii.gz');end
+    segfile = fullfile(opt.outDir, 'T1w_tissue.nii.gz');end
 
 if(exist(csffile,'file')); fprintf(['Loading CSF data from: ' csffile '\n']); CSF = readFileNifti(csffile);CSF=double(CSF.data);
 else   error(['error , can not find the file: '  csffile])    ;end
@@ -19,10 +21,11 @@ PD=readFileNifti(opt.PDfile); xform=PD.qto_xyz;PD=PD.data;
 %% calcute the CSF PD
 
 % find the white matter mean pd value from segmetation.
-wmV=mean(PD(seg==3 & PD>0));
+% wmV=mean(PD(seg==3 & PD>0)); fsl conventions changed
 
-% assure thata the CSF ROI have pd value that are resnable.  The csf roi is a reslut of segmentation algoritim runed on the
-% T1wighted image and cross section with T1 values. Yet  the ROI may have some contaminations or segmentation faules .
+
+% make sure the CSF ROI have pd value that are resonable.  The csf roi is a result of segmentation algorthm run on the
+% T1 weighted image and cross section with T1 values. Yet  the ROI may have some contaminations or segmentation faults .
 %Therefore, we create some low and up bonderies. No CSF with PD values that are the white matter PD value(too low) or double the white matter values (too high).
 CSF1=CSF & PD>wmV & PD< wmV*2;
 

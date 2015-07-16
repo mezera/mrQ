@@ -98,7 +98,7 @@ end
 if(exist('T1file','var') && ~isempty(T1file))
     disp(['Loading T1 data from ' T1file '...']);
 else
-    T1file=mrQ_getT1file(mrQ);
+   [ T1file,~,~]=mrQ_get_T1M0_files(mrQ,1,0,0);
 end
 
 %         T1file1= fullfile(outDir,'maps/T1_map_lsq.nii.gz');
@@ -165,7 +165,7 @@ load(infofile);
 
 % Set field strength
 if (~exist('mField','var')|| isempty(mField))
-    mField = AnalysisInfo.fieldStrength;
+    mField = mrQ.fieldstrength;
 end
 
 % Save files used and params for future reference

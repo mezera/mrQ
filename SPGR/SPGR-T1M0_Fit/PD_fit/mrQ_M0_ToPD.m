@@ -9,7 +9,7 @@ function [mrQ]=mrQ_M0_ToPD(mrQ)
 
 if ~isfield(mrQ,'PDfit_Method');
     
-    mrQ.PDfit_Method=1; % 1. will use only T1 to fit (default); 2. Will use only multi coils to fit; 3. Will use both multi coils and T1 to fit;
+    mrQ.PDfit_Method=1; % 1. will use only T1 to fit (default old 5); 2. Will use only multi coils to fit (old 2); 3. Will use both multi coils and T1 to fit (old 1);
 end
 
 if mrQ.PDfit_Method~=1
@@ -71,7 +71,7 @@ end
 %% Build the local fits
 %Join the local overlap area to one PD image.
 
-mrQ.opt=mrQ_buildPD_ver2(mrQ.opt_logname,0,[],[],[],0.01);
+mrQ.opt=mrQ_buildPD_ver2(mrQ.opt_logname,[],[],[],[],0.01);
 %
 
 %4 build

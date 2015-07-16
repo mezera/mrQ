@@ -91,7 +91,8 @@ mrQ.maps.SIRpath=fullfile(mapDir,'SIR_map.nii.gz');
 
 SEIRT1Dir=fullfile(mapDir,'SEIR');
 mkdir(SEIRT1Dir)
-cmd =(['! cp ' mrQ.T1file ' '  SEIRT1Dir '/.']) ;
+% cmd =(['! cp ' mrQ.T1file ' '  SEIRT1Dir '/.']) ;
+cmd =(['! cp ' T1file ' '  SEIRT1Dir '/.']) ;
 eval(cmd);
 
 

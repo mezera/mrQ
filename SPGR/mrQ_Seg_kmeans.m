@@ -101,9 +101,11 @@ end
 seg=zeros(size(R1));
 seg(mask)=IDX;
 
-% the tissue with the highest value is white matter, with the lowest va;ue
+% the tissue with the highest value is white matter, with the lowest value
 % is GM, and the tissue with the intermediate values is deep nuclei and
-% tissue between the WM and the GM
+% tissue between the WM and the GM. in some segmentations the lowest valie
+% is is air, intermediate is GM, and WM is the highest value. either waythe
+% order is maintained and weget a segmentation of GM and WM and CSF
 
 [val,idx]=sort(C);
 GMclass=1;DEEPclass=2;WMclass=3; CSFclass=4;

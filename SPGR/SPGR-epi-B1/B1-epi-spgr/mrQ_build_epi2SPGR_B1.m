@@ -14,9 +14,12 @@ T1=readFileNifti(mrQ.Ants_Info.RB_T1_epi_spgr);
 B1=readFileNifti(mrQ.Ants_Info.RB_B1_epi_spgr);
 xform=T1.qto_xyz;
 mask=logical(T1.data);
-
-
 B1Fit_S=zeros(size(mask));
+
+mask(B1.data==0)=0;
+mask(isinf(B1.data))=0;
+mask(isnan(B1.data))=0;
+
 B1Fit_S(mask)=B1.data(mask);
 % clear T1 B1 mask;
 
@@ -132,11 +135,17 @@ end
 %% calculate if the smoothing intruduce a constant bias, and correct for it.
 
 % original bias clearing from mrQ_smooth_LR_B1.m
-% Cal=median(B1(tissuemask)./B1Fit_S(tissuemask));
-% B1Fit_S=B1Fit_S.*Cal;
+mask(B1Fit_S==0)=0;
+
+mask(  isnan( B1.data(:)./B1Fit_S(:) )  )=0;
+mask(  isinf( B1.data(:)./B1Fit_S(:) )  )=0;
 
 Cal=median(B1.data(mask)./B1Fit_S(mask));
 B1Fit_S=B1Fit_S.*Cal;        
+B1Fit_S(B1Fit_S<=0)=eps;
+B1Fit_S(isnan(B1Fit_S))=eps;
+B1Fit_S(isinf(B1Fit_S))=eps;
+
 
         %% save
 outDir = mrQ.spgr_initDir; 

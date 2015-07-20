@@ -85,7 +85,7 @@ for ii= st:ed,
     
     
     if  skip(Iter)==1
-        disp(['skipping box  bad data'])
+%         disp(['skipping box  bad data'])
          
     else
         %% lop over Poly degrees

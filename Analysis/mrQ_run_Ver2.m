@@ -1,4 +1,4 @@
-function mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_seir,B1file)
+function mrQ_run_Ver2(sub,dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_seir,B1file)
 %  mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_seir,B1file)
 %  this is an improved version of: mrQ_runNIMS(dir,Callproclus,refFile,outDir)
 %
@@ -24,11 +24,16 @@ function mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_sei
 %       Biophysical model will be applied to calculate VIP and SIR maps.
 % %
 %
+folders={'501_s1','501_s2','502_s1','502_s2','503_s1','503_s2','504_s1','504_s2',...
+    '505_s1','505_s2','506_s1','506_s2','507_s1','507_s2','508_s1','508_s2',...
+    '509_s1','509_s2','510_s1','510_s2'};
+fol=folders{sub};
 
 %% Create the initial structure
-
+ dir= strcat('/home/shai.berman/Documents/Code/mrQ_test/',fol,'/input');
 if notDefined('outDir')
-    outDir = fullfile(dir,'mrQ');
+    outDir= strcat('/home/shai.berman/Documents/Code/mrQ_test/',fol,'/output');
+%     outDir = fullfile(dir,'mrQ');
 end %creates the name of the output directory
 
 if ~exist(outDir,'dir'); mkdir(outDir); end
@@ -244,9 +249,9 @@ if mrQ.segmentation==0;
     %     default- fsl segmentation
     if (mrQ.runfreesurfer==0 && ~isfield(mrQ,'freesurfer'))
         % Segment the T1w by FSL (step 1) and get the tissue mask (CSF WM GM) (step 2;
-%         mrQ=mrQ_segmentT1w2tissue(mrQ);
- mrQ=mrQ_Seg_kmeans(mrQ,mrQ.BrainMask);
-    mrQ.segmentation=1;
+        %         mrQ=mrQ_segmentT1w2tissue(mrQ);
+        mrQ=mrQ_Seg_kmeans(mrQ,mrQ.BrainMask);
+        mrQ.segmentation=1;
         
         %      run FreeSurfer : it is slow and needs extra defintions.
     elseif (mrQ.runfreesurfer==1)

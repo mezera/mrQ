@@ -23,7 +23,7 @@ tissuemask=tissuemask & errMap< prctile(errMap(tissuemask),95);
 
 
 
-%% II fit local regresiions
+%% II fit local regressions
 % we will smooth the B1 map by local regresiions
 %the fit is done in tree steps
 %1.we first estimate the voxel that have can be estimate with great confidance
@@ -138,10 +138,14 @@ for  jj=1:size(B1Fit_S,1)
         
         [zg,xg,yg]= gridfit(x,y,z,1:2:size(tmp,1),1:2:size(tmp,2),'smoothness',smoothnessVal);
         ZI = griddata(xg,yg,zg,XI,YI);
+       
         % put the result gain in the 3D gain image and fix orientation
         ZI=rot90(ZI);
         ZI = flipdim(ZI,1);
+       
         B1Fit_S(jj,:,:)=ZI;
+
+        
         
         clear ZI
     end;
@@ -184,9 +188,15 @@ B1Fit_S(B1Fit_S<0)=0;
 
 
 %% calculate if the smoothing intruduce a constant bias, and correct for it.
+%remove values that would cause correction value to be 0 or inf.
+tissuemask(B1Fit_S==0)=0;
+tissuemask(isnan(B1(:)./B1Fit_S(:)))=0;
+tissuemask(isinf(B1(:)./B1Fit_S(:)))=0;
 
 Cal=median(B1(tissuemask)./B1Fit_S(tissuemask));
-B1Fit_S=B1Fit_S.*Cal;
+ B1Fit_S=B1Fit_S.*Cal;
+
+
 
 %% SAVE the result smooth B1 map
 outDir = mrQ.spgr_initDir; % check that this is right

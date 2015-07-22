@@ -52,7 +52,7 @@ if (~exist('T1file','var') || isempty(T1file)),
 end
 
 if ~exist(T1file,'file') && isfield(mrQ,'outDir') 
-    T1file=mrQ_getT1file(mrQ);
+    T1file=mrQ_get_T1M0_files(mrQ);
     %T1file = fullfile(mrQ.outDir,'T1_map_lsq.nii.gz');
 end
 T1 = readFileNifti(T1file);

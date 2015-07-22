@@ -5,10 +5,8 @@ function opt=mrQ_PD2WF_step5(opt,csffile,segfile)
 % AM (C) Stanford University, VISTA
 
 %% get the CSF (ventricals) full tissue segmetation and PD maps to calcultate Water fraction (WF)
-if notDefined('csffile'); %csffile = fullfile(opt.outDir, 'csf_seg_T1.nii.gz');end
-csffile = fullfile(opt.outDir, 'csf_seg_T1.nii.gz');end
-if notDefined('segfile');%segfile = fullfile(opt.outDir, 't1_bet_seg.nii.gz');end
-    segfile = fullfile(opt.outDir, 'T1w_tissue.nii.gz');end
+if notDefined('csffile'); csffile = fullfile(opt.outDir, 'csf_seg_T1.nii.gz');end
+if notDefined('segfile'); segfile = fullfile(opt.outDir, 'T1w_tissue.nii.gz');end
 
 if(exist(csffile,'file')); fprintf(['Loading CSF data from: ' csffile '\n']); CSF = readFileNifti(csffile);CSF=double(CSF.data);
 else   error(['error , can not find the file: '  csffile])    ;end

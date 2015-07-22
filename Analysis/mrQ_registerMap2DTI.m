@@ -20,32 +20,26 @@ end
 
 
 %% Configure ENV paths
-
-orig_path = getenv('LD_LIBRARY_PATH');
-colon_idx = strfind(orig_path, ':');
-
-matlab_path = [];
-other_path = [];
-
-for i=1:(length(colon_idx)-1)
-    
-    this_path = orig_path(colon_idx(i):colon_idx(i+1));
-    % This is part of the matlab path:
-    if strfind(this_path, 'matlab')
-        matlab_path = [matlab_path, ':', this_path];
-        
-        % Should go before the matlab bit of the path (all the rest):
-    else
-        other_path = [other_path, ':', this_path];
-        
-    end
-end
-
-new_path = [other_path, ':', matlab_path];
-
-setenv('LD_LIBRARY_PATH', new_path)
-
-
+% % 
+% for i=1:(length(colon_idx)-1)
+%     
+%     this_path = orig_path(colon_idx(i):colon_idx(i+1));
+%     % This is part of the matlab path:
+%     if strfind(this_path, 'matlab')
+%         matlab_path = [matlab_path, ':', this_path];
+%         
+%         % Should go before the matlab bit of the path (all the rest):
+%     else
+%         other_path = [other_path, ':', this_path];
+%         
+%     end
+% end
+% 
+% new_path = [other_path, ':', matlab_path];
+% 
+% setenv('LD_LIBRARY_PATH', new_path)
+% 
+% 
 
 %% Calculate the transform
 
@@ -113,7 +107,7 @@ end
 %%
 
 % get the path back
-setenv('LD_LIBRARY_PATH', orig_path)
+% setenv('LD_LIBRARY_PATH', orig_path)
 
 return
 

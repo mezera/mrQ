@@ -104,6 +104,12 @@ for  jj=1:size(B1Fit,3)
         
         [zg,xg,yg]= gridfit(x,y,z,1:2:size(tmp,1),1:2:size(tmp,2),'smoothness',smoothnessVal);
         ZI = griddata(xg,yg,zg,XI,YI);
+        if  ~isempty(isnan(ZI)) % we might get nan in the edges
+            ZIt = griddata(xg,yg,zg,XI,YI,'v4');
+            ZI(isnan(ZI))=ZIt(isnan(ZI));
+        end
+                        ZI(isnan(ZI))=0;
+
         % put the result gain in the 3D gain image and fix orientation
         ZI=rot90(ZI);
         ZI = flipdim(ZI,1);
@@ -138,7 +144,13 @@ for  jj=1:size(B1Fit_S,1)
         
         [zg,xg,yg]= gridfit(x,y,z,1:2:size(tmp,1),1:2:size(tmp,2),'smoothness',smoothnessVal);
         ZI = griddata(xg,yg,zg,XI,YI);
-       
+        if  ~isempty(isnan(ZI)) % we might get nan in the edges
+            ZIt = griddata(xg,yg,zg,XI,YI,'v4');
+            ZI(isnan(ZI))=ZIt(isnan(ZI));
+        end
+        
+               ZI(isnan(ZI))=0;
+
         % put the result gain in the 3D gain image and fix orientation
         ZI=rot90(ZI);
         ZI = flipdim(ZI,1);
@@ -175,6 +187,13 @@ for  jj=1:size(B1Fit_S,2)
         
         [zg,xg,yg]= gridfit(x,y,z,1:2:size(tmp,1),1:2:size(tmp,2),'smoothness',smoothnessVal);
         ZI = griddata(xg,yg,zg,XI,YI);
+        if  ~isempty(isnan(ZI)) % we might get nan in the edges
+            ZIt = griddata(xg,yg,zg,XI,YI,'v4');
+            ZI(isnan(ZI))=ZIt(isnan(ZI));
+        end
+        
+        ZI(isnan(ZI))=0;
+        
         % put the result gain in the 3D gain image and fix orientation
         ZI=rot90(ZI);
         ZI = flipdim(ZI,1);

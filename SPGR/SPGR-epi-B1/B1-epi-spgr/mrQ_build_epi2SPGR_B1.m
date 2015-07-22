@@ -55,6 +55,10 @@ end
             
             [zg,xg,yg]= gridfit(x,y,z,1:2:size(tmp,1),1:2:size(tmp,2),'smoothness',smoothnessVal);
             ZI = griddata(xg,yg,zg,XI,YI);
+            if  ~isempty(isnan(ZI)) % we might get nan in the edges
+                ZIt = griddata(xg,yg,zg,XI,YI,'v4');
+                ZI(isnan(ZI))=ZIt(isnan(ZI));
+            end
             % put the result gain in the 3D gain image and fix orientation
             ZI=rot90(ZI);
             ZI = flipdim(ZI,1);
@@ -88,6 +92,10 @@ end
             
             [zg,xg,yg]= gridfit(x,y,z,1:2:size(tmp,1),1:2:size(tmp,2),'smoothness',smoothnessVal);
             ZI = griddata(xg,yg,zg,XI,YI);
+            if  ~isempty(isnan(ZI)) % we might get nan in the edges
+                ZIt = griddata(xg,yg,zg,XI,YI,'v4');
+                ZI(isnan(ZI))=ZIt(isnan(ZI));
+            end
             % put the result gain in the 3D gain image and fix orientation
             ZI=rot90(ZI);
             ZI = flipdim(ZI,1);
@@ -121,6 +129,10 @@ end
             
             [zg,xg,yg]= gridfit(x,y,z,1:2:size(tmp,1),1:2:size(tmp,2),'smoothness',smoothnessVal);
             ZI = griddata(xg,yg,zg,XI,YI);
+            if  ~isempty(isnan(ZI)) % we might get nan in the edges
+                ZIt = griddata(xg,yg,zg,XI,YI,'v4');
+                ZI(isnan(ZI))=ZIt(isnan(ZI));
+            end
             % put the result gain in the 3D gain image and fix orientation
             ZI=rot90(ZI);
             ZI = flipdim(ZI,1);
@@ -141,7 +153,12 @@ mask(  isnan( B1.data(:)./B1Fit_S(:) )  )=0;
 mask(  isinf( B1.data(:)./B1Fit_S(:) )  )=0;
 
 Cal=median(B1.data(mask)./B1Fit_S(mask));
-B1Fit_S=B1Fit_S.*Cal;        
+B1Fit_S=B1Fit_S.*Cal; 
+
+% B1Fit_S(B1Fit_S<=0)=1;
+% B1Fit_S(isnan(B1Fit_S))=1;
+% B1Fit_S(isinf(B1Fit_S))=1;
+
 B1Fit_S(B1Fit_S<=0)=eps;
 B1Fit_S(isnan(B1Fit_S))=eps;
 B1Fit_S(isinf(B1Fit_S))=eps;

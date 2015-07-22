@@ -82,7 +82,7 @@ eval(cmd);
 
 
 mrQ.mapsDir=mapDir;
-mrQ.maps.T1path=fullfile(mapDir,'T1_map_lsq.nii.gz');
+mrQ.maps.T1path=fullfile(mapDir,'T1_map_Wlin.nii.gz');
 mrQ.maps.WFpath=fullfile(mapDir,'WF_map.nii.gz');
 mrQ.maps.TVpath=fullfile(mapDir,'TV_map.nii.gz');
 mrQ.maps.SIRpath=fullfile(mapDir,'SIR_map.nii.gz');
@@ -101,7 +101,7 @@ eval(cmd);
 
 BiasDir=fullfile(mrQ.OutPutNiiDir,'BiasMap');
 
-% if we redo it and maps dir is already exsist we will saved
+% if we redo it and maps dir already exists we will save
 % the old before we make a new one
 if (exist(BiasDir,'dir'))
     ex=0; num=0;
@@ -125,6 +125,11 @@ eval(cmd);
 cmd =(['! ln -s  '  BiasDir '/B1_Map.nii.gz ' mrQ.spgr_initDir '/.']) ;
 eval(cmd);
 
+cmd =(['! mv ' mrQ.spgr_initDir '/Gains.nii.gz ' BiasDir '/.']) ;
+eval(cmd);
+
+cmd =(['! ln -s  '  BiasDir '/Gains.nii.gz ' mrQ.spgr_initDir '/.']) ;
+eval(cmd);
 %% wighted images
 
 T1wDir=fullfile(mrQ.OutPutNiiDir,'T1w');
@@ -147,17 +152,28 @@ end
 mkdir(T1wDir);
 
 %
-cmd =(['! mv ' mrQ.spgr_initDir '/T1wfs_4.nii.gz ' T1wDir '/.']) ;
+% cmd =(['! mv ' mrQ.spgr_initDir '/T1wfs_4.nii.gz ' T1wDir '/.']) ;
+% eval(cmd);
+% 
+% cmd =(['! ln -s  '  T1wDir '/T1wfs_4.nii.gz ' mrQ.spgr_initDir '/.']) ;
+% eval(cmd);
+% 
+% cmd =(['! mv ' mrQ.spgr_initDir '/T1wfs_2.nii.gz ' T1wDir '/.']) ;
+% eval(cmd);
+% 
+% cmd =(['! ln -s  '  T1wDir '/T1wfs_2.nii.gz ' mrQ.spgr_initDir '/.']) ;
+% eval(cmd);
+
+cmd =(['! mv ' mrQ.T1w_file ' ' T1wDir '/.']) ;
 eval(cmd);
 
-cmd =(['! ln -s  '  T1wDir '/T1wfs_4.nii.gz ' mrQ.spgr_initDir '/.']) ;
+cmd =(['! ln -s  '  T1wDir '/T1w.nii.gz ' mrQ.spgr_initDir '/.']) ;
 eval(cmd);
 
-cmd =(['! mv ' mrQ.spgr_initDir '/T1wfs_2.nii.gz ' T1wDir '/.']) ;
+cmd =(['! mv ' mrQ.T1w_file1 ' ' T1wDir  '/.']) ;
 eval(cmd);
 
-cmd =(['! ln -s  '  T1wDir '/T1wfs_2.nii.gz ' mrQ.spgr_initDir '/.']) ;
+cmd =(['! ln -s  '  T1wDir '/T1w1.nii.gz ' mrQ.spgr_initDir '/.']) ;
 eval(cmd);
-
 %%
  save(mrQ.name,'mrQ');

@@ -1,4 +1,4 @@
-function mrQ_run_Ver2(sub,dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_seir,B1file)
+function mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_seir,B1file)
 %  mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_seir,B1file)
 %  this is an improved version of: mrQ_runNIMS(dir,Callproclus,refFile,outDir)
 %
@@ -23,19 +23,14 @@ function mrQ_run_Ver2(sub,dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData
 %`      PD and coil gain will be fit from the M0 image.
 %       Biophysical model will be applied to calculate VIP and SIR maps.
 % %
-%
-folders={'501_s1','501_s2','502_s1','502_s2','503_s1','503_s2','504_s1','504_s2',...
-    '505_s1','505_s2','506_s1','506_s2','507_s1','507_s2','508_s1','508_s2',...
-    '509_s1','509_s2','510_s1','510_s2'};
-fol=folders{sub};
+
 
 %% Create the initial structure
- dir= strcat('/home/shai.berman/Documents/Code/mrQ_test/',fol,'/input');
-if notDefined('outDir')
-    outDir= strcat('/home/shai.berman/Documents/Code/mrQ_test/',fol,'/output');
-%     outDir = fullfile(dir,'mrQ');
-end %creates the name of the output directory
-
+ 
+if notDefined('outDir') 
+     outDir = fullfile(dir,'mrQ');
+end
+%creates the name of the output directory
 if ~exist(outDir,'dir'); mkdir(outDir); end
 
 mrQ = mrQ_Create(dir,[],outDir); %creates the mrQ structure
@@ -220,8 +215,6 @@ end
 
 %%  Create the synthetic T1 weighted images and save them to disk
 
-% currently not working
-
 if ~isfield(mrQ,'synthesis')
     mrQ.synthesis=0;
 end
@@ -238,8 +231,8 @@ else
 end
 
 
-%%
-%. Segmentation and CSF
+%% Segmentation and CSF
+
 if ~isfield(mrQ,'segmentation');
     mrQ.segmentation=0;
 end
@@ -293,6 +286,10 @@ end
 
 %%   calculate VIP TV and SIR
 
+if ~isfield(mrQ,'SPGR_PDBuild_done')
+    mrQ.SPGR_PDBuild_done=0;
+end
+
 if (mrQ.SPGR_PDBuild_done==0)
     fprintf('\n calculate VIP TV SIR form T1 and WF maps               \n');
     
@@ -307,14 +304,13 @@ end
 
 
 
+%%  Create a series of synthetic T1w images
 
+[mrQ.T1w_file,mrQ.T1w_file1] =mrQ_T1wSynthesis1(mrQ);
 
 %% Organize the OutPut  directory
 mrQ=mrQ_arrangeOutPutDir(mrQ);
 
-%%  Create a series of synthetic T1w images
-
-[mrQ.T1w_file,mrQ.T1w_file1] =mrQ_T1wSynthesis1(mrQ);
 %done
 mrQ.AnalysisDone=1;
 mrQ.AnalysisDoneDate=date;

@@ -33,7 +33,7 @@ function [T1 PD resNorm] = mrQ_fitT1PD_LSQ(s,brainMask,tr,flipAngles,M0,t1,Gain,
 %
 % See Also:
 %       mrQfit_T1M0_ver2.m
-
+%
 
 %% Check inputs
 
@@ -61,10 +61,9 @@ if str2num(a(end-3:end))==2012
 else
     options =  optimset('LevenbergMarquardt','on','Display', 'off','Tolx',1e-12);%'TolF',1e-12
     
-end% we put all the relevant data in a structure call op.t thiss will make it  easyer to send it between the computer in the grid
+end% we put all the relevant data in a structure call opt. This will make it  easier to send it between the computers in the grid
 sz=size(brainMask);
-for i=1:length(s)
-    
+for i=1:length(s) 
     tmp=s(i).imData(brainMask);
     opt.s(:,i)=double(tmp);
 end
@@ -239,13 +238,6 @@ if SGE==1;
             
             
             end
-            
-            
-            
-            
-            
-            
-            
             
             
             

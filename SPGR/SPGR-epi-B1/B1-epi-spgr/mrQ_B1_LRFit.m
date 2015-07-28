@@ -1,44 +1,43 @@
 function mrQ_B1_LRFit(optName,jumpindex,jobindex)
 %
-% mrQ_B1_gridFit(opt,jumpindex,jobindex)
-%  this function call by the sun grid it load the relavant data and fit the
-%  B1 in a rigion (volume).
-% the imaging voulume region also call here "box". The box is a location (few voxel 100's to
-% 1000's).  
-% INPUTS:
-%       opt - this is optmization structure that was passed from
-%       jumpindex - how many boxes this grid call we fit (book keeping)
-%       jobindex  - the number of box it will start whe ncalling the grid
-%       (book keeping)
+% function mrQ_B1_LRFit(optName,jumpindex,jobindex)
 %
-% OUTPUTS:
-%  save an output file with fitted parameters in a tmp directorry
-%   this will be used later  to make the B1 map
+%  This function calls the SunGrid, loads the relevant data, and fits the
+%  B1 in a specific region (volume). Herein, the imaging volume region is
+%  also called the "box". The box is a location ranging in size from a few
+%  hundred voxels to a few thousand. 
+%
+%    ~INPUTS~
+%         optName: This is optmization structure that was passed from
+%                    mrQ_PD_LRB1SPGR_GridParams.m 
+%       jumpindex: How many boxes we fit in this grid call  (bookkeeping) 
+%        jobindex: The number of boxes it will start when calling the grid 
+%                  (bookkeeping)
+%
+%   ~OUTPUTS~
+%  This function will save an output file with fitted parameters to a tmp
+%  directory. This will be used later to make the B1 map.
 
 % SEE ALSO:
 % AM (C) Stanford University, VISTA
 %
-%
 
 %% I. Initialization
-
-
 load(optName);
 %find the box to work on
 j=0;
 st=1 +(jobindex-1)*jumpindex;
 ed=st+jumpindex-1;
 
-%cheack that this box have brain data
+%chack that this box has brain data
 if ed>opt.N_Vox2Fit, ed=opt.N_Vox2Fit;end;
 
 nIteration=ed-st+1;
-%intilazie parameters and saved outputs
+%initialize parameters and saved outputs
 
 %
 
-
-% initite the saved parameters
+% initiate the saved parameters
 exitflag=zeros(nIteration,1);
 resnorm=zeros(nIteration,1);
 UseVoxN=zeros(nIteration,1);
@@ -56,7 +55,7 @@ B1=zeros(nIteration,1);
 BM=readFileNifti(opt.tisuuemaskFile); 
 BM=logical(BM.data);    
   
-    %% get the needed parameters to fit
+    % Get the needed parameters to fit
     %EPI space
     [tr, flipAngles,Res]=epiParams(opt);
     SigMask=logical(ones(size(BM)));
@@ -66,13 +65,15 @@ BM=logical(BM.data);
 
 
     loc=find(SigMask);
-%%  II. go over the box the boxs
+    
+    
+%%  II. Go over box by box
    tic    ;
 for ii= st:ed,
-    %run over the box you like to fit
+    %run over the box you'd like to fit
+    
    % clear parameters
     Iter= Iter+1;
-   
    
     if ~(ii>length(loc))
           [S, t1, BM1,SZ, UseVoxN(Iter), skip(Iter), f ]=  mrQ_GetB1_LR_Data(opt,Res,BM,loc(ii));
@@ -80,15 +81,11 @@ for ii= st:ed,
         skip(Iter)=1;
     end
       
-          
-    
-    
     
     if  skip(Iter)==1
-%         disp(['skipping box  bad data'])
-         
+%         disp(['skipping box bad data'])        
     else
-        %% lop over Poly degrees
+        % loop over Poly degrees
      S=reshape(S,prod(SZ(1:3)),SZ(4));
             
         f1=repmat(f(:),1,size(ratios,1));
@@ -98,19 +95,18 @@ for ii= st:ed,
      double(f1),  BM1(:), ratios),...
     1,[],[],options);
         
-%% some thing wrong with the flip angle i bellive. cheack the ANat call. and file orders!!!
+% Something wrong with the flip angle, I believe. 
+% Check the ANat call and file orders!!!
  
      end
      
 
         end; 
         toc
-        %%  X-Validation Fit we can save some of the ratio and corrsvalidate the poly degree or  box size .
+ %% III. Cross-Validation Fit
+ % we can save some of the ratio and cross-validate the poly degree or box size.
        
         %
-
-
-
 
 name=[ opt.name '_' num2str(st) '_' num2str(ed)];
 
@@ -128,8 +124,4 @@ flipAngles=opt.FlipAngle;
 tr=opt.TR;
 end
 
-
 %%
-
-
-

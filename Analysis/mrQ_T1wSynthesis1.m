@@ -1,6 +1,6 @@
 function [saveName,saveName1] =mrQ_T1wSynthesis1(mrQ,WFfile,T1file,BMfile,outDir,symTR,symFA, saveName,saveName1,FullBMfile)
 % 
-% mrQ_T1wSynthesis1(dataDir,B1file,outDir,trIn,flipAngleIn)
+%[saveName,saveName1] = mrQ_T1wSynthesis1(mrQ,WFfile,T1file,BMfile,outDir,symTR,symFA, saveName,saveName1,FullBMfile)
 % 
 % Create a series of synthetic T1w images and save them to the dataDir.
 % 
@@ -26,7 +26,6 @@ function [saveName,saveName1] =mrQ_T1wSynthesis1(mrQ,WFfile,T1file,BMfile,outDir
 
 %% Check INPUTS
 
-
 if(exist('T1file','var') && ~isempty(T1file))
     disp(['Loading T1 data from ' T1file '...']);
 else
@@ -50,7 +49,6 @@ else
 
 end
 PD=readFileNifti(WFfile);PD=PD.data;
-
 
 if notDefined('outDir')
     outDir=mrQ.outDir;
@@ -162,9 +160,6 @@ t1ww = ( (1-exp(-symTR./t1)).*sin(fa)./(1-exp(-symTR./t1).*cos(fa)));
  % clip what we define as notbrain
   t1ww(~mask)=0;
 
-  
-  
-  
 %% IV. Save out the resulting nifti files
 
 % Write them to disk

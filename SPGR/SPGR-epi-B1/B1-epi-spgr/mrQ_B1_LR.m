@@ -1,37 +1,41 @@
 function mrQ=mrQ_B1_LR(mrQ)
-% this function control the B1 fit.
-% The function have two parts. 
-% 1. fitting each voxel.
-%     The fit is not independed to each voxel. A local regresion (LR) approch is taken.
-%     When each voxel is fitted is close seraund voxel ae also used for the fit.
+%  function mrQ=mrQ_B1_LR(mrQ)
+%
+% This function controls the B1 fit.
+% The function has two parts: 
+% 1. Fitting each voxel.
+%     The fit is not independent to each voxel. A local regression (LR) 
+%     approach is taken. When each voxel is fitted, close surrounding voxels 
+%     are also used for the fit.
 % 
-% 2. Join all the voxels to B1 map.
-% 	after join the voxels the fits we check for smoothnesswe  and exstrapulate to voxel that are missing in EPI space and then in SPGR space.
-
-%% get ready to fit B1 and call to fit
+% 2. Joining all the voxels to the B1 map.
+% 	  After joining the voxels to the fits, we check for smoothness.  Then
+%     we extrapolate to voxels that are missing in EPI space and then to
+%     those in SPGR space.
+%
+% The INPUT is a mrQ structure, and the OUTPUT is the updated mrQ
+% structure.
+%
+%% Get ready to fit B1 and call to fit
 if ~isfield(mrQ,'B1fit_done');
     mrQ.B1fit_done=0;
 end
 
 if ( mrQ.B1fit_done==0)
     
-    
-    % we build a mask for the voxel we like to fit with in epi space
+% We build a mask for the voxel we'd like to fit with in EPI space.
 % [mrQ.maskepi_File] = mrQ_B1FitMask(mrQ.Ants_Info.dirAnts,mrQ.spgr2epiAlignFile,mrQ.SEIR_epi_fitFile,mrQ.spgr_initDir);
-% shai : there is not DirAnts in the Ants_Info, looks like you meant te
-% directory where the aligned and warped files are.. 
+% shai : there is not DirAnts in the Ants_Info, looks like you meant the
+% directory where the aligned and warped files are. 
 [mrQ.maskepi_File] = mrQ_B1FitMask(mrQ.spgr_initDir,mrQ.spgr2epiAlignFile,mrQ.SEIR_epi_fitFile,mrQ.spgr_initDir);
-
     
     %define the fit parameters
     mrQ.B1.logname=mrQ_PD_LRB1SPGR_GridParams(mrQ);
     
-    
     % call to fit (with or without grid)
     mrQ_fitB1LR_Call(mrQ.B1.logname,mrQ.SunGrid);
     
-    
-    %check that the fit is done (for SGE )  before you move on (while loop)
+    %check that the fit is done (for SGE)  before you move on (while loop)
     mrQ. B1fit_done=mrQ_Gridcheck(mrQ.B1.logname,mrQ.SunGrid,3);
     
     save(mrQ.name,'mrQ');
@@ -40,32 +44,30 @@ end
     
     %%
     
-    % build the grid B1 fits
+    % Build the grid B1 fits
     if isfield(mrQ,'B1Build_done');
     else
         mrQ.B1Build_done=0;
     end
     
     if (mrQ.B1Build_done==0 && mrQ.B1fit_done==1)
-        fprintf('Build the B1 map form local fits           \n ');
+        fprintf('Build the B1 map from local fits    \n ');
         
-        % join the estiations
+        % join the estimations
         mrQ=mrQ_build_LR_B1(mrQ);
         
-% smooth the B1 fit clear outlayer and exstarpulate for voxel that have no
-% fits.
-         mrQ=mrQ_smooth_LR_B1(mrQ);
-         
-         
-        mrQ=mrQ_build_epi2SPGR_B1(mrQ);
-                 mrQ.B1Build_done=1;
-    save(mrQ.name,'mrQ');
+   % Smoothe the B1 fit, clear outliers, and extrapolate for voxels that 
+   % have no fits.
+        mrQ=mrQ_smooth_LR_B1(mrQ);
         
-    end    
+        mrQ=mrQ_build_epi2SPGR_B1(mrQ);
+        mrQ.B1Build_done=1;
+        save(mrQ.name,'mrQ');
+        
+    end
             
  
-    
-    %% non linear Fit of  B1
+    %% non-linear fit of  B1
     
 %     %%% FIT B1 by lsq fit compare T1 SEIR(Res{1}.im) to the multi flip
 %     % angle Res{3:end}.im % USE sge make the fit faster

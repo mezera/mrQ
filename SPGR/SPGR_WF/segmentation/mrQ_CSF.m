@@ -1,11 +1,11 @@
 function [AnalysisInfo]=mrQ_CSF(outDir,freesurfer,T1file,AnalysisInfo)
 %
-% Create a CSF ROI from the freesurfer segmentaiton
+% Create a CSF ROI from the freesurfer segmentation
 % 
 % mrQ_CSF(outDir,freesurfer,T1file)
 %
 % This function will generate a smooth white matter mask for for the coil
-% gain estimatin with polynomial with a degree (defult 3) and save a clean
+% gain estimation with polynomial with a degree (default 3) and save clean
 % PD and WF maps.
 % 
 % Provide a freesurfer raw segmentation image in nii.gz format
@@ -23,8 +23,7 @@ function [AnalysisInfo]=mrQ_CSF(outDir,freesurfer,T1file,AnalysisInfo)
 % 
 % WEB RESOURCES
 %       http://white.stanford.edu/newlm/index.php/Quantitative_Imaging
-%       
-% 
+%        
 % (C) Stanford University, VISTA Lab 
 % 
 

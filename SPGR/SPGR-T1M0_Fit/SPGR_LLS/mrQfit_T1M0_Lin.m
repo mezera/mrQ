@@ -1,45 +1,40 @@
 function [mrQ]=mrQfit_T1M0_Lin(mrQ,B1File,MaskFile,outDir,dataDir,clobber)
 %  [mrQ]=mrQfit_T1M0_Lin(mrQ,B1File,MaskFile,outDir,dataDir,clobber)
 %
+% This function creates NIfTI files in the outDir, and saves their
+% location in the updated mrQ structure, which is the output of the
+% function. This function will create NIfTIs for the following (if they
+% don't exist): headmask, brainmask, and linearly fitted T1.
+%
 % INPUT:
-%       mrQ:        the mrQ structure. 
-%       B1File:     nifti file of a B1 map, default is ones
-%                   matrice
-%       MaskFile:   nifti file of brain mask if not defined it will be
-%                   created using mrAnatExtractBrain, and folowed by some
-%                   corections. 
-
-%       clobber: 
+%       mrQ:        The mrQ structure.
+%       B1File:     NIfTI file of a B1 map. Default is a ones matrix.
+%       MaskFile:   NIfTI file of brain mask. If not defined, it will be
+%                   created using mrAnatExtractBrain.m, and followed by some
+%                   corrections. 
+%       outDir:     Directory to which the data will be saved.
+%       dataDir:    Directory of the data.
+%       clobber:    Default is false.
 % 
 % OUTPUT:
-%                   the function creates nifti filesin the outDir, and saves their
-%                   location in the mrQ sructure which is the output of the
-%                   function. this function will create niftis for the (if
-%                   don't exist): headmask, brainmask, and linearly fitted
-%                   T1.
+%       mrQ:        The mrQ structure, updated.  
 % 
 % WEB RESOURCES
 %       http://white.stanford.edu/newlm/index.php/Quantitative_Imaging
-%
 %
 % EXAMPLE USAGE:
 %    *** add relevant example ***
 %    [mrQ.AnalysisInfo]=mrQfit_T1M0_ver2(mrQ.spgr_initDir,mrQ.lsq,mrQ.SEIRepiDir,mrQ.SPGR_coilWeights,mrQ.runfreesurfer,mrQ.sub);
 %
-% (c) Stanford University, VISTA Lab
-
-% Author: Aviv Mezer  date 01.18.2011
-% Copyright, Stanford University 2011
+% (C) Stanford University, VISTA Lab
+%
+% Author: Aviv Mezer, 01.18.2011
 % rewrite by AM. June 16 2011
-% rewrite by AM. July 29 2011 %fit for the B1 fitting to be based on local
-% regression
+% rewrite by AM. July 29 2011 
+%     %fit for the B1 fitting to be based on local regression
 
-
-%%
 
 %% I. Check INPUTS and set defaults
-
-
 
 if notDefined('dataDir');
     dataDir = mrQ.spgr_initDir;
@@ -67,7 +62,7 @@ load(outFile);
 
 
 
-%% IV. Setup and save AnalysisInfo file.
+%% III. Setup and save AnalysisInfo file.
 % % a structure that keep records of the T1 fit
 % infofile=fullfile(outDir,'AnalysisInfo.mat');
 % if (exist(infofile,'file'))
@@ -88,10 +83,10 @@ load(outFile);
 %
 
 
-%% V. Calculate initial fits without correction
+%% IV. Calculate initial fits without correction
 
 % !!!!!!!!!!!!!!!!!!!!!!!
-% All the inital parts can be done in lower resolution. Should save it and
+% All the initial parts can be done in lower resolution. Should save it and
 % use it for the B1 gain part.
 
 if notDefined('B1File')
@@ -105,9 +100,7 @@ end
 
 
 
-%% VI. Linear fit to estimate T1 and M0 no B1 (this will be used to fit B1)
-
-
+%% V. Linear fit to estimate T1 and M0 no B1 (this will be used to fit B1)
 
 t1file   = fullfile(outDir,['T1_LFit.nii.gz']);
 M0file   = fullfile(outDir,['M0_LFit.nii.gz']);
@@ -151,15 +144,16 @@ if~( exist(t1file,'file') &&  exist(M0file,'file')  && ~clobber),
         %findind the first and the last slice of the brain
         [~, ~, z]=ind2sub(size(brainMask),find(brainMask));
         
-        % Create the head mask the head mask make the registration with the
-        % SEIR imags better using ANts softwere
+   % Create the head mask.
+        % The head mask makes the registration with the SEIR images better 
+        % using ANTS software
         
-        % we find the voxel that have signal geater then 2std below the
+        % Find the voxels that are more than 2 stdev below the
         % mean brain signal
         cutV=mean(s(1).imData(brainMask)) -2*std(s(1).imData(brainMask));
         %noise estraction - we will need to genralize this somehow espesialy
         
-        % selecting the relevant slices (this is not beutiful)
+        % selecting the relevant slices (this is not beautiful)
         HM=B1;
         HM(s(1).imData<cutV)=0;
         HM(:,:,1:min(z)+3)=0;
@@ -177,15 +171,14 @@ if~( exist(t1file,'file') &&  exist(M0file,'file')  && ~clobber),
 %         SAVE head mask and brain mask as niftis
         dtiWriteNiftiWrapper(single(HM), xform, HMfile);
         dtiWriteNiftiWrapper(single(brainMask), xform, BMfile);
-           mrQ.HeadMask=HMfile;
-    mrQ.BrainMask=BMfile;
+        mrQ.HeadMask=HMfile;
+        mrQ.BrainMask=BMfile;
     else
         
         brainMask=niftiRead(MaskFile);
         brainMask=logical(brainMask.data);
         
     end
-    
      
     t1(~brainMask) = 0;
     M0(~brainMask) = 0;
@@ -197,8 +190,7 @@ if~( exist(t1file,'file') &&  exist(M0file,'file')  && ~clobber),
     mrQ.T1_LFit=t1file;
     mrQ.M0_LFit=M0file;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
-    
+
     if ~notDefined('HMfile')
         t1=t1_copy; M0=M0_copy;
         t1(~HM) = 0; 
@@ -216,8 +208,3 @@ if~( exist(t1file,'file') &&  exist(M0file,'file')  && ~clobber),
     end
     
 end;
-
-
-
-
-    

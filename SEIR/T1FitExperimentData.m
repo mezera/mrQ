@@ -2,21 +2,24 @@ function T1FitExperimentData(loadStr, saveStr, method, checkData)
 %
 % T1FitExperimentData(loadStr, saveStr, method,[checkData=1])
 %
+% ~INPUTS~
 % loadStr:    Data file to be loaded
-% saveStr:    Where results of the fit will be saved along with filename
+% saveStr:    Where results of the fit will be saved, along with filename
 % method:     What fitting method to use: NLS or NLSPR
-% checkData:  If you want to visually check the data leave empty or set to
-%             1. To not check data set to 0.
+% checkData:  If you want to visually check the data, leave empty or set to
+%             1. To not check data, set to 0.
 %
 % Estimates T1 together with:
-%   NLS:   a and b parameters to fit the data to a + b*exp(-TI/T1)
-%   NLSPR: a and b parameters to fit the data to |a + b*exp(-TI/T1)
+%   -Nonlinear least squares (NLS):   
+%                 a and b parameters to fit the data to a + b*exp(-TI/T1)
+%   -NLS with Polarity Restoration (NLS-PR): 
+%                 a and b parameters to fit the data to |a + b*exp(-TI/T1)|
 %
 %
 %  (c) Board of Trustees, Leland Stanford Junior University
-
-% written by J. Barral, M. Etezadi-Amoli, E. Gudmundson, and N. Stikov, 2009
-
+%
+% Written by J. Barral, M. Etezadi-Amoli, E. Gudmundson, and N. Stikov, 2009
+%
 
 %% Check INPUTS
 
@@ -71,13 +74,14 @@ end
 %% Check Data
 
 % Adding the option to check the data manually. Manual data checking is not
-% always practical to do given that many datasets may be processed in
+% always practical to do, given that many datasets may be processed in
 % sequence.
 
 % This cell may have some errors. It has been noted that we're getting
-% errors if I choose slice 12 - or if I say that the mask is no good. *
-% Need to explain what we're doing here and how to choose a slice, and how
-% to evaluate the graphs that appear *
+% errors if I choose slice 12 - or if I say that the mask is no good. 
+
+% * Need to explain what we're doing here and how to choose a slice, 
+% and how to evaluate the graphs that appear *
 
 if checkData
     % The data needs to lie along an exponential.
@@ -114,7 +118,7 @@ dataOriginal = data;
 
 %% Mask the background
 
-% For each slice we mask points dimmer than maskFactor*the brightest point.
+% For each slice we mask points dimmer than maskFactor * the brightest point.
 mesures=size(data,4);
 maskFactor = 0.03;
 mask = zeros(nbrow, nbcol, nbslice,mesures);
@@ -135,7 +139,9 @@ for v=1:size(data,4)
 end
 mask=(sum(mask,4));
 mask=logical(mask==mesures);
-%let fit also around the mask so we won't have holes (that can help registration to the SPGR)
+
+%Let's fit also around the mask so we won't have holes 
+%(that can help registration to the SPGR)
 D3=size(mask,3);
 if D3>1
     mask1=logical(smooth3(mask));%,'box',[5 5 5]
@@ -149,7 +155,7 @@ for i=1:size(mask1,3)
     mask1(:,:,i)=imfill(mask1(:,:,i),'holes');
 end;
 mask=double(mask1);
-% but exclude zeros nan and inf voxels
+% But exclude zeros, nan and inf voxels
 for i=1:length(extra.tVec);
     tmp=data(:,:,:,i);
     mask(isnan(tmp))=0;

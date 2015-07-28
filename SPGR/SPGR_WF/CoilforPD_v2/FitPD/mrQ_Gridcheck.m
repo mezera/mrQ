@@ -1,7 +1,7 @@
 function GridFit_done=mrQ_Gridcheck(opt_Log_name,SunGrid,CallType)
 %%
-% This loop checks if all the outputs have been saved or waits until
-% they are all done, if needed it will run again job that are missing
+% This loop checks whether all the outputs have been saved, or waits until
+% they are all done. If needed, it will re-run for jobs that are missing.
 
 if (~exist(opt_Log_name,'file')),
     
@@ -37,7 +37,7 @@ while GridFit_done~=true
         % Once we have collected all the nodes we delete the sge output
         eval(['!rm -f ~/sgeoutput/*' sgename '*'])
     else
-        % check if ther are jobs on the sun grid que list
+        % check if there are jobs on the sun grid queue list
         qStatCommand    = [' qstat | grep -i  job_' sgename(1:6)];
         [status result] = system(qStatCommand);
         tt=toc;

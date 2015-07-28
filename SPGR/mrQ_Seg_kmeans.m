@@ -1,15 +1,31 @@
-function [mrQ,seg]=mrQ_Seg_kmeans(mrQ,BMfile,CSFVal,T1file,M0file,outDir)
+function [mrQ]=mrQ_Seg_kmeans(mrQ,BMfile,CSFVal,T1file,M0file,outDir)
+% function [mrQ,seg]=mrQ_Seg_kmeans(mrQ,BMfile,CSFVal,T1file,M0file,outDir)
+%
+% Clip brain to ventricles area, then segment using k-means with three
+% clusters.
+%
+% This function uses FSL to segment into three tissues. It takes the CSF
+% tissue and restricts it by the T1 values. The CSF is also restricted to
+% be in the center of the brain in a box of approximately 60mm x 80mm x
+% 40mm. Assuming that the brain is in AC-PC space, this is where the
+% ventricles are.
+%
+% ~INPUTS~
+%          mrQ: The mrQ structure.
+%       BMfile: The location of the Brain Mask file.
+%       CSFVal: R1 for water at body temperature (in 1/sec). 
+%                  Default is 0.35.
+%       T1file: The location of the T1 file.
+%       M0file: The location of the M0 file.
+%       outDir: Directory of where the file should be saved to.
+%
+% ~OUTPUTS~
+%          mrQ: The updated mrQ structure
+%
+% See also: mrQ_get_T1M0_files.m
 
-%%clip brain to vernrucales area then segment using k means
 
-% 
-% The function segment by FSL to three tissue take the CSF tissue restrict
-% it by the T1 values the CSF is also restricted to be in the center of the
-% brain in a box of ~ 60x80x40mm asuming the brain is in ACPC space this is
-% where the ventrical are.
-% 
-% 
-
+%%
 if notDefined('CSFVal')
     CSFVal=0.35; %R1 in -sec water in body temp  (minimum value ) any think above that will cosider as water for segmentation (the same tissue)
 end
@@ -42,7 +58,6 @@ if notDefined('M0file')
 end
 M0 = readFileNifti(M0file);M0=double(M0.data);
 
-
 if notDefined('T1file')
     [T1file, ~,~]=mrQ_get_T1M0_files(mrQ,1,0,0);
     if ~exist(T1file,'file')
@@ -69,17 +84,19 @@ while notdone==0
     seg(mask)=IDX;
     
     notdone=1;
-    % check we don't get a strange cluster that is very small in size (if
     
-    % so this might be just noise)
+    % Check we don't get a strange cluster that is very small in size.
+    %(if so, this might be just noise)
     if  length(find(IDX==1))/length(IDX)<0.05
         mask=mask & seg~=1;
         notdone=0;
     end
+    
     if  length(find(IDX==2))/length(IDX)<0.05
         mask=mask & seg~=2;
         notdone=0;
     end
+    
     if  length(find(IDX==3))/length(IDX)<0.05
         mask=mask & seg~=3;
         notdone=0;
@@ -101,11 +118,16 @@ end
 seg=zeros(size(R1));
 seg(mask)=IDX;
 
-% the tissue with the highest value is white matter, with the lowest value
-% is GM, and the tissue with the intermediate values is deep nuclei and
-% tissue between the WM and the GM. in some segmentations the lowest valie
-% is is air, intermediate is GM, and WM is the highest value. either waythe
-% order is maintained and weget a segmentation of GM and WM and CSF
+% The tissue with the highest value is white matter (WM), the tissue with
+% the lowest value is gray matter (GM), and the tissue with the
+% intermediate value is the deep nuclei and the tissue between the WM and
+% the GM. 
+%
+% In some segmentations the lowest value is is air, intermediate is
+% GM, and highest is WM. 
+%
+% Either way, the order is maintained and we get a segmentation of GM, WM
+% and CSF.
 
 [val,idx]=sort(C);
 GMclass=1;DEEPclass=2;WMclass=3; CSFclass=4;
@@ -162,7 +184,9 @@ if length(find(CSF2))<200
            fprintf(['\n Warning: We could find only ' num2str(length(find(CSF1))) ' csf voxel this make the CSF WF estimation very noisy, cosider to edit csf_seg_T1.nii.gz fiel see below \n']);
 end
 
-% larger ventricals region. this mask os good for cases when CSF ventrical are hard to identify. it may reduce the accuracy 
+% Larger ventricles region. 
+% This mask is good for cases when CSF ventricles are hard to identify. 
+% It may reduce the accuracy. 
 CSF= CSF & R1<0.25 & R1>0.2 & M0<prctile(M0(BM),99);
 
 %
@@ -175,12 +199,5 @@ dtiWriteNiftiWrapper(single(CSF), xform, csffile1);
 mrQ.csf_large=csffile1;
 mrQ.csf=csffile;
 mrQ.T1w_tissue=segfile;
-
-
-
-
-
-
-
 
 

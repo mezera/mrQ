@@ -10,11 +10,10 @@ function mrQ = mrQ_arrangeData_nimsfs(mrQ,inputData_spgr,inputData_seir)
 %     INPUTS:
 %      
 %       inputData_spgr:     The SPGR data.
-% 
 %       inputData_seir:     The SEIR data.
 % 
 % 
-% (C) Stanford Univsersity, VISTA Lab [2014]
+% (C) Stanford University, VISTA Lab [2014]
 % Edited by Shai Berman and Jonathan Bain, June-02-2015
 
 
@@ -29,7 +28,8 @@ end
 if ~notDefined('inputData_spgr')
     mrQ=mrQ_Set(mrQ,'inputdata_spgr',inputData_spgr);
 end
-%   go to the nifti hdr if needed
+
+%   Go to the nifti hdr, if needed
 if ~isfield(mrQ,'inputdata_spgr') || ~isfield(mrQ,'inputdata_seir')
     mrQ = mrQ_initInputData(mrQ);
 end
@@ -80,7 +80,8 @@ if (mrQ.MakeNewSPGRRDir==1)
     % Initialize counters
     num = 1; ex = 0;
     
-    % Make a SPGRDir Dir. If there is one already it will make another.
+    % Make a SPGRDir directory. 
+    % If there is one already, this section will make another.
     while ex == 0
         
         SPGRDir=fullfile(mrQ.outDir,['SPGR_' num2str(num)]);

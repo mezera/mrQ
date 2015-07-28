@@ -1,26 +1,26 @@
 function [mrQ]= mrQ_fitSEIR_T1(SEIRdir,outDir,checkData,mrQ)
 % 
-%  [mrQ]=mrQ_fitSEIR_T1(SEIRdir,outDir,[checkData=1])
+%  [mrQ]=mrQ_fitSEIR_T1(SEIRdir,outDir,[checkData=1],mrQ)
 % 
 % Loads SEIR_Dat.mat file from the directory 'data' in the SEIRdir, and
-% performs T1 mapping, also displays the results for the user to check if
-% checkData = 1.
+% performs T1 mapping. 
 % 
 % 
 % INPUTS:
-%   SEIRdir -     Path to your desired T1 image. Use the same path as in
+%   SEIRdir   -   Path to your desired T1 image. Use the same path as in
 %                 getSEIR.
 % 
-%   checkData -   If you want to visually check the data leave empty or set
-%                 to 1. To not check data set to 0.
-%   mrQ      -     information structure
+%   checkData -   If you want to visually check the data, leave empty or
+%                 set to 1. To not check data, set to 0.
+%
+%   mrQ       -   Information structure
 % 
 % OUTPUTS:
-%     mrQ      -    information structure, updated
-%   
+%     mrQ     -   Information structure, updated.
+%
+%
 %   This function will save the fitted images in a new directory called
-%   "fitT1_GS" under the SEIRdir. the name of the saved files in  the
-%   output strctures
+%   "fitT1_GS" within the SEIRdir. 
 %
 % WEB RESOURCES:
 %   web('http://white.stanford.edu/newlm/index.php/Quantitative_Imaging','-browser');
@@ -28,14 +28,14 @@ function [mrQ]= mrQ_fitSEIR_T1(SEIRdir,outDir,checkData,mrQ)
 % 
 % EXAMPLE USAGE:
 %   SEIRdir = '/biac2/wandell2/data/WMDevo/adult/109_AL/QuantitativeImaging/20110622_0582/SEIR_epi_1'
-%   mrQ_fitSEIR_T1(SEIRdir,[],[],[],mrQ);
+%   mrQ_fitSEIR_T1(SEIRdir,[],[],mrQ);
 %   
- 
-% written by J. Barral, M. Etezadi-Amoli, E. Gudmundson, and N. Stikov, 2009
+% 
+% Written by J. Barral, M. Etezadi-Amoli, E. Gudmundson, and N. Stikov, 2009
 %  (c) Board of Trustees, Leland Stanford Junior University
 % 
 
-%% Check INPUTS
+%% Check Inputs
 
 % This makes many assumptions about the paths. This should be flexible. All
 % we need is the data - the input should just point to that. The function
@@ -58,8 +58,8 @@ if notDefined('checkData') || isempty(checkData) || checkData > 1
     checkData = 1;
 end
 
-% Which algorithm to use: real 
-% nonlinear least squares polarity restoration. 
+% Which algorithm to use: 
+%real nonlinear least squares polarity restoration. 
 
 method = 'NLSPR'; % magnitude data
 
@@ -70,6 +70,7 @@ close all
 
 % We should now be pointed to this file, and not to the directory. It is
 % much easier to work with filenames than with directories.
+
 filename = 'SEIR_Dat';
 loadStr = fullfile(seirDataDir, filename);
 

@@ -1,7 +1,6 @@
 function [T1_WL, T1_L,PD_WL, PD_L] = mrQ_T1M0_LWFit(s,brainMask,tr,flipAngles,Gain,B1,outDir,xform,SGE,savenow,sb,proclass)
 %
-% [T1 PD resNorm] = mrQ_T1M0_LWFit(s,brainMask,tr,flipAngles,M0,t1,Gain,B1,outDir,xform,SGE,savenow,sb,proclass)
-%
+% [T1_WL, T1_L,PD_WL, PD_L] = mrQ_T1M0_LWFit(s,brainMask,tr,flipAngles,Gain,B1,outDir,xform,SGE,savenow,sb,proclass)%
 % Perform weighted least square fitting of T1 and PD according to:
 % Linear least-squares method for unbiased estimation of T1 from SPGR signals. Chang LC, Koay CG, Basser PJ, Pierpaoli C. Magn Reson Med. 2008 Aug;60(2):496-501.
 %
@@ -156,7 +155,7 @@ if SGE==1;
         end
     end
     
-    %% build the data that was fit by the SGE to a T1 nd M0 maps
+    %% Build the data that was fit by the SGE to a T1 and M0 maps
     % This loop checks if all the outputs have been saved and waits until
     % they are all done
     StopAndSave=0;
@@ -253,7 +252,7 @@ if SGE==1;
     %using the local computer to fit T1 and the sunGrid
 else
     
-    fprintf('\n fit the T1 map localy, may be slow. SunGrid use can be much faster             \n');
+    fprintf('\n Fiting the T1 map locally, may be slow. SunGrid use can be much faster             \n');
     
     if (~exist([outDir '/tmpSGWL'],'dir')),
         mkdir([outDir '/tmpSGWL']);

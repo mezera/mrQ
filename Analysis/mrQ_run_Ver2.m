@@ -1,28 +1,30 @@
 function mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_seir,B1file)
 %  mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_seir,B1file)
-%  this is an improved version of: mrQ_runNIMS(dir,Callproclus,refFile,outDir)
+%
+% This is an improved version of: mrQ_runNIMS(dir,Callproclus,refFile,outDir)
 %
 %    INPUT:
 %
-%       dir:     where the nifti from NIMS are.
-%       outDir:  where the output will be saved (defult is: pwd/mrQ)
-%       useSUNGRID:
-%       % %%% Callproclus use 1 when using proclus (stanfrod computing cluster)
-%       refFile: path to a reference image (nii.gz)
-%       inputData_spgr:
-%       inputData_seir:
-%       B1file:
+%       dir: Directory where the nifti from NIMS are located.
+%       outDir: Directory to which the output will be saved. (default: pwd/mrQ)
+%       useSUNGRID: Whether to use SUNGRID cluster computing
+%       refFile: The path to a reference image (nii.gz)
+%       inputData_spgr: The SPGR data
+%       inputData_seir: The SEIR data
+%       B1file: Specify where the B1 inhomogeneity map exists. If you leave it
+%                empty, it will use the B1 file from the data directory.
+%   OUTPUT:
 %
-%   OUPUT:
-%       This function creates and saves the mrQ strucure to the subject???s directory.
-%       New directories will be created, including directories for data and quantitative fits.
-%       Images will be register to each other.
-%       SEIR-EPI T1 will be computed (low resultion)
-%       SPGR T1, M0, B1 maps, and a synthetic T1-weighted image, will be computed.
-%       T1-weighted and quantitative T1 images will be combined to segment the brain tissue.
-%`      PD and coil gain will be fit from the M0 image.
-%       Biophysical model will be applied to calculate VIP and SIR maps.
-% %
+%       This function creates and saves the mrQ strucure to the subject's
+%       directory. New directories will be created, including directories
+%       for data and quantitative fits. Images will be registered to each
+%       other. SEIR-EPI T1 will be computed (low resultion). SPGR T1, M0,
+%       B1 maps, and a synthetic T1-weighted image will be computed.
+%       T1-weighted and quantitative T1 images will be combined to segment
+%       the brain tissue.
+%`      PD and coil gain will be fitted from the M0 image.
+%       Biophysical models will be applied to calculate VIP and SIR maps.
+% 
 
 
 %% Create the initial structure
@@ -30,12 +32,15 @@ function mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_sei
 if notDefined('outDir') 
      outDir = fullfile(dir,'mrQ');
 end
-%creates the name of the output directory
+
+% Creates the name of the output directory
 if ~exist(outDir,'dir'); mkdir(outDir); end
 
-mrQ = mrQ_Create(dir,[],outDir); %creates the mrQ structure
+% Creates the mrQ structure
+mrQ = mrQ_Create(dir,[],outDir); 
 
-% Set other parameters
+% Set other parameters, such as SUNGRID and fieldstrength
+
 %            mrQ = mrQ_Set(mrQ,'sub',num2str(ii));
 
 if notDefined('useSUNGRID')
@@ -49,14 +54,13 @@ mrQ = mrQ_Set(mrQ,'fieldstrength',3);
 
 if ~notDefined('refFile')
     mrQ = mrQ_Set(mrQ,'ref',refFile);
-    
 else
-    % New input to automatically acpc align
+    % New input to automatically perform ac-pc alignment
     mrQ = mrQ_Set(mrQ,'autoacpc',1);
 end
 
-%% arrange data
-% Specific arrange function for nimsfs nifti or using input for user
+%% Arrange the data
+% A specific arrange function for nimsfs, nifti, or using input for user
 
 if ~isfield(mrQ,'Arrange_Date');
     
@@ -67,13 +71,13 @@ if ~isfield(mrQ,'Arrange_Date');
         
     end
 else
-    fprintf('data was already arranged at %s \n',mrQ.Arrange_Date)
+    fprintf('Data was already arranged at %s \n',mrQ.Arrange_Date)
 end
-%% fit SEIR
+%% Perform SEIR fit
 
 if notDefined('B1file')
-    % checks if B1 was defined by the user.
-    %     if not we will use the SEIR data to map it.
+    % Checks if B1 was defined by the user.
+    % If not, we will use the SEIR data to map it.
     
     if isfield(mrQ,'SEIR_done');
     else
@@ -82,27 +86,27 @@ if notDefined('B1file')
     
     if (mrQ.SEIR_done==0);
         
-        % keeps track of the variables we use  for detail see inside the function
+        % Keeps track of the variables we use.  
+        % For details, see inside the function.
         [~, ~, ~, mrQ.SEIRsaveData]=mrQ_initSEIR_ver2(mrQ,mrQ.SEIRepiDir,mrQ.alignFlag);
         
         [mrQ]=mrQ_fitSEIR_T1(mrQ.SEIRepiDir,[],0,mrQ);
         
         mrQ.SEIR_done=1;
         save(mrQ.name,'mrQ');
-        fprintf('fit SEIR  - done!');
+        fprintf('Fit SEIR  - done! \n');
         
     else
-        fprintf('\n  load fit SEIR data ! \n');
+        fprintf('\n  Load fit SEIR data! \n');
         
     end
     
 end
 
 
-%% intiate and  Align SPGR
-%  param for Align SPGR
+%% Initiate and align SPGR
+%  parameters for aligning SPGR
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %load(name);
 
 if isfield(mrQ,'SPGR_init_done');
@@ -112,7 +116,8 @@ end
 
 if     mrQ.SPGR_init_done==0
     
-    %keeps track of the variables we use;  for details, look inside the function
+    % Keeps track of the variables we use.
+    % For details, look inside the function.
     [~, ~, ~,~,~, mrQ]=mrQ_initSPGR_ver2(mrQ.SPGR,mrQ.refIm,mrQ.mmPerVox,mrQ.interp,mrQ.skip,[],mrQ);
     mrQ.SPGR_init_done=1;
     
@@ -146,7 +151,7 @@ else
     
 end
 
-%%  register high res EPI image to low res aligned T1 image
+%%  Register high-resolution EPI image to low-resolution aligned T1 image
 
 %mrQ_NLANTS_warp_SPGR2EPI_RB(AnalysisInfo,SET1file,t1fileHM,flipAngles,outDir,AlignFile)
 
@@ -169,7 +174,7 @@ else
 end
 
 
-%% B1
+%% Build B1
 if ~isfield(mrQ,'B1Build_done');
     mrQ.B1Build_done=0;
 end
@@ -191,6 +196,7 @@ end
 
 %
 %% T1M0 fit with B1
+
 if ~isfield(mrQ,'SPGR_T1fit_done');
     mrQ.SPGR_T1fit_done=0;
 end
@@ -202,7 +208,7 @@ if ( mrQ.SPGR_T1fit_done==0)
     mrQ.SPGR_T1fit_done=true;
     save(mrQ.name,'mrQ');
     
-    fprintf('\n fit  T1 SPGR  - done!              \n');
+    fprintf('\n fit T1 SPGR  - done!              \n');
     
 else
     
@@ -210,10 +216,13 @@ else
     
 end
 
-%%  segmentation needed for PD fit
-%prefer to PD fit 1. get a segmentation (need freesurfer output) 2. get CSF; 3.make a M0 fies for the coils
+%%  Segmentation needed for PD fit
+% Prefer to PD fit 
+% 1. Get a segmentation (need freesurfer output) 
+% 2. Get CSF 
+% 3. Make a M0 file for the coils
 
-%%  Create the synthetic T1 weighted images and save them to disk
+%%  Create the synthetic T1-weighted images and save them to disk
 
 if ~isfield(mrQ,'synthesis')
     mrQ.synthesis=0;
@@ -239,24 +248,24 @@ end
 
 if mrQ.segmentation==0;
     
-    %     default- fsl segmentation
+    %     default- FSL segmentation
     if (mrQ.runfreesurfer==0 && ~isfield(mrQ,'freesurfer'))
-        % Segment the T1w by FSL (step 1) and get the tissue mask (CSF WM GM) (step 2;
+        % Segment the T1w by FSL (step 1) and get the tissue mask (CSF-WM-GM) (step 2)
         %         mrQ=mrQ_segmentT1w2tissue(mrQ);
         mrQ=mrQ_Seg_kmeans(mrQ,mrQ.BrainMask);
         mrQ.segmentation=1;
         
-        %      run FreeSurfer : it is slow and needs extra defintions.
+        %      run FreeSurfer: it is slow and needs extra definitions.
     elseif (mrQ.runfreesurfer==1)
         mrQ=mrQ_Complitfreesurfer(mrQ);
         mrQ.segmentation=1;
         
-        %      use an uploaded freesurfer nii.zg
+        %      use an uploaded freesurfer nii.gz
     elseif   isfield(mrQ,'freesurfer');
         [mrQ.SegInfo]=mrQ_CSF(mrQ.spgr_initDir,mrQ.freesurfer,[],mrQ.AnalysisInfo);
-        mrQ.segmentation=1;
-        
+        mrQ.segmentation=1;       
     end
+    
     save(mrQ.name,'mrQ');
     fprintf('\n segmentation and CSF  - done!              \n');
 else
@@ -265,8 +274,7 @@ else
     
 end
 
-%% fitting PD from M0
-
+%% Fitting PD from M0
 
 if ~isfield(mrQ,'PDdone')
     mrQ.PDdone=0;
@@ -282,9 +290,7 @@ else
     fprintf('\n using previously calculated PD              \n');
 end
 
-
-
-%%   calculate VIP TV and SIR
+%% Calculate VIP, TV, and SIR
 
 if ~isfield(mrQ,'SPGR_PDBuild_done')
     mrQ.SPGR_PDBuild_done=0;
@@ -308,7 +314,7 @@ end
 
 [mrQ.T1w_file,mrQ.T1w_file1] =mrQ_T1wSynthesis1(mrQ);
 
-%% Organize the OutPut  directory
+%% Organize the OutPut directory
 mrQ=mrQ_arrangeOutPutDir(mrQ);
 
 %done

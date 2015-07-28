@@ -1,41 +1,47 @@
 function mrQ = mrQ_Set(mrQ,param,varargin,saveflag)
-% Setting data in the mrQ structure for the mrQ anlysis
+% function mrQ = mrQ_Set(mrQ,param,varargin,saveflag)
 %
-% The mrQ structure stores all the MRQ computations.  mrQ_Set is the main
+% Setting data in the mrQ structure for the mrQ analysis.
+%
+% The mrQ structure stores all the mrQ computations.  mrQ_Set is the main
 % function to add values, images, computations etc. to this structure.  As
-% inputs mrQ_Set takes in an mrQ structure, a parameter defined as a
-% 'string' which is to be set, and a number of aditional arguments and
+% inputs, mrQ_Set accepts a mrQ structure ("mrQ"); a parameter ("param"), a
+% string which is to be set; and a number of additional arguments and
 % values that are specific to that parameter.  The arguments for each
 % parameter are described below.  mrQ_Set always returns the modified mrQ
-% structure and save it unless saveflag=0.  The structure is created with defult values with mrQ_Create
-% or in the first call.
-
-%See also:  mrQ_Create
-
-% Parameter list and associated arguments:
-% saveflag          - the defult is yes; for no save make it 0
-% param             - varargin the key parameters are
-%   rawdir            - directory of raw image   string 'path' this define in mrQ_Create
-%   seir              - list of SEIR scan number cell of string {'001' 002'}
-%   SPGR              - list of SPGR scan number  cell of string{'001' 002'}
-%   sub               - a name of subject string 'name'
-%   clobber           - true or faluse to redo the anlysis
-%   refim             - a path to an imge to use as arefernce string 'path'
-%   check            - if a interactive image is used to ditect movment number - 1
-%   proclus          -use the proclass number - 1
-% sungrid          - use the sgesngrid calls -1
-%  polydeg           - the polynomyals degree to fit to the Gain (defult 3)
-%  'brakeaftervisualization' or 'viewbrake' - use that to start the data
-%  visual the images wirh the check flag and then stop the code from
+% structure and saves it, unless saveflag=0.  The structure is created
+% using the default values from mrQ_Create or from the first call.
+%
+% See also:  mrQ_Create
+%
+%    Parameter list and associated arguments:
+% saveflag         - the default is to save; to not save, enter 0
+%
+% ~PARAM~          ~VARARGIN~ (the key parameters are):
+% rawdir               - directory of raw image: a string 'path', as defined in mrQ_Create
+% seir                 - list of SEIR scan number: a cell of strings, e.g. {'001' 002'}
+% SPGR                 - list of SPGR scan number: a cell of strings, e.g. {'001' 002'}
+% sub                  - a name of subject: a string 'name'
+% clobber              - enter "true" or "false" to redo the anlysis
+% refim                - a path to an image to use as a refernce: a string 'path'
+% check                - enter 1, if an interactive image is used to detect movement
+% proclus              - enter 1, to use the proclus number
+% sungrid              - enter 1, to use the sungrid calls
+% polydeg              - the polynomial degree to fit to the Gain (default is 3)
+%
+% brakeaftervisualization or viewbrake 
+%                       - use that to start the data
+% visual the images with the check flag and then stop the code from
 % To reverse sewpesipic steps in the fir
-% seir_done                                1 to skip the SEIR t1 fit or 0 to redo it
-% spgr_init_done                      1 to skip the spgr init stepor 0 to redo it
-% spgr_coilweight_done           1 to skip wighting 0 to redo it
-% spgr_t1fit_done                      1 to skip T1 fit SPGR 0 to redo it
-% segmentation                            1 to skip segmentation 0 to redo it
-%  calm0_done                           1 to skip M0 claculation 0 to redo it
-% spgr_pdfit_done                     1 to skip PD fit0 to redo it
-%spgr_pdbuild_done                1 to skip PD fit0 to redo it
+%
+% seir_done             - enter 1 to skip the SEIR T1 fit, or enter 0 to redo it
+% spgr_init_done        - enter 1 to skip the SPGR init step, or enter 0 to redo it
+% spgr_coilweight_done  - enter 1 to skip weighting, or enter 0 to redo it
+% spgr_t1fit_done       - enter 1 to skip T1 fit SPGR, or enter 0 to redo it
+% segmentation          - enter 1 to skip segmentation, or enter 0 to redo it
+% calm0_done            - enter 1 to skip M0 calculation, or enter 0 to redo it
+% spgr_pdfit_done       - enter 1 to skip PD fit, or enter 0 to redo it
+% spgr_pdbuild_done     - enter 1 to skip PD fit0 to redo it
 %
 % ...                  - check code for others
 %
@@ -135,11 +141,11 @@ switch(param)
         mrQ.autoacpc = varargin;
     case{ 'field','stregth','fieldstrength'}
         mrQ.fieldstrength = varargin;
-         case{ 'wl'}
+    case{ 'wl'}
              mrQ.LW= varargin;  
     otherwise
         
-        error('Uknown mrQ parameter');
+        error('Unknown mrQ parameter!');
 end
 
 

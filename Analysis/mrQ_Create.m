@@ -1,5 +1,5 @@
 function mrQ = mrQ_Create(path,name,outDir)
-%  mrQ = mrQ_Create(path)
+%  mrQ = mrQ_Create(path,name,outDir)
 %
 % This function will load data into a mrQ structure and set default
 % parameters. If the mrQ file exists within the directory where this
@@ -12,7 +12,8 @@ function mrQ = mrQ_Create(path,name,outDir)
 %             useful to make the path the location of the raw image.
 %     name -  A string that will be saved as the name of the mrQ structure. 
 %             The default name is "mrQ_params".
-%     outDir- 
+%     outDir- The outDir is a string of the location where the function
+%             will create the new directory for the output.
 %
 % EXAMPLE USAGE:
 %
@@ -23,6 +24,7 @@ function mrQ = mrQ_Create(path,name,outDir)
 
 %%
 
+% Setting directory paths
 if notDefined('path') || ~exist(path,'dir')
     path = uigetdir(pwd,'Choose mrQ directory');
 end
@@ -42,7 +44,7 @@ else
     mrQ.name = fullfile(mrQ.outDir,[name '.mat']); 
 end
 
-% Check for and load mrQ file if it exists
+% Check for and load mrQ file, if it exists.
 if exist(mrQ.name,'file')
     load (mrQ.name)
     setDefault = 0;
@@ -52,24 +54,26 @@ else
 end
 
 
-%% set defult parameters
+%% Set default parameters
 
 if setDefault
-    %% intiate
+    %% Initiate
     mrQ.clobber = false;
     [~, mrQ.sub] =fileparts(tempname);
     
   
     %% SEIR
-    % SEIR alignment and fit
+    % SEIR alignment and fit.
     mrQ.MakeNewSEIRDir=true;
         mrQ.alignFlag=true;
 
     mrQ.SEIR_done=false;
+    
   %  mrQ.complexFlag=false;
-    % for complex data that we do not use for now.
+    % For complex data that we do not use, for now.
+    
    % mrQ.useAbs=false;
-    % for complex data that we'd like to use as magnitude data. Use 1
+    % For complex data that we'd like to use as magnitude data. Use 1.
    
     % Create a cell array to hold the SEIR series numbers:
     mrQ.SEIR_seriesNumbers = {};
@@ -84,10 +88,11 @@ if setDefault
     mrQ.SPGR_T1fit_done=false;
     
     % SPGR alignment
-   % mrQ.coilWeights=1;
+    % mrQ.coilWeights=1;
     
     % This is to align the SEIR data.
-    %we like that unless  if phantom dead or maybe complex (zero)
+    % We like that, unless the sample is: 
+    %    a phantom, dead, or maybe complex (zero)
     mrQ.interp=[];
     mrQ.mmPerVox =[];
     
@@ -95,10 +100,11 @@ if setDefault
     mrQ.skip=[];
     
     mrQ.permutation=false;
+    
     % Create a cell array for the SPGR series numbers:
     mrQ.SPGR_seriesNumbers = {};
     
-    %% for debugging
+    %% For debugging
     % brake and checks
 %     mrQ.check=0;
 %     mrQ.brakeAfterVisualization=0;
@@ -106,23 +112,24 @@ if setDefault
 %     mrQ.viewbrake=0;
 
     %%  T1 fit of SPGR
-    mrQ.lsq=false; %see for detail inside we recomand the lsq version
-    mrQ.LW=true;  %or the WL fits
+    mrQ.lsq=false; % See inside for details; we recommend the LSW version...
+    mrQ.LW=true;  % ..or the LW fits.
     
     %% Segmentation
     mrQ.segmentation=false;
-    mrQ.runfreesurfer=false; % the defult is FSL
+    mrQ.runfreesurfer=false; % The default is FSL.
     
-    %% fit PD
+    %% Fit PD
     mrQ.calM0_done=false;
-    mrQ.SPGR_PDfit_done=false; %   
+    mrQ.SPGR_PDfit_done=false;    
     mrQ.SPGR_PDBuild_done=false;
     
     mrQ.PolyDeg=3; 
     mrQ.SunGrid=false;
     
    % mrQ.proclus=1;
-    %
+   
+   % Save the file.
     save(mrQ.name,'mrQ');
     
 end

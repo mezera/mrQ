@@ -2,27 +2,29 @@ function [s, niifiles] = mrQ_input2Stuck(input,includeIm)
 %
 % [s, niifiles] = mrQ_input2Stuck(input,includeIm)
 % 
-% This function take the nifti files and the scan parameters and put them
-% in mat structure that is used by the mrQ code. this is an alternative to
-% reading the information from the dicom. getting away from the dicom is
-% usful when dealing with different scanner convention dcm file. our code
-% is working smoothly only with GE dicom so this is a way to solve the dcm
-% problem. not that the user have to be carfule when plaging the scan
-% parameters (TR ,TE flipangle, inversion time field Strength and nifti
-% name and dir)
+%   This function takes the NIfTI files and the scan parameters, and puts
+% them into a .mat structure which is used by the mrQ code. This is an
+% alternative to reading the information from the DICOMs. Getting away from
+% the DICOM is useful when dealing with different scanners' convention dcm
+% files. Our code works smoothly only with GE DICOMs, so this is a way to
+% solve the dcm problem.
+%    Note that the user should be careful when inputting the scan
+% parameters (TR, TE, flip angle, inversion time, field strength, and NIfTI
+% name and directory).
 % 
 % INPUTS:
-%   input -     a structure with the scanning parameters that is provide
-%               by the user and may include these feileds [dir (a directory were
-%               the niffti saved); name (Niifti image name or part of it);
-%               flipAngle; TR; TE; IT; (inversionTime); fieldStrength]
-%   includeIm-  to include the image from the nifti in the structure (s)
-%   includeIm   = 1 (defult).
+%   input      - A structure with the scanning parameters as provided
+%                by the user. It may include these fields: dir (a directory
+%                where the NIfTI is saved); name (NIfTI image name or part
+%                of it); flip angle; TR; TE; IT (inversion time); or field
+%                strength.
+%   includeIm  - Determines whether to include the image from the NIfTI in
+%                the output structure "s". (default is 1, "yes")
 %
 % OUTPUTS:
-%   s -         A mat strucute with the input information that can be used
-%               by mrQ code 
-%   niifiles -  The list of the nifti files that was used to make s
+%   s          - A .mat strucute with the input information that can be
+%                used by the mrQ code
+%   niifiles   - The list of the NIfTI files that were used to make s.
 %
 % Example:
 %   inputData_seir.dir  = mrQ.RawDir; 
@@ -33,7 +35,7 @@ function [s, niifiles] = mrQ_input2Stuck(input,includeIm)
 %   mrQ = mrQ_Set(mrQ,'inputdata_seir',inputData_seir)
 %   s = mrQ_input2Stuck(mrQ.inputdata_seir);
 % 
-% 
+
 
 
 if notDefined('includeIm')
@@ -42,8 +44,9 @@ end
 
 
 for i=1:length(input.name)
-    % input.name might already the full path to the file. For example, if
-    % you use mrQ_initInputData they will all be full paths.
+    
+    % Note that input.name might already be the full path to the file. For
+    % example, if you use mrQ_initInputData, they will all be full paths.
     if exist(input.name{i},'file')
         tmp=input.name{i};
     else
@@ -68,28 +71,28 @@ for i=1:length(input.name)
     s(i).seriesDescription=name;
 end
 
-% flipAngle in degree
+% flip angle in degrees
 if isfield(input,'flipAngle')
     for i=1:length(input.name)
         s(i).flipAngle=input.flipAngle(i);
     end;
 end;
 
-% TR in milisec
+% TR in milliseconds
 if isfield(input,'TR')
     for i=1:length(input.name)
         s(i).TR=input.TR(i);
     end;
 end;
 
-% TE in milisec
+% TE in milliseconds
 if isfield(input,'TE')
     for i=1:length(input.name)
         s(i).TE=input.TE(i);
     end;
 end;
 
-% IT in milisec
+% IT in milliseconds
 if isfield(input,'IT')
     for i=1:length(input.name)
         s(i).inversionTime=input.IT(i);
@@ -102,7 +105,7 @@ if isfield(input,'fieldStrength')
 end;
 
 if isfield(input,'orientation')
-    % if the convention of X Y and Z need to be fliped
+    % if the convention of X, Y, and Z need to be fliped
     for ii=1:length(input.name)
         s(ii).imToScanXform(1,1)=input.orientation(1)*s(ii).imToScanXform(1,1);
         s(ii).imToScanXform(2,2)=input.orientation(2)*s(ii).imToScanXform(2,2);

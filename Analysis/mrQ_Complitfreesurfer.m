@@ -1,26 +1,40 @@
-function mrQ=mrQ_Complitfreesurfer(mrQ);
-% comleeting the tfreesurfer segmentation and use it to make tissue masks
+function mrQ=mrQ_Complitfreesurfer(mrQ)
+% function mrQ=mrQ_Complitfreesurfer(mrQ)
+% Completing the freesurfer segmentation and using it to make tissue masks.
+%
+% Accepts the mrQ structure as an INPUT and returns the updated mrQ
+% structure as the OUTPUT.
+%
+
 if isfield(mrQ,'freesurfer')
-    % we got freesurfer 
-    fprintf('\n load freesurfer seqmwntation file                \n ');
+    % we get freesurfer
+    fprintf('\n Load freesurfer segmentation file                \n ');
     
-    
-else %we need to get the freesufer segmentation here or to run it now
+else %we need to get the freesurfer segmentation here or to run it now
     c=clock;
     fprintf(['\n' date  ' ' num2str(c(4)) ':'  num2str(c(5))  ' working to get  the freesurfer segmentation; this can take time               \n'  ])
     subjID=['freesufer_' mrQ.AnalysisInfo.sub];
     
-    if isfield(mrQ.AnalysisInfo,'freeSufer_subdir')  %freesurfer of the syntetic T1w image (was was start  inside mrQfit_T1M0_ver2.m)
+    if isfield(mrQ.AnalysisInfo,'freeSufer_subdir')  
+        %freesurfer of the synthetic T1w image (was was start inside mrQfit_T1M0_ver2.m)
         
-        location=mrQ.AnalysisInfo.freeSufer_subdir; %freesufer write to here
-        lstfilemripath=[location '/mri/wmparc.mgz']; %the last file that need to be made byfreeSufer
-    
-    elseif   isfield(mrQ,'freeSuferRefIm_subdir') % in the case freesurfer was done on the refIm that was provided
+        location=mrQ.AnalysisInfo.freeSufer_subdir; 
+        %freesurfer write to here
         
-        location=mrQ.freeSuferRefIm_subdir;         %freesufer write to here
-        lstfilemripath=[location '/mri/wmparc.mgz'];  %the last file that need to be made byfreeSufer
+        lstfilemripath=[location '/mri/wmparc.mgz']; 
+        %the last file that needs to be made by freesurfer
     
-        if exist(lstfilemripath,'file') % got the last file so we  can move on with freesufer
+    elseif   isfield(mrQ,'freeSuferRefIm_subdir') 
+           %in the case freesurfer was done on the refIm that was provided
+        
+        location=mrQ.freeSuferRefIm_subdir;         
+           %freesufer write to here
+        
+        lstfilemripath=[location '/mri/wmparc.mgz'];  
+           %the last file that need to be made byfreeSurfer
+    
+        if exist(lstfilemripath,'file') 
+            %get the last file so we can move on with freesurfer
             
             [mrQ.freesurfer mrQ.freesurfer1  ]= mrQfinalized_autosegment(subjID,mrQ.AnalysisInfo.T1wSynthesis,1);
     
@@ -32,18 +46,21 @@ else %we need to get the freesufer segmentation here or to run it now
              fprintf('\n freeSufer files are missing wating try to wait for it to finish (maybe long)              \n')
             
             while wait_on
-                %cheak if anything was wrrithing in the last 5 hours or we will
-                %run it again
+                %check if anything was written in the last 5 hours,
+                %or we will run it again
             
                 [status, result] =system([' find ' location ' -type f -mmin -300']);
                 
-                if      exist(lstfilemripath,'file') % got the last file so we  can move on
+                if      exist(lstfilemripath,'file') % get the last file so we can move on
                 
                     [mrQ.freesurfer mrQ.freesurfer1  ]=mrQfinalized_autosegment(subjID,mrQ.AnalysisInfo.T1wSynthesis,1);
                     wait_on=0;
                 
                 elseif  notDefined('result')
-                    %we wait no file was writen and the last needed file is not there so somthing is wrong let run freesufer again
+                    %We wait. No file was written and the last needed file
+                    %is not there, so something is wrong. Let's run
+                    %freesurfer again
+                    
                     wait_on=0;
                     cmd=(['! rm -r ' location]); %clear the directory
                     eval(cmd);
@@ -54,13 +71,14 @@ else %we need to get the freesufer segmentation here or to run it now
         end
     else
         
-        %it freesufer was never startedso it have to be down now - this
-        %may take about 24 hours
-       fprintf('\n  freeSufer files are missing. starting segmentation now this maybe long ~24h               \n')
+        %freesurfer was never started, so it has to be down now - this may
+        %take about 24 hours
+       fprintf('\n  Freesurfer files are missing. Starting segmentation now, this may take long (~24h).               \n')
       
         [mrQ.freesurfer mrQ.freesurfer1  ]   =   mrQfinalized_autosegment(subjID,mrQ.AnalysisInfo.T1wSynthesis);
     end
 end
+
 save(mrQ.name,'mrQ');
 
 % 2. CSF
@@ -70,13 +88,13 @@ else
 end
 
 if (mrQ.FITCSF==0);
-    fprintf('finding the CSF               ');
+    fprintf('Finding the CSF               ');
     
-    % use thefreesurfer  segmentation
+    % use the freesurfer segmentation
     [mrQ.AnalysisInfo]=mrQ_CSF(mrQ.spgr_initDir,mrQ.freesurfer);
     mrQ.FITCSF=1;
     save(mrQ.name,'mrQ');
 else
-    fprintf('load the CSF               ');
+    fprintf('Load the CSF               ');
 end
 

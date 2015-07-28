@@ -1,9 +1,18 @@
 function mrQ=mrQ_smooth_LR_B1(mrQ,smoothnessVal)
-%% load  the fit information
+% mrQ=mrQ_smooth_LR_B1(mrQ,smoothnessVal)
+%
+% ~INPUTS~
+%              mrQ: The mrQ structure
+%    smoothnessVal: Value for the smoothness of the grid. Default is 5.
+%
+% ~OUTPUTS~
+%              mrQ: The updated mrQ structure.
 
 
-% load the fit parameeters
-load  (mrQ.B1.logname)
+%% I. Load the fit information
+
+% load the fit parameters
+load(mrQ.B1.logname)
 
 B1=readFileNifti(mrQ.B1.epiFitFileName);
 pixdim=B1.pixdim;   xform=B1.qto_xyz;
@@ -12,80 +21,77 @@ B1=double(B1.data);
 resnormMap=readFileNifti(mrQ.B1.resnormFileName);   resnormMap=double(resnormMap.data);
 UseVoxNMap=readFileNifti(mrQ.B1.NvoxFileName);     UseVoxNMap=double(UseVoxNMap.data);
 
+% We will smoothe and interpolate/extrapolate the values to have a solution 
+% at every location.
 
-%% we will smooth and interpulate/exstapulate the values to have solution in every location
-%the fit error resnorm (sum of error) devided by number of voxels
+%the fit error resnorm (sum of error) divided by number of voxels
 errMap=(resnormMap./UseVoxNMap);
 
 tissuemask=resnormMap>0;
 % don't use the misfit location
 tissuemask=tissuemask & errMap< prctile(errMap(tissuemask),95);
 
+%% II. Fit local regressions
+% We will smoothe the B1 map by using local regressions.
 
-
-%% II fit local regressions
-% we will smooth the B1 map by local regresiions
-%the fit is done in tree steps
-%1.we first estimate the voxel that have can be estimate with great confidance
-%(<45% ) of the area under the filter
-%local information
-
-%2. we fit  the others that are possible but with less confidence with
-%more smooth (bigger filter)
-
-%3. the one that are out of reach for local regration will be fitted by
-%global polynomyial along the full B1 space (like a fillter along the all B1 map)
+% The fit is done in three steps:
+%    1. We first estimate the voxels that can be estimated with great confidence
+%       (<45% of the area under the filter)
+%    2. We fit the other voxels that are possible (but with less confidence) 
+%       with a smoother (bigger) filter
+%    3. The voxels that are out of reach for local regression will be fitted 
+%       by global polynomial along the full B1 space (like a filter along 
+%       the entire B1 map)
 
 B1Fit=zeros(size(tissuemask));
-
 
 sz=size(tissuemask);
 tt=ones(sz);
 
-%%%
-%1. we check the local information by comparing to covariance of
-%the filter with a all ones image (full information).
+%
+% 1. We check the local information by comparing the covariance of
+%   the filter that of an all-ones image (full information).
 
-area=0.45;
+area=0.45; 
+
 %filter size
 FS=30;
+
 filter1=FS./pixdim;
+
 [f1] = makegaussian3d(filter1,[0.5 0.5 0.5],[0.25 0.25 0.25]);
 
-%define the available coverage
+%Define the available coverage
 C1 = convn(tissuemask,f1,'same');
 
-%define the maximal caverage
+%Define the maximal coverage
 CC1=convn(tt,f1,'same');
 
-%the voxel that we will use
+%The voxels that we will use:
 tissuemask1=C1>max(CC1(:)).*area;
 
-%where there are B1 estimation (x,y,z location)
+%Where there is B1 estimation (x,y,z location)
 [x y z]=ind2sub(size(tissuemask),find(tissuemask));
 
-%where we will find the smooth B1  estimation (x,y,z location)
+%Where we will find the smooth B1 estimation (x,y,z location)
 [x0 y0 z0]=ind2sub(size(tissuemask),find(tissuemask1));
 
-%local regression
+%Local regression
 w1 = localregression3d(x,y,z,B1(find(tissuemask)),(x0),(y0),(z0),[],[],filter1,[]);
 
-%save the result
+%Save the result
 B1Fit(find(tissuemask1))=w1;
 
-
-
-
-%% exstrapulate by smooth surfaces
+%% III. Extrapolate by smooth surfaces
 
 if notDefined('smoothnessVal')
-    smoothnessVal=5; % this is a value for gridfit see inside.
+    smoothnessVal=5; % this is a value for gridfit; see inside.
 end
 
 
 B1Fit_S=B1Fit;
 
-%loop over Z slices
+%% IIIa. Loop over Z slices
 
 [XI YI]=meshgrid(1:size(B1Fit,1),1:size(B1Fit,2));
 
@@ -99,12 +105,15 @@ for  jj=1:size(B1Fit,3)
         %find location of data
         [x,y] = ind2sub(size(tmp),wh);
         z=double(tmp(wh));
-        % estimate a smooth version of the data in the slice for original code see:
-        % Moterdaeme et.al. Phys. Med. Biol. 54 3474-89 (2009)
+        % Estimate a smooth version of the data in the slice. 
+        % For original code see: 
+        %           Noterdaeme et al. "Intensity correction with a pair of 
+        %               spoiled gradient recalled echo images". Phys. Med. 
+        %               Biol. 54 3473-3489 (2009)
         
         [zg,xg,yg]= gridfit(x,y,z,1:2:size(tmp,1),1:2:size(tmp,2),'smoothness',smoothnessVal);
         ZI = griddata(xg,yg,zg,XI,YI);
-        if  ~isempty(isnan(ZI)) % we might get nan in the edges
+        if  ~isempty(isnan(ZI)) % we might get NaNs in the edges
             ZIt = griddata(xg,yg,zg,XI,YI,'v4');
             ZI(isnan(ZI))=ZIt(isnan(ZI));
         end
@@ -120,11 +129,9 @@ for  jj=1:size(B1Fit,3)
     
 end;
 
-%%
-
 B1Fit_S(B1Fit_S<0)=0;
-%%  %loop over  x slices
 
+%%  IIIb. Loop over X slices
 
 [XI YI]=meshgrid(1:size(B1Fit_S,2),1:size(B1Fit_S,3));
 
@@ -139,12 +146,15 @@ for  jj=1:size(B1Fit_S,1)
         %find location of data
         [x,y] = ind2sub(size(tmp),wh);
         z=double(tmp(wh));
-        % estimate a smooth version of the data in the slice for original code see:
-        % Moterdaeme et.al. Phys. Med. Biol. 54 3474-89 (2009)
+        % Estimate a smooth version of the data in the slice. 
+        % For original code see: 
+        %           Noterdaeme et al. "Intensity correction with a pair of 
+        %               spoiled gradient recalled echo images". Phys. Med. 
+        %               Biol. 54 3473-3489 (2009)
         
         [zg,xg,yg]= gridfit(x,y,z,1:2:size(tmp,1),1:2:size(tmp,2),'smoothness',smoothnessVal);
         ZI = griddata(xg,yg,zg,XI,YI);
-        if  ~isempty(isnan(ZI)) % we might get nan in the edges
+        if  ~isempty(isnan(ZI)) % we might get NaNs in the edges
             ZIt = griddata(xg,yg,zg,XI,YI,'v4');
             ZI(isnan(ZI))=ZIt(isnan(ZI));
         end
@@ -156,18 +166,15 @@ for  jj=1:size(B1Fit_S,1)
         ZI = flipdim(ZI,1);
        
         B1Fit_S(jj,:,:)=ZI;
-
-        
         
         clear ZI
     end;
     
 end;
 
-
 B1Fit_S(B1Fit_S<0)=0;
 
-%%  %loop over  y slices
+%%  IIIc. Loop over Y slices
 
 [XI YI]=meshgrid(1:size(B1Fit_S,1),1:size(B1Fit_S,3));
 
@@ -182,12 +189,15 @@ for  jj=1:size(B1Fit_S,2)
         %find location of data
         [x,y] = ind2sub(size(tmp),wh);
         z=double(tmp(wh));
-        % estimate a smooth version of the data in the slice for original code see:
-        % Moterdaeme et.al. Phys. Med. Biol. 54 3474-89 (2009)
+        % Estimate a smooth version of the data in the slice. 
+        % For original code see: 
+        %           Noterdaeme et al. "Intensity correction with a pair of 
+        %               spoiled gradient recalled echo images". Phys. Med. 
+        %               Biol. 54 3473-3489 (2009)
         
         [zg,xg,yg]= gridfit(x,y,z,1:2:size(tmp,1),1:2:size(tmp,2),'smoothness',smoothnessVal);
         ZI = griddata(xg,yg,zg,XI,YI);
-        if  ~isempty(isnan(ZI)) % we might get nan in the edges
+        if  ~isempty(isnan(ZI)) % we might get NaNs in the edges
             ZIt = griddata(xg,yg,zg,XI,YI,'v4');
             ZI(isnan(ZI))=ZIt(isnan(ZI));
         end
@@ -203,10 +213,10 @@ for  jj=1:size(B1Fit_S,2)
     end;
     
 end;
+
 B1Fit_S(B1Fit_S<0)=0;
 
-
-%% calculate if the smoothing intruduce a constant bias, and correct for it.
+%% IV. Calculate if the smoothing introduces a constant bias, and correct for it.
 %remove values that would cause correction value to be 0 or inf.
 tissuemask(B1Fit_S==0)=0;
 tissuemask(isnan(B1(:)./B1Fit_S(:)))=0;
@@ -214,8 +224,6 @@ tissuemask(isinf(B1(:)./B1Fit_S(:)))=0;
 
 Cal=median(B1(tissuemask)./B1Fit_S(tissuemask));
  B1Fit_S=B1Fit_S.*Cal;
-
-
 
 %% SAVE the result smooth B1 map
 outDir = mrQ.spgr_initDir; % check that this is right

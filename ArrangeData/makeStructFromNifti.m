@@ -1,23 +1,27 @@
 function [s coilNum] = makeStructFromNifti(niftiFile,multiChannels,struc,permutation)
 % 
-% [s] = makeStracFromNifti(niftiFile,multiChannels,struc)
+% [s coilNum] = makeStructFromNifti(niftiFile,multiChannels,struc,permutation)
 % 
-% Load a nifti file and make a structure that the Align tool (knk's?) knows
+% Load a NIfTI file and make a structure that the Align tool (knk's?) knows
 % how to work with. The data needs to be reshaped and permuted so that data
 % ---> (x,y,z,coils).
 % 
 % INPUTS: 
-%       niftiFile     - full path to nifti file.
-%       multiChannels - If multiChannels = -1 this will take all the
+%       niftiFile     - Full path to NIfTI file.
+%       multiChannels - If multiChannels = -1, this will take all the
 %                       channels and separate them. If it's a different
-%                       number then we will work only on those channels
-%                       named in multiChannels (vector). If it = -2 then we
+%                       number, then we will work only on those channels
+%                       named in multiChannels (vector). If it = -2, then we
 %                       use only the last channel. *** EXPLAIN IN MORE
 %                       DETAIL ***
-%     struc             provide a structior that the data will be add to
-%     permutation           rearange the data. defult 1. most time the data from multi chanel need a permutation if this is not neccery use 0. 
+%     struc           - A structure that the data will be added to
+%     permutation     - Rearanges the data. Default is 1. 
+%                        Most of the time the data from multichanel needs a 
+%                        permutation; if this is not necessary, use 0. 
+%
+%
 % OUTPUTS:
-%       [s]           - Structure containing the nifti data in a format
+%       s             - Structure containing the NIfTI data in a format
 %                       that works well with the Align tool. 
 % 
 % SEE ALSO:
@@ -43,7 +47,7 @@ DD = niftiRead(niftiFile);
 if exist('multiChannels','var') && ~isempty(multiChannels)
     
     % Reshape the data structure so the 3rd and 4th dimensions are
-    % switched-up and Permute the data so that dat dim --> (x,y,z,coils)
+    % switched-up, and permute the data so that dat dim --> (x,y,z,coils)
     sz  = size(DD.data);
     
     if length((sz))<4
@@ -68,14 +72,14 @@ if exist('multiChannels','var') && ~isempty(multiChannels)
     elseif multiChannels == -2 
         s(1) = makeStruct(dat(:,:,:,sz(4)),DD,['last coil from ' DD.fname],struc);
 
-     % Use only the elected coils        
+     % Use only the selected coils        
     else
         for i = 1:numel(multiChannels)
             s(i) = makeStruct(dat(:,:,:,multiChannels(i)),DD,['coil ' num2str(multiChannels(i)) ' from ' DD.fname],struc); %#ok<AGROW>
         end
     end
     
-%for single chanel nifti
+%for single channel NIfTI
 else
     s(1) = makeStruct(DD.data(:,:,:,end),DD,['image from ' DD.fname],struc);
 coilNum=1;

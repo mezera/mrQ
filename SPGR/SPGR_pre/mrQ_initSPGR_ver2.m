@@ -4,62 +4,60 @@ function [s,xform,mmPerVox,niiFiles,flipAngles,mrQ] = ...
 % [s,xform,mmPerVox,niiFiles,flipAngles,mrQ] = ...
 %     mrQ_initSPGR_ver2(spgrDir,refImg,mmPerVox,interp,skip,clobber,mrQ)
 % 
-% Load and align all the SPGR dicoms in the spgrDir. (It won't work
+% Loads and aligns all the SPGR DICOMs in the spgrDir. (It won't work
 % for multi-coil data, so take care of that in mrQ_arrangeData.m).
 %
-% This function will align dicoms with the same TR and TE (for T1-M0 linear
-% fit). So if there is a different TR or TE you will have to select the 
-% right TR and TE. Note that you can also work with multiple TR's but then
+% This function will align DICOMs with the same TR and TE (for T1-M0 linear
+% fit). So if there is a different TR or TE, you will have to select the 
+% correct TR and TE. Note that you can also work with multiple TR's, but then
 % the relevant line needs to be commented. *** MORE INFO ON THIS NEEDED ***
-%.
 %
 %
 % INPUTS
-%       spgrDir:  The SPGR nifti output directory
+%       spgrDir:  The SPGR NIfTI output directory
 %
 %       refImg:   Different ref images can be used as an input (refImg is a
-%                 path to a nifti image). If there is no refImg (refImg is
-%                 empty) then the SPGR with a similar contrast to the T1
-%                 weighted image will be selected and the user will be
-%                 asked to mark the ac/pc using mrAnatAverageAcpcNifti
+%                 path to a NIfTI image). If there is no refImg (i.e. refImg 
+%                 is empty), then the SPGR with a similar contrast to the
+%                 T1-weighted image will be selected and the user will be
+%                 asked to mark the ac-pc using mrAnatAverageAcpcNifti.m.
 %
 %       mmPerVox: The resolution at which you want to resample the data.
-%                 This is a 3X1 vector. If empty, the dicom
+%                 This is a 3X1 vector. If empty, the DICOM
 %                 resolution will be used -- this does not have to be the
-%                 native scan size as the magnet output is zeroed. The
+%                 native scan size, as the magnet output is zeroed. The
 %                 saved directory will have the resolution in its name.
 %
 %       interp:   Interpolation method. [Default = 1]
 %                 1 = trilinear,
 %                 7 = b-spline (resampling algorithm)
 %
-%       skip:     you can skip any of the scans in spgrDir if you want by
-%                 passing in a 1xn vector of scans to skip.
+%       skip:     You can skip any of the scans in spgrDir if you want by
+%                 passing in a 1xN vector of scans to skip.
 %
+%       clobber:  Overwrite existing data and reprocess. [Default = false]
 %
-%      clobber:   Overwrite existing data and reprocess. [default = false]
+%       mrQ:      Information structure.
 %
-%        mrQ:     information structure
-
 %
 %
 % OUTPUTS
-%       S:        All the aligned images are saved within the structure S.
+%     s:          All the aligned images are saved within the structure s.
 %
-%       xform:    The matrix that transforms from raw to acpc.
+%     xform:      The matrix that transforms from raw to ac-pc.
 %
-%       mmPerVox: The resolution that the data was sampled to.
+%     mmPerVox:   The resolution to which the data was sampled.
 %
 %                 * These three outputs are saved in the output directory
 %                   in the file: fullfile(outDir,'dat_aligned.mat');
 %
-%       niiFiles: A list of full paths to the nifti files used. If nifti
-%                 files were not used this will be = [];
+%     niiFiles:   A list of full paths to the NIfTI files used. If NIfTI
+%                  files were not used, this will be = [];
 %
-%     flipAngles: A 1xn vector of flip angles.
+%     flipAngles: A 1xN vector of flip angles.
 %
-%     mrQ:          information structure, updated
-
+%     mrQ:        Information structure, updated
+%
 %
 %
 % WEB RESOURCES
@@ -85,10 +83,10 @@ function [s,xform,mmPerVox,niiFiles,flipAngles,mrQ] = ...
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% To Do:
-%    If there are no niftis we need to make them from the dicoms. We will use
-%    them (and not the dicoms), as the niftis are more compatible with
-%    the rest of the function! In the CNi we always have dicom so it not
-%    a big problem for now.
+%    If there are no NIfTIs, we need to make them from the DICOMs. We will use
+%    NIfTIs (and not DICOMs), as they are more compatible with the rest of
+%    the function! In the CNI we always have DICOM so it is not a big
+%    problem for now.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Check INPUTS
@@ -111,17 +109,18 @@ if notDefined('interp')
     interp = 1;
     mrQ.SPGR_init_interp=interp;
 end
+
 if interp ~= 1 && interp ~= 7
-    error('Invalid interpolation method. Must be 1 (linear) or 7 (trilinear)');
+    error('Invalid interpolation method. Must be 1 (trilinear) or 7 (b-spline)');
 end
 
 % Clobber flag. Overwrite existing dat_aligned.mat if it already exists and
-% redo the acpc.
+% redo the ac-pc.
 if notDefined('clobber')
     clobber = false;
 end
 
-% Check if the acpc alignment should be done automatically or manually
+% Check if the ac-pc alignment should be done automatically or manually
 if exist('mrQ','var') && ~isempty(mrQ) && isfield(mrQ,'autoacpc')
     autoAcpc = mrQ.autoacpc;
 else
@@ -129,10 +128,10 @@ else
 end
 
 
-%%  Get paths to nifti SPGR data (get niiFiles)
-% Get a structure that has the paths to each of the spgr nifti files.
+%%  Get paths to NIfTI SPGR data (get niiFiles)
+% Get a structure that has the paths to each of the SPGR NIfTI files.
 
-if isfield(mrQ,'inputdata_spgr') %input of list of nifti file and the relevant scan parameters
+if isfield(mrQ,'inputdata_spgr') %input of list of nifti files and the relevant scan parameters
     [s, niiFiles]=mrQ_input2Stuck(mrQ.inputdata_spgr,0);
     
     t1Inds(1:length(s))=1;
@@ -147,7 +146,7 @@ if isfield(mrQ,'inputdata_spgr') %input of list of nifti file and the relevant s
     clear s1
     
 else
-    error('mrQ.inputdata_spgr does not exist! please define the list of nifti files and the relevant scan parameters ')
+    error('mrQ.inputdata_spgr does not exist! Please define the list of NIfTI files and the relevant scan parameters. ')
 end
 
 
@@ -181,7 +180,7 @@ te = [s(t1Inds).TE];
 
 % Check that the TEs match
 if ~all(te == te(1))
-    p = input(['TE''s do not match: ' num2str(te) ' please select the TE, press 0 to use all of the scans  \n']) ;
+    p = input(['TE''s do not match: ' num2str(te) ' Please select the TE, press 0 to use all of the scans  \n']) ;
     if p~=0
         teIndsNot = [s(:).TE] ~= p;
         t1Inds = t1Inds & ~teIndsNot;
@@ -232,18 +231,18 @@ mrQ.SPGR_niiFile_TR=tr;
 mrQ.SPGR_niiFile_TE=te;
 
 
-% Set the resolution if it was not passed in
+% Set the resolution if it was not entered in
 if ~exist('mmPerVox','var') || isempty(mmPerVox),
     mmPerVox = s(min(find(t1Inds))).mmPerVox(1:3);   %#ok<MXFND>
     mrQ.SPGR_init_mmPerVox=mmPerVox; 
 end
 %end
 
-%% ACPC Alignement
+%% AC-PC Alignment
 
 outDir = spgrDir;
-% If the reference image was not passed in, then we make the user take one
-% of the images and choose the acpc landmarks. We then use the resulting image
+% If the reference image was not entered in, then we make the user take one
+% of the images and choose the ac-pc landmarks. We then use the resulting image
 % as a reference for alignment.
 
 if ~exist('refImg','var') || isempty(refImg)
@@ -253,8 +252,8 @@ if ~exist('refImg','var') || isempty(refImg)
     end
     
     
-    % Take a flip angle (closest to 20 deg) create a nifti image of that
-    % volume and use for acpc marking
+    % Take a flip angle (closest to 20 deg) create a NIfTI image of that
+    % volume and use for ac-pc marking
     [~, sec]     = sort(abs(val));
     fileRaw      = fullfile(outDir,'t1w_raw.nii.gz');
     t1w_acpcfile = fullfile(outDir,'t1w_acpc.nii.gz');
@@ -262,7 +261,7 @@ if ~exist('refImg','var') || isempty(refImg)
     
     % Decide whether to do manual or automatic alignment
     if ~exist('autoAcpc','var') || isempty(autoAcpc) || autoAcpc == 0;
-        % Do the acpc alignment - prompt the user to make sure it's good.
+        % Do the ac-pc alignment - prompt the user to make sure it's good.
         an = 0;
         while an ~= 1 || isempty(an)
             mrAnatAverageAcpcNifti({fileRaw},t1w_acpcfile);
@@ -284,7 +283,7 @@ if ~exist('refImg','var') || isempty(refImg)
     
     close all
     
-    % The refImg is now the acpc aligned image.
+    % The refImg is now the ac-pc aligned image.
     refImg = t1w_acpcfile;
     mrQ.SPGR_init_ref_acpc=refImg;
     
@@ -301,12 +300,10 @@ if(~exist(outDir,'dir')), mkdir(outDir); end
 % Align all the series to this subject's reference volume
 %% NOTES
 % Originally we used spm 8 rigid body registration code applied by RFD; for
-% details see relaxAlignAll. This was tested and it works on GE data but
-% not for Siemens data. Therefore we use fsl implementation; for details see
+% details, see relaxAlignAll. This was tested and it works on GE data but
+% not for Siemens data. Therefore we use fsl implementation; for details, see
 % mrQ_fslAlignCall. It still needs to be tested for other kinds of data.
 %
-
-
 
 % if  ~isfield(mrQ,'SPGR_raw_strac')
 

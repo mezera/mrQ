@@ -1,24 +1,37 @@
 function mrQ=mrQ_T1M0_Fit(mrQ,B1File,MaskFile,outDir,dataDir,clobber)
 % mrQ=mrQ_T1M0_Fit(mrQ,B1File,MaskFile,outDir,dataDir,clobber)
+%
+% Different types of fit of T1 to M0: linear, least squares (LSQ), linear weighted
+%
+% ~INPUTS~
+%        mrQ: The mrQ structure
+%     B1File: Location of the B1 file (NIfTI)
+%   MaskFile: Location of the mask file (NIfTI)
+%     outDir: Directory to save the data
+%    dataDir: Directory for the spgr data
+%    clobber: Default is false 
+%
+% ~OUTPUTS~
+%        mrQ: The updated mrQ structure
+%
+%
+
+
 %%  LSQ or LINEAR fit of M0 and T1:
-%  Use the sun-grid to excelerate this fit
+%  Use the SunGrid to accelerate this fit
 
-
-
-%%
-% I. Check INPUTS and set defaults
-
-
+%% I. Check INPUTS and set defaults
 
 if notDefined('dataDir');
     dataDir = mrQ.spgr_initDir;
 end
+
 if notDefined('outDir');
     outDir =dataDir;
 end
 
-% Clobber flag. Overwrite existing fit if it already exists and redo the T1
-%  fit
+% Clobber flag: 
+% Overwrite existing fit, if it already exists, and redo the T1 fit
 if notDefined('clobber')
     clobber = false;
 end
@@ -28,7 +41,6 @@ if isfield(mrQ,'B1FileName')
 end
 
 if notDefined('B1File')
-    
     disp('Initial fits with no correction are now being calculated...');
     B1 = ones(size(s(1).imData));
 else
@@ -39,22 +51,21 @@ end
 if isfield(mrQ,'FullMaskFile')
     MaskFile=mrQ.FullMaskFile;
 end
+
 if notDefined('MaskFile')
-    
-    MaskFile= fullfile(outDir,'FullMask.nii.gz');
-    
+       MaskFile= fullfile(outDir,'FullMask.nii.gz');
 end
-
-
 
 if ~isfield(mrQ,'lsq');
     mrQ.lsq = 1;
 end
+
 lsqfit = mrQ.lsq;
 
 if ~isfield(mrQ,'LW');
     mrQ.LW = false;
 end
+
 if lsqfit==0 
     mrQ.LW = true;
 end
@@ -62,10 +73,7 @@ end
 LWfit = mrQ.LW;
 
 
-
-
 %% II. Load aligned data
-
 
 outFile  = fullfile(dataDir,'dat_aligned.mat'); %without coilWeights data
 
@@ -73,24 +81,18 @@ disp(['Loading aligned data from ' outFile '...']);
 
 load(outFile);
 
+%% III. Linear Fit 
+% Linear fit is used to calculate T1 and M0.
+% (Linear fitting can bias the fit, but it's very fast)
 
-
-
-
-%%
-% LINEAR FITTING  Linear fit is used to calculate T1 and M0
-% (Linear fitting can bias the fit but it's very fast)
-
-
-disp([' linear fits of T1 and PD !!!'] );
+disp([' Linear fits of T1 and PD !!!']);
 T1LFfile= fullfile(outDir,['T1_map_lin.nii.gz']);
 M0LFfile= fullfile(outDir,['M0_map_lin.nii.gz']);
 
-%
-
 if (exist( T1LFfile,'file') && exist( M0LFfile,'file')  && exist( MaskFile,'file') && ~clobber),
     
-    disp(['loading exsisting T1 and M0 linear fit'])
+    disp(['Loading existing T1 and M0 linear fit'])
+    
     T1L=readFileNifti(T1LFfile);
     M0L=readFileNifti(M0LFfile);
     HeadMask=readFileNifti(MaskFile);
@@ -98,11 +100,11 @@ if (exist( T1LFfile,'file') && exist( M0LFfile,'file')  && exist( MaskFile,'file
     T1L=double(T1L.data);
     M0L=double(M0L.data);
     HeadMask=logical(HeadMask.data);
-    
-    
+        
 else
     
     disp('Performing linear fit of T1 and M0...');
+    
     flipAngles = [s(:).flipAngle];
     tr = [s(:).TR];
     
@@ -114,12 +116,11 @@ else
     % M0: PD = M0 * G * exp(-TE / T2*).
     [T1L,M0L] = relaxFitT1(cat(4,s(:).imData),flipAngles,tr,B1);
     
-    %% let's calculate a new mask 
-    [HeadMask, mrQ]=CalculateFullMask(mrQ,T1L,M0L,outDir);
+    % let's calculate a new mask 
+    [HeadMask, mrQ]=CalculateFullMask(mrQ,T1L,M0L,outDir); %see below for function
     % Zero-out the values that fall outside of the brain mask
     T1L(~HeadMask) = 0;
-    M0L(~HeadMask) = 0;
-    
+    M0L(~HeadMask) = 0;    
     
     % Save the T1 and PD data
     dtiWriteNiftiWrapper(single(T1L), xform,T1LFfile);
@@ -130,52 +131,45 @@ else
 end;
 
 
-
 if ~isfield(mrQ,'FullMaskFile')
         [HeadMask, mrQ]=CalculateFullMask(mrQ,T1L,M0L,outDir);
 end
 
 
-
-%% LSQ FIT
+%% IV. LSQ Fit
 if lsqfit==1,
-    %% lsq fit of M0 and T1 use the sun-grid to excelerate this fit
-    disp('Fitting T1 and PD by lsq: This takes time - SGE can be used!!!');
+    % LSQ fit of M0 and T1. Use the SunGrid to accelerate this fit
+    
+    disp('Fitting T1 and PD by LSQ: This takes time - SGE can be used!!!');
     T1lsqfile= fullfile(outDir,['T1_map_lsq.nii.gz']);
     M0lsqfile= fullfile(outDir,['M0_map_lsq.nii.gz']);
     
-    % If the fits have been performed then we simply load them.
+    % If the fits have been performed, then we simply load them.
     
     if (exist( T1lsqfile,'file') && exist( M0lsqfile,'file') && ~clobber),
         
-        disp(['loading exsisting T1 and M0 lsq fit'])
+        disp(['Loading existing T1 and M0 LSQ fit'])
         T1=readFileNifti(T1lsqfile);
         M0=readFileNifti(M0lsqfile);
         T1=double(T1.data);
         M0=double(M0.data);
         
     else
-        
-        
         if clobber && (exist([outDir '/tmpSG'],'dir'))
-            % in the case we start over and there are  old fits we will
-            % deleat them
+            % in the case we start over and there are old fits, 
+            % we will delete them
             eval(['! rm -r ' outDir '/tmpSG']);
-        end
+        end      
         
-        
-        
-        disp(['Fiting lsq T1 and M0']);
+        disp(['Fitting LSQ T1 and M0']);
         flipAngles = [s2(:).flipAngle];
         tr = [s(:).TR];
         
         Gain=double(HeadMask);
         
-        % LSQ fit of M0 and T1: Use the sun-grid to excelerate this fit
+        % LSQ fit of M0 and T1: Use the SunGrid to accelerate this fit
         [T1,M0] = mrQ_fitT1PD_LSQ(s2,HeadMask,tr,flipAngles,M0L,T1L,Gain,B1,outDir,xform,SunGrid,[],sub,mrQ.proclus);
-        
-        %
-        
+              
         % Save the T1 and M0 data
         dtiWriteNiftiWrapper(single(T1), xform,T1lsqfile);
         dtiWriteNiftiWrapper(single(M0), xform, M0lsqfile);
@@ -185,19 +179,17 @@ if lsqfit==1,
     end
 end
 
-
+%% V. Weighted linear fit
 if LWfit==1
-    %% Weighted linear Fit
-    disp([' linear fits of T1 and PD !!!'] );
+    disp([' Linear fits of T1 and PD !!!'] );
     T1WLFfile= fullfile(outDir,['T1_map_Wlin.nii.gz']);
     T1LFfile= fullfile(outDir,['T1_map_lin.nii.gz']);
     M0LFfile= fullfile(outDir,['M0_map_Wlin.nii.gz']);
     M0WLFfile= fullfile(outDir,['M0_map_Wlin.nii.gz']);
-    %
     
     if (exist( T1WLFfile,'file') && exist( M0WLFfile,'file')  && ~clobber),
         
-        disp(['loading exsisting T1 and M0 linear fit'])
+        disp(['Loading existing T1 and M0 linear fit'])
         T1=readFileNifti(T1WLFfile);
         M0=readFileNifti(M0WLFfile);
         T1=double(T1.data);
@@ -227,8 +219,6 @@ if LWfit==1
         dtiWriteNiftiWrapper(single(M0), xform, M0LFfile);
         dtiWriteNiftiWrapper(single(T1w), xform,T1WLFfile);
         dtiWriteNiftiWrapper(single(M0w), xform, M0WLFfile);
-              
-        
         
         mrQ.T1_B1_LWFit=T1WLFfile;
         mrQ.M0_B1_LWFit=M0WLFfile;
@@ -241,10 +231,8 @@ end
 
        save(mrQ.name,'mrQ');
 
-
 function [mask, mrQ]=CalculateFullMask(mrQ,t1,M0,outDir)
 %% one more mask anywhere we have signal
-
 
 HM = readFileNifti(mrQ.HeadMask);     HM=logical(HM.data);
 BM=  readFileNifti(mrQ.BrainMask); BM=logical(BM.data);
@@ -322,8 +310,7 @@ end;
 mask=logical(mask1+mask +HM+BM);
 
 
-% make a head mask that include for sure the brain mask
-
+% make a head mask that definitely includes the brain mask
 FullMaskFile= fullfile(outDir,'FullMask.nii.gz');
 dtiWriteNiftiWrapper(single(mask), mrQ.xform,FullMaskFile);
 mrQ.FullMaskFile=FullMaskFile;

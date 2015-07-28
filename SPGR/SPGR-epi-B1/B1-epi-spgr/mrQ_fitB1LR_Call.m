@@ -13,8 +13,6 @@ function mrQ_fitB1LR_Call(opt_logname,SunGrid,RunSelectedJob,clobber)
 %         SunGrid: Whether to use the SunGrid; default is no.
 %  RunSelectedJob:
 %         clobber: Default is false.
-%
-%
 
 load(opt_logname);
 dirname=opt.dirname;
@@ -37,19 +35,29 @@ end
 %%   Perform the gain fits
 % Perform the fits for each box using the SunGrid Engine
 if SunGrid==1; %if there is a grid
-    
-     if notDefined('RunSelectedJob')
-    
-    % Check to see if there is an existing SGE job that can be
-    % restarted. If "no", start the job; if "yes", prompt the user.
-    
-    % should we control the sgeoutput clear it before we start?
-    %    eval(['!rm -f ~/sgeoutput/*' sgename '*'])
-    %    sgerun2('mrQ_B1_LRFit(opt,jumpindex,jobindex);',sgename,1,1:ceil(opt.N_Vox2Fit/jumpindex),[],[],5000);
+    jumpindex=5000;
+    if notDefined('RunSelectedJob')
         
-            sgerun('mrQ_B1_LRFit(opt_logname,jumpindex,jobindex);',sgename,1,1:ceil(opt.N_Vox2Fit/jumpindex),[],[],5000);
-     else
-         % Run only the selected jobs  
+        % Check to see if there is an existing SGE job that can be
+        % restarted. If "no", start the job; if "yes", prompt the user.
+        
+        % should we control the sgeoutput clear it before we start?
+        %    eval(['!rm -f ~/sgeoutput/*' sgename '*'])
+        %    sgerun2('mrQ_B1_LRFit(opt,jumpindex,jobindex);',sgename,1,1:ceil(opt.N_Vox2Fit/jumpindex),[],[],5000);
+        
+        for jobindex=1:ceil(opt.N_Vox2Fit/jumpindex)
+            %         right now opt.N_Vox2Fit/jumpindex)=1!!
+            %         or is it?
+            %         not sure which opt it is...
+            %         there's file opt (mrQ.B1.logname) and there's mrQ.opt
+            command=sprintf('qsub -cwd -j y -b y -N job%g "matlab -nodisplay -r ''mrQ_B1_LRFit(%f,%g,%g); exit'' >log%g"', jobindex, id,jumpindex,jobindex,jobindex);
+            system(command)
+            
+        end
+        
+%         sgerun('mrQ_B1_LRFit(opt_logname,jumpindex,jobindex);',sgename,1,1:ceil(opt.N_Vox2Fit/jumpindex),[],[],5000);
+    else
+        % Run only the selected jobs
            MissingFileNumber=mrQ_multiFit_HowIsMissing( dirname,N_Vox2Fit,jumpindex); % the job to run
            sgerun('mrQ_B1_LRFit(opt_logname,jumpindex,jobindex);',sgename,1,MissingFileNumber,[],[],5000);
                   
@@ -69,7 +77,8 @@ else %if there is not a grid
     jumpindex=   opt.N_Vox2Fit;
     opt.jumpindex=jumpindex;
     save(opt.logname,'opt');
-    mrQ_B1_LRFit(opt_logname,jumpindex,1);
+%     mrQ_B1_LRFit(opt_logname,jumpindex,1);
+    mrQ_B1_LRFit(id,jumpindex,1);
  
      
 end

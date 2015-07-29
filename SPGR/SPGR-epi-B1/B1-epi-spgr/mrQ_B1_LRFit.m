@@ -1,4 +1,4 @@
-function mrQ_B1_LRFit(optName,jumpindex,jobindex)
+function mrQ_B1_LRFit(IDnum,jumpindex,jobindex)
 %
 % function mrQ_B1_LRFit(optName,jumpindex,jobindex)
 %
@@ -23,6 +23,11 @@ function mrQ_B1_LRFit(optName,jumpindex,jobindex)
 %
 
 %% I. Initialization
+
+[mrQpath]= mrQ_getPath(IDnum);
+load(mrQpath);
+optName=mrQ.B1.logname;
+
 load(optName);
 %find the box to work on
 j=0;

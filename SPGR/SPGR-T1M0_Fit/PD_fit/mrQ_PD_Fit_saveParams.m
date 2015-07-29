@@ -1,129 +1,137 @@
-function [logname]=mrQ_PD_Fit_saveParams(outDir,subName,degrees,M0file,T1file,BMfile,PDfit_Method,mrQ,outMm,boxSize,percent_overlap,Coilsinfo,Init,clobber,Inclusion_Criteria)
+function [logname]=mrQ_PD_Fit_saveParams(outDir,subName,degrees,M0file,T1file,... 
+                                         BMfile,PDfit_Method,mrQ,outMm,boxSize,... 
+                                         percent_overlap,Coilsinfo,Init,...
+                                         clobber,Inclusion_Criteria)
+% [logname]=mrQ_PD_Fit_saveParams(outDir, subName, degrees, M0file, ...
+%                                 T1file, BMfile, PDfit_Method, mrQ, ...
+%                                 outMm, boxSize, percent_overlap, ...
+%                                 Coilsinfo, Init, clobber, ... 
+%                                 Inclusion_Criteria)
 %
-%   [logname]=mrQ_PD_Fit_saveParams(outDir,subName,degrees,M0file,T1file,BMfile,outMm,boxSize,pracent_overlap,Coilsinfo,PDfit_Method,Init,clobber,Inclusion_Criteria,mrQ)
 %
-% # Create a stracture of information to fit the M0 boxes ffor coil gain
-% and PD using parallel computation (grid) using SGE
+% This function creates a structure of information to fit the M0 boxes for
+% coil gain and PD, using parallel computation via SunGrid Engine (SGE).
 %
-% INPUTS:
-%   outDir      - The output directory - also reading file from there
+%   ~INPUTS~
+%             outDir:   The output directory. 
+%                           The function also reads the file from there.
+%            subName:   The subject name for the SGE run.
+%            degrees:   Polynomial degrees for the coil estimation.
+%             M0file:   The combined/aligned M0 data.
+%             T1file:   The fitted T1 map.
+%             BMfile:   The defined brain mask.
+%       PDfit_Method:   Regularization approach 
+%                           Reg=1 -- T1 regularization (default) 
+%                           Reg=2 -- correlation  
+%                           Reg=3 -- ridge
+%                mrQ:   The mrQ structure
+%              outMm:   The resample (undersample) resolution of those 
+%                           images. (Default is 2mm x 2mm x 2mm.) This can
+%                           shorten the fits. The fit procedure was written
+%                           to this resolution. This resolution is assumed
+%                           to be high, given the low frequency change of
+%                           the coils gain.
+%            boxSize:   The box size that is used for the fit (in mm)
+%                           Default is 14.
+%    percent_overlap:   The overlap between the boxes. 
+%                           (Default is 0.5 --> 50%)
+%          Coilsinfo:   A structure with three fields that define the coil 
+%               Init:   Approach to initiate the search
+%                           1= SOS (default) 
+%                           2= T1 PD, theoretical relations 
+%                           3= segmentation 
+%            clobber:   Overwrite existing data and reprocess. 
+%                           Default is false.
+% Inclusion_Criteria:   Default is [0.8 200].
 %
-%   SunGrid     - Flag to use the SGE for computations
-%  proclass   - actived a Stanford local parralel computing grid to fit
-%  (using SGE )
-%   M0file     - The combined/aligned M0 data
-% T1file         - The fitted T1 map
-% BMfile       - The defied brain mask
-%   degrees     - Polynomial degrees for the coil estimation
-%   subName     - the subject name for the SGE run
-%  outMm        - resample (undersample) resultoion of those images. defult
-%                       (2X2X2) this can shorten the fits. The fit prociger was wrriten to this
-%                       resulotion. This resulotion is asumed to be high given the low feqencicy
-%                       change of the coils gain. 
-% boxSize        the box size in mm that are used for the fit
-% pracent_overlap  the overlap between the boxes (defult 0.5  --> 50%)
-% Coilsinfo   coil info a stracture with three filled define the coil to be (used see below)
-% PDfit_Method       REgularization approch Reg=1 T1 regularization (defult) , Reg=2 corralation ; Reg=3 ridge
-% Init           approch to init the search  1 defult (SOS) , 2 T1 PD, theortical relations, 3 segmentation 
-%  clobber:     - Overwrite existing data and reprocess. [default = false]
-%
-% OUTPUTS:
-% opt           - a  structure that save the fit parameter is saved in the outdir and in
-%               the tmp directory named fitLog.mat
-%               calling to FitM0_sanGrid_v2 that save the output fitted files in tmp directorry
-%              this will be used lster by mrQfitPD_multiCoils_M0 to make the PD map
+%     ~OUTPUTS~
+%            logname:   A structure that saves the fit parameters. It is 
+%                           saved in the outDir, and in the tmp directory,
+%                           with the name fitLog.mat. It calls to
+%                           FitM0_sanGrid_v2 that saves the fitted files
+%                           (output) in the tmp directory. This will be
+%                           used later by mrQfitPD_multiCoils_M0.m to make
+%                           the PD map.
 %
 %
 % SEE ALSO:
 %   mrQ_CoilPDFit_grid.m
 %
-%
 % ASSUMPTIONS:
 %   This code assumes that your SGE output directory is '~/sgeoutput'
-% :
 %
 % AM (C) Stanford University, VISTA
 %
 %
 
-
-%% CHECK INPUTS AND SET DEFAULTS
-%  Saving parameters and relevant information for the Gain fit in the opt stracture. This allow to send them to all the
-% grid call running  in parallel
-
+%% I. Check inputs and set defaults
+%  Saving parameters and relevant information for the Gain fit in the opt
+%  structure. This allows us to send them to all the
+%  grid calls running in parallel
 
 if (notDefined('outDir') || ~exist(outDir,'dir'))
     outDir = uigetDir(pwd,'Select outDir');
 end
-opt.outDir  = outDir;
+   opt.outDir  = outDir;
 
 if(~exist('degrees','var'))
-    disp('Using the defult polynomials: Degrees = 3 for coil estimation');
+    disp('Using the default polynomials: degrees = 3 for coil estimation');
     degrees = 3;
 end
-opt.degrees = degrees;
-% if the M0file is not an input we load the file that was made by
-% mrQ_multicoilM0.m (defult)
+   opt.degrees = degrees;
+
+% If the M0file is not an input, we load the file that was made by
+% mrQ_multicoilM0.m (default)
 if(~exist('M0file','var') || isempty(M0file))
 [~, M0file,~]=mrQ_get_T1M0_files(mrQ,0,1,0);
-
     if ~exist(M0file,'file')
-        disp(' can not find the   M0 file')
+        disp('Cannot find the M0 file.')
         error
     end
 end
-opt.M0file = M0file;
-
+   opt.M0file = M0file;
 
 if notDefined('boxSize')
     boxSize =14;
 end
+
 if notDefined('percent_overlap')
     percent_overlap =0.5;
 end
 
-% In cases of high resltion data we can undersample the data to outMm
-% resulotion
+% In cases of high-resolution data, we can undersample the data to outMm
+% resolution
 if notDefined('outMm')
     outMm=[2 2 2];
 end
-% defult T1 regularization
+
+% Default T1 regularization
 if notDefined('PDfit_Method')
     PDfit_Method=1;
 end
-
-
-opt.PDfit_Method=PDfit_Method;
-
+  opt.PDfit_Method=PDfit_Method;
 
 if notDefined('Coilsinfo')
-    if PDfit_Method~=1;
-        
-        % we define the number of coil that will be used to the fit and the
-        % pull of best coil
-        Coilsinfo.maxCoil=4;    Coilsinfo.minCoil=4;  Coilsinfo.useCoil=[1:16];
-    else % in case we using only one coil
-        Coilsinfo.maxCoil=1;Coilsinfo.minCoil=1; Coilsinfo.useCoil=1;
-        
+    if PDfit_Method~=1; 
+             % We define the number of coils that will be used for the fit
+             % and the pull of best coil      
+        Coilsinfo.maxCoil=4; Coilsinfo.minCoil=4; Coilsinfo.useCoil=[1:16];
+    else % in case we use only one coil
+        Coilsinfo.maxCoil=1; Coilsinfo.minCoil=1; Coilsinfo.useCoil=1; 
     end
 end
 
-    
-    if(~exist('T1file','var') || isempty(T1file))
-        [T1file]=mrQ_get_T1M0_files(mrQ,1,0,0);
-
-    end   
-      opt.T1file=T1file;
+if(~exist('T1file','var') || isempty(T1file))
+  [T1file]=mrQ_get_T1M0_files(mrQ,1,0,0);
+end   
+  opt.T1file=T1file;
  
-      %end
-
 if notDefined('Init')
-        Init=1;
+   Init=1;
 end
-opt.Init=Init;
+   opt.Init=Init;
 
 if (notDefined('Inclusion_Criteria'))
-    
     opt.Inclusion_Criteria=[0.8 200];
 else
     opt.Inclusion_Criteria=Inclusion_Criteria;
@@ -131,10 +139,9 @@ else
 end
 
 % Load the brain mask file
-  if(~exist('BMfile','var') || isempty(BMfile))
-        [BMfile]=mrQ_get_T1M0_files(mrQ,0,0,1);
-  end   
-    
+if(~exist('BMfile','var') || isempty(BMfile))
+  [BMfile]=mrQ_get_T1M0_files(mrQ,0,0,1);
+end   
 
 if (exist(BMfile,'file'))
     disp(['Loading brain Mask data from ' BMfile '...']);
@@ -142,46 +149,44 @@ if (exist(BMfile,'file'))
     mmPerVox  = brainMask.pixdim;
     opt.BMfile = BMfile;
     
-    % In casses of high resltion data we can undersample the data when we fit the coil gains this may shorter the fit time.  not that the Coil gain was writtern for 2X2X2 resultion.
-    % images different resultion may need some changes in the regularization protocol.
-    if outMm(1)~=0 % unless we don't like to change the fitting resulotion
-    if (outMm(1)~=mmPerVox(1) || outMm(2)~=mmPerVox(2) || outMm(3)~=mmPerVox(3) )
-        [opt]=mrQ_resamp4G_fit(opt,outMm);
-        brainMask = readFileNifti(opt.BMfile);
-        mmPerVox  = brainMask.pixdim;
-    end
+    % In cases of high resolution data, we can undersample the data when we
+    % fit the coil gains. This may shorten the fit time. Note that the coil
+    % gain was written for 2mm x 2mm x 2mm resolution. Images with a
+    % different resolution may need some changes in the regularization
+    % protocol.
+    
+    if outMm(1)~=0 % Unless we don't want to change the fitting resulotion
+       if (outMm(1)~=mmPerVox(1) || outMm(2)~=mmPerVox(2) || outMm(3)~=mmPerVox(3) )
+          [opt]=mrQ_resamp4G_fit(opt,outMm);
+           brainMask = readFileNifti(opt.BMfile);
+           mmPerVox  = brainMask.pixdim;
+       end
     end
     brainMask = logical(brainMask.data);
 else
     error('Cannot find the file: %s', BMfile);
 end
 
-
 % Get the subject prefix for SGE job naming
 if notDefined('subName')
     % This is a job name we get from the for SGE
     [~, subName] = fileparts(fileparts(fileparts(fileparts(fileparts(outDir)))));
-    disp([' Subject name for lsq fit is ' subName]);
+    disp([' Subject name for LSQ fit is: ' subName]);
 end
 
-
-% Clobber flag. Overwrite existing fit if it already exists and redo the PD
-% Gain fits. Not  implamented full yet
+% Clobber flag. 
+% Overwrite existing fit and redo the PD Gain fits. 
+%      ** Not yet implemented in full **
 if notDefined('clobber')
     clobber = false;
 end
 
-
-% segmening R1 to tissue types
-
- 
+% segmenting R1 to tissue types
     opt=R1Seg(opt);
     
+%% II. Identify the boxes we want to fit
 
-%% find the boxes we will to fit
-
-
-% Try to fill the brain with boxes of roughly boxSize mm^3 and with an
+% Try to parcel the brain into boxes of roughly boxSize mm^3 and with an
 % overlap of 2;
 sz   = (size(brainMask));
 
@@ -191,21 +196,20 @@ even = find(mod(boxS,2)==0);
 boxS(even)  = boxS(even)+1;
 opt.boxS = boxS;
 
-% Determine the percentage of pracent_overlap  (0.1, 0.5, 0.7)
+% Determine the percentage of percent_overlap  (0.1, 0.5, 0.7)
 overlap = round(boxS.*percent_overlap);
 
-% Grid of the center of the boxs that will be used to fit
+% Create a grid of the center of the boxes that will be used to fit
 [opt.X,opt.Y,opt.Z] = meshgrid(round(boxS(1)./2):boxS(1)-overlap(1):sz(1)    ,    round(boxS(2)./2):boxS(2)-overlap(2):sz(2)    , round(boxS(3)./2):boxS(3)-overlap(3):sz(3));
 
 
-%donemask is a voulume of the center locations that are used for boc keeping. (which
-%boxes are  done and which need be done of skip.)
+%donemask is a volume of the center locations and is used for bookkeeping. 
+%(i.e., which boxes are done and which need be done or skipped.)
 donemask = zeros(size(opt.X));
 
 opt.HboxS = (boxS-1)/2;
 
-
-%% Loop over the box to fit and check there is data there
+%% III. Loop over the identified boxes and check that the data is there
 
 ii = 1;
 opt.donemask = donemask;
@@ -231,19 +235,18 @@ end
 
 opt.donemask = donemask;
 
-%% Intiate other parameters for the fit and SGE call
-opt.Kfold=3;   % the cross validation fold ( use split half)
+%% IV. Initiate other parameters for the fit and SGE call
 
-
-opt.BasisFlag = 'qr'; %ortonormal basis for the coil  polynomyals
-
+opt.Kfold=3;   % the fold for cross validation (use split half)
+opt.BasisFlag = 'qr'; %orthonormal basis for the coil polynomials
 
 if opt.PDfit_Method==3
-opt.lambda = [1e4 5e3 1e3 5e2 1e2 5e1 1e1 5  1e0 0.5 1e-1 0] ;%[1e4  1e3 5e2 1e2  1e1  1e0  0] ; %the different weights (lambda) for the T1 regularization we will check the differnt lambda by cross validation.
+    opt.lambda = [1e4 5e3 1e3 5e2 1e2 5e1 1e1 5  1e0 0.5 1e-1 0] ;%[1e4  1e3 5e2 1e2  1e1  1e0  0] ; 
+    % These are the different weights (lambda) for the T1 regularization. 
+    % We will check the different lambda values using cross validation.
 end
 
-
-% the coils information how many coil to use and to poll from.
+% The coils information: how many coils to use and to pull from.
 opt.maxCoil=Coilsinfo.maxCoil;
 opt.minCoil=Coilsinfo.minCoil;
 opt.useCoil=Coilsinfo.useCoil;
@@ -252,7 +255,7 @@ opt.smoothkernel=0;
 sgename    = [subName '_MultiCoilM0'];
 dirname    = [outDir '/tmpSGM0' ];
 dirDatname = [outDir '/tmpSGM0dat'];
-jumpindex  = 5; %number of boxs fro each SGR run
+jumpindex  = 5; %number of boxes for each SGE run
 
 opt.dirDatname = dirDatname;
 opt.name = [dirname '/M0boxfit_iter'] ;
@@ -261,16 +264,17 @@ opt.jumpindex = jumpindex;
 opt.dirname=dirname;
 
 opt.SGE=sgename;
+
 % Save out a logfile with all the options used during processing
 logname = [outDir '/fitLog.mat'];
 opt.logname=logname;
-%saving an information file we can load after if needed
+
+%saving an information file we can load afterwards if needed
 save(opt.logname,'opt');
 
-
 if clobber && (exist(dirname,'dir'))
-    % in the case we start over and there are  old fits, so we will
-    % deleat them
+    % in the case we start over and there are old fits, we will
+    % delete them
     eval(['! rm -r ' dirname]);
 end
 return

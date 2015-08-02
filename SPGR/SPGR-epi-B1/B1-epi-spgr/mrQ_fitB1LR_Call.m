@@ -36,6 +36,9 @@ end
 % Perform the fits for each box using the SunGrid Engine
 if SunGrid==1; %if there is a grid
     jumpindex=5000;
+    fullID=sgename(isstrprop(sgename, 'digit'));
+    id=str2double(fullID(1:8));
+
     if notDefined('RunSelectedJob')
         
         % Check to see if there is an existing SGE job that can be
@@ -44,22 +47,33 @@ if SunGrid==1; %if there is a grid
         % should we control the sgeoutput clear it before we start?
         %    eval(['!rm -f ~/sgeoutput/*' sgename '*'])
         %    sgerun2('mrQ_B1_LRFit(opt,jumpindex,jobindex);',sgename,1,1:ceil(opt.N_Vox2Fit/jumpindex),[],[],5000);
-        
+       
         for jobindex=1:ceil(opt.N_Vox2Fit/jumpindex)
-            %         right now opt.N_Vox2Fit/jumpindex)=1!!
-            %         or is it?
-            %         not sure which opt it is...
-            %         there's file opt (mrQ.B1.logname) and there's mrQ.opt
-            command=sprintf('qsub -cwd -j y -b y -N job%g "matlab -nodisplay -r ''mrQ_B1_LRFit(%f,%g,%g); exit'' >log%g"', jobindex, id,jumpindex,jobindex,jobindex);
-            system(command)
+            jobname=100*str2double(fullID(1:3))+jobindex;
+            command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_B1_LRFit(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
+           [stat,res]= system(command);
+           
+           if ~mod(jobindex,25)
+               fprintf('%g jobs out of %g have been submitted',jobindex,ceil(opt.N_Vox2Fit/jumpindex))
+           end
             
         end
         
 %         sgerun('mrQ_B1_LRFit(opt_logname,jumpindex,jobindex);',sgename,1,1:ceil(opt.N_Vox2Fit/jumpindex),[],[],5000);
     else
         % Run only the selected jobs
-           MissingFileNumber=mrQ_multiFit_HowIsMissing( dirname,N_Vox2Fit,jumpindex); % the job to run
-           sgerun('mrQ_B1_LRFit(opt_logname,jumpindex,jobindex);',sgename,1,MissingFileNumber,[],[],5000);
+           MissingFileNumber=mrQ_multiFit_HowIsMissing( dirname,opt.N_Vox2Fit,jumpindex); % the job to run
+           for kk=1:length(MissingFileNumber)
+               jobindex=MissingFileNumber(kk);
+               jobname=100*str2double(fullID(1:3))+jobindex;
+               command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_B1_LRFit(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
+              [stat,res]= system(command);
+              
+              if ~mod(kk,25)
+                  fprintf('%g jobs out of %g have been submitted',kk,length(MissingFileNumber));
+              end
+           end
+%            sgerun('mrQ_B1_LRFit(opt_logname,jumpindex,jobindex);',sgename,1,MissingFileNumber,[],[],5000);
                   
            % (We can also add an interactive call.
            % The code for that is commented below.)

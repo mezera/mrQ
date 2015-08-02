@@ -31,7 +31,8 @@ if ( mrQ.B1fit_done==0)
     
     %define the fit parameters
     mrQ.B1.logname=mrQ_PD_LRB1SPGR_GridParams(mrQ);
-    
+    % save mrQ so the sungrid can load it fully characterized
+    save(mrQ.name,'mrQ');
     % call to fit (with or without grid)
     mrQ_fitB1LR_Call(mrQ.B1.logname,mrQ.SunGrid);
     

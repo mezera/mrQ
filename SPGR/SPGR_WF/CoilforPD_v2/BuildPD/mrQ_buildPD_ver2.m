@@ -67,7 +67,7 @@ jumpindex=opt.jumpindex; % number of box in each file
 jobindexs=1:ceil(length(opt.wh)/jumpindex);  % the numbers of saved file each with jumpindex boxs
 
 % if opt.PDfit_Method~=2 & opt.PDfit_Method~=5 % this oupput (X-vlidation ) are not part of the correlation method
-if opt.PDfit_Method~=2 & opt.PDfit_Method~=1 % this oupput (X-vlidation ) are not part of the correlation method
+if opt.PDfit_Method~=2 & opt.PDfit_Method~=1 % this output (X-vlidation ) are not part of the correlation method
    
 GoodBoxs=zeros(length(opt.wh),1);
        BoxBestReg=zeros(length(opt.wh),2);
@@ -120,7 +120,7 @@ if opt.PDfit_Method==2
         if ed>length(opt.wh), ed=length(opt.wh);end;
         
         
-        %% this is tempurary fix !!!
+        %% this is temporary fix !!!
         
         FileName=[ opt.name '_' num2str(st) '_' num2str(ed)];
         

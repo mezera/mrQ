@@ -240,7 +240,7 @@ opt.donemask = donemask;
 opt.Kfold=3;   % the fold for cross validation (use split half)
 opt.BasisFlag = 'qr'; %orthonormal basis for the coil polynomials
 
-if opt.PDfit_Method==3
+if opt.PDfit_Method~=1
     opt.lambda = [1e4 5e3 1e3 5e2 1e2 5e1 1e1 5  1e0 0.5 1e-1 0] ;%[1e4  1e3 5e2 1e2  1e1  1e0  0] ; 
     % These are the different weights (lambda) for the T1 regularization. 
     % We will check the different lambda values using cross validation.

@@ -1,4 +1,6 @@
-function mrQ_fitT1PDLW_SGE(opt,jumpindex,jobindex)
+function mrQ_fitT1PDLW_SGE(IDnum,jumpindex,jobindex)
+%
+% function mrQ_fitT1PDLW_SGE(opt,jumpindex,jobindex)
 %
 % Perform the T1 and PD fitting using the SGE
 %
@@ -11,9 +13,13 @@ function mrQ_fitT1PDLW_SGE(opt,jumpindex,jobindex)
 %   mrQ_fitT1M0.m, mrQ_fitT1PD_LSQ.m
 %
 % Authors: Aviv Mezer and Nikola Stikov date 24.02.2014 
-%%
+%% get the opt structure using the mrQ ID
+mrQpath= mrQ_getPath(IDnum);
+load(mrQpath);
+load(mrQ.LWoptname);
 
-% Set the maximum number of computational threads avaiable to Matlab
+
+%% Set the maximum number of computational threads avaiable to Matlab
 %maxnumcompthreads(1)
 
 j  = 0;

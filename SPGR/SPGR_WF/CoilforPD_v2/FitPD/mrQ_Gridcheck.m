@@ -16,7 +16,7 @@ if notDefined('SunGrid');SunGrid=0;end
 if notDefined('CallType');CallType=1;end
 
 GridFit_done=false;
-
+fullID=sgename(isstrprop(sgename, 'digit'));
 %%
 if CallType==1 || CallType==2
     fNum=ceil(length(opt.wh)/opt.jumpindex);
@@ -25,6 +25,7 @@ elseif CallType==3
 end
 
 sgename=opt.SGE;
+
 tic
 while GridFit_done~=true
     % List all the files that have been created from the call to the
@@ -38,7 +39,8 @@ while GridFit_done~=true
         eval(['!rm -f ~/sgeoutput/*' sgename '*'])
     else
         % check if there are jobs on the sun grid queue list
-        qStatCommand    = [' qstat | grep -i  job_' sgename(1:6)];
+        jobname=(fullID(1:3));
+        qStatCommand    = [' qstat | grep -i  job_' jobname];
         [status result] = system(qStatCommand);
         tt=toc;
         if (isempty(result) && tt>60)

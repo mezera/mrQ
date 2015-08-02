@@ -1,17 +1,30 @@
-function [mrQpath]= mrQ_getPath(IDnum)
+function [mrQStructPath]= mrQ_getPath(IDnum)
 
-directory=fullfile(pwd,'sge'); % some directory with all of the mrQ structures. 
-load(fullfile(directory,'sge_info'));
-numOfFiles = length(sge_info);
-mrQpath=[];
+funcpath=which('mrQ_arrangeOutPutDir.m');
+[mrQpath,~]=fileparts(funcpath);
 
-for i=1:numOfFiles
-    if sge_info(i).ID==IDnum
-        mrQpath=sge_info(i).path;
-        return
+% mrQpath =/home/shai.berman/Documents/Code/git/mrQ
+
+directory=fullfile(mrQpath,'sge_subjects'); % some directory with all of the mrQ structures. 
+%%
+% load all files in library
+    filesAndFolders = dir(directory);     % Returns all the files and folders in the directory
+    filesInDir = filesAndFolders(~([filesAndFolders.isdir]));  % Returns only the files in the directory
+    
+    numOfFiles = length(filesInDir);
+    mrQStructPath=[];
+    i=1;
+    while(i<=numOfFiles)
+        filename = filesInDir(i).name;      % Store the name of the file
+        ID=str2double(filename(2:end-4));%         take only the number- remove underscore, and .mat
+       if ID==IDnum
+           IDfilename=fullfile(directory, filename);
+           load(IDfilename);
+           mrQStructPath=(sge_info);
+           return
+       end
     end
-end
 
-if isempty(mrQpath)
+if isempty(mrQStructPath)
     error('the path to the given mrQ ID was not found')
 end

@@ -68,7 +68,7 @@ end
             [zg,xg,yg]= gridfit(x,y,z,1:2:size(tmp,1),1:2:size(tmp,2),'smoothness',smoothnessVal);
             ZI = griddata(xg,yg,zg,XI,YI);
             
-                if  ~isempty(isnan(ZI)) % We might get NaNs in the edges
+                if  ~isempty(find(isnan(ZI),1)) % We might get NaNs in the edges
                     ZIt = griddata(xg,yg,zg,XI,YI,'v4');
                     ZI(isnan(ZI))=ZIt(isnan(ZI));
                 end
@@ -104,7 +104,7 @@ end
             
             [zg,xg,yg]= gridfit(x,y,z,1:2:size(tmp,1),1:2:size(tmp,2),'smoothness',smoothnessVal);
             ZI = griddata(xg,yg,zg,XI,YI);
-            if  ~isempty(isnan(ZI)) % we might get nan in the edges
+            if ~isempty(find(isnan(ZI),1)) % we might get nan in the edges
                 ZIt = griddata(xg,yg,zg,XI,YI,'v4');
                 ZI(isnan(ZI))=ZIt(isnan(ZI));
             end
@@ -140,7 +140,7 @@ end
             [zg,xg,yg]= gridfit(x,y,z,1:2:size(tmp,1),1:2:size(tmp,2),'smoothness',smoothnessVal);
             ZI = griddata(xg,yg,zg,XI,YI);
             
-                if  ~isempty(isnan(ZI)) % we might get NaNs in the edges
+                if  ~isempty(find(isnan(ZI),1)) % we might get NaNs in the edges
                     ZIt = griddata(xg,yg,zg,XI,YI,'v4');
                     ZI(isnan(ZI))=ZIt(isnan(ZI));
                 end

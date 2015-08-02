@@ -1,6 +1,7 @@
-function mrQ_CoilPD_gridFit(opt,jumpindex,jobindex)
+function mrQ_CoilPD_gridFit(IDnum,jumpindex,jobindex)
 %
-% mrQ_CoilPD_gridFit_ver3(opt,jumpindex,jobindex)
+% mrQ_CoilPD_gridFit_ver3(opt,jumpindex,jobindex)---> now instead of opt
+% function gets id of mr Q fro which it load opt. 
 %  this function call by the sun grid it load the relavant data and fit the
 %  PD and coils bias of M0 mage rigion (voulume).
 % the imaging voulume region also call here "box". The box is a location (few voxel 100's to
@@ -33,6 +34,9 @@ function mrQ_CoilPD_gridFit(opt,jumpindex,jobindex)
 %% I. Initialization
 
 
+mrQpath= mrQ_getPath(IDnum);
+load(mrQpath);
+load(mrQ.opt_logname);
 
 %find the box to work on
 j=0;

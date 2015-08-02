@@ -49,6 +49,14 @@ else
     mrQ = mrQ_Set(mrQ,'sungrid',useSUNGRID);
 end
 
+%%
+if mrQ.SunGrid
+%     create a file containing mrQpath, named after its 'ID' (taken from
+%     its tempname). This allows for an easy use of sungrid.
+    mrQ_createIDfile(mrQ);
+end
+    
+%%
 %             mrQ = mrQ_Set(mrQ,'sungrid',1);
 mrQ = mrQ_Set(mrQ,'fieldstrength',3);
 
@@ -287,7 +295,7 @@ if mrQ.PDdone==0
     mrQ.PDdone=1;
     fprintf('\n Calculation of PD from M0  - done!              \n');
 else
-    fprintf('\n using previously calculated PD              \n');
+    fprintf('\n Using previously calculated PD              \n');
 end
 
 %% Calculate VIP, TV, and SIR
@@ -297,17 +305,16 @@ if ~isfield(mrQ,'SPGR_PDBuild_done')
 end
 
 if (mrQ.SPGR_PDBuild_done==0)
-    fprintf('\n calculate VIP TV SIR form T1 and WF maps               \n');
+    fprintf('\n Calculate VIP, TV and SIR form T1 and WF maps               \n');
     
     [mrQ.AnalysisInfo] = mrQ_VIP(mrQ);
     save(mrQ.name,'mrQ');
     mrQ.SPGR_PDBuild_done=1;
-    fprintf('\n Calculation of VIP,TV, and SIR  - done!              \n');
+    fprintf('\n Calculation of VIP, TV and SIR  - done!              \n');
     
 else 
-     fprintf('\n using previously calculated VIP, TV and SIR              \n');
+     fprintf('\n Using previously calculated VIP, TV and SIR              \n');
 end
-
 
 
 %%  Create a series of synthetic T1w images

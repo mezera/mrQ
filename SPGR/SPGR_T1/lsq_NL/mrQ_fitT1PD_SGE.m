@@ -1,5 +1,5 @@
-function mrQ_fitT1PD_SGE(opt,jumpindex,jobindex)
-%
+function mrQ_fitT1PD_SGE(IDnum,jumpindex,jobindex)
+%function mrQ_fitT1PD_SGE(opt,jumpindex,jobindex)
 % Perform the T1 and PD fitting using the SGE
 %
 % mrQ_fitT1PD_SGE(opt,jumpindex,jobindex)
@@ -11,9 +11,12 @@ function mrQ_fitT1PD_SGE(opt,jumpindex,jobindex)
 %   mrQ_fitT1M0.m, mrQ_fitT1PD_LSQ.m
 %
 
-%%
+%% get the opt structure using the mrQ ID
+mrQpath= mrQ_getPath(IDnum);
+load(mrQpath);
+load(mrQ.LSQoptname);
 
-% Set the maximum number of computational threads avaiable to Matlab
+%% Set the maximum number of computational threads avaiable to Matlab
 %maxnumcompthreads(1)
 
 j  = 0;
@@ -26,7 +29,7 @@ end
 
 %%
 a=version('-date');
-if str2num(a(end-3:end))>=2012
+if str2num(a(end-3:end))>=2012 
     options = optimset('Algorithm', 'levenberg-marquardt','Display', 'off','Tolx',1e-12);
 else
     options =  optimset('LevenbergMarquardt','on','Display', 'off','Tolx',1e-12);%'TolF',1e-12

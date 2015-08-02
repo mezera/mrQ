@@ -56,7 +56,7 @@ opt.FlipAngle=mrQ.SPGR_niiFile_FA;
 sgename    = [subName '_B1'];
 dirname    = [outDir '/tmpSGB1' ];
 dirDatname = [outDir '/tmpSGB1dat'];
-jumpindex  = 100; %number of boxes for each SGE run
+jumpindex  = 5000; %number of boxes for each SGE run
 
 opt.dirDatname = dirDatname;
 opt.name = [dirname '/B1boxfit_iter'] ;

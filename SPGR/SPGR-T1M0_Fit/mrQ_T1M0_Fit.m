@@ -162,13 +162,14 @@ if lsqfit==1,
         end      
         
         disp(['Fitting LSQ T1 and M0']);
-        flipAngles = [s2(:).flipAngle];
+        flipAngles = [s(:).flipAngle];
         tr = [s(:).TR];
         
         Gain=double(HeadMask);
         
         % LSQ fit of M0 and T1: Use the SunGrid to accelerate this fit
-        [T1,M0] = mrQ_fitT1PD_LSQ(s2,HeadMask,tr,flipAngles,M0L,T1L,Gain,B1,outDir,xform,SunGrid,[],sub,mrQ.proclus);
+%         [T1,M0] = mrQ_fitT1PD_LSQ(s2,HeadMask,tr,flipAngles,M0L,T1L,Gain,B1,outDir,xform,SunGrid,[],sub,mrQ.proclus);
+      [T1,M0] = mrQ_fitT1PD_LSQ(s,HeadMask,tr,flipAngles,M0L,T1L,Gain,B1,outDir,xform,mrQ);
               
         % Save the T1 and M0 data
         dtiWriteNiftiWrapper(single(T1), xform,T1lsqfile);
@@ -212,7 +213,8 @@ if LWfit==1
         
 %         [T1w, T1,M0w, MO] = mrQ_T1M0_LWFit(s,HeadMask,tr,flipAngles,Gain,B1,outDir,xform,SunGrid,[],sub,mrQ.proclus);
         
-        [T1w, T1,M0w, M0] = mrQ_T1M0_LWFit(s,HeadMask,tr,flipAngles,Gain,B1,outDir,xform,mrQ.SunGrid);
+%         [T1w, T1,M0w, M0] = mrQ_T1M0_LWFit(s,HeadMask,tr,flipAngles,Gain,B1,outDir,xform,mrQ.SunGrid);
+                [T1w, T1,M0w, M0] = mrQ_T1M0_LWFit(s,HeadMask,tr,flipAngles,Gain,B1,outDir,xform,mrQ);
 
         % Save the T1 and PD data
         dtiWriteNiftiWrapper(single(T1), xform,T1LFfile);

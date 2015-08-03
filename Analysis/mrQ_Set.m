@@ -25,7 +25,7 @@ function mrQ = mrQ_Set(mrQ,param,varargin,saveflag)
 % clobber              - enter "true" or "false" to redo the anlysis
 % refim                - a path to an image to use as a refernce: a string 'path'
 % check                - enter 1, if an interactive image is used to detect movement
-% proclus              - enter 1, to use the proclus number
+% proclus              - enter 1, to use the proclus calls
 % sungrid              - enter 1, to use the sungrid calls
 % polydeg              - the polynomial degree to fit to the Gain (default is 3)
 %
@@ -41,7 +41,7 @@ function mrQ = mrQ_Set(mrQ,param,varargin,saveflag)
 % segmentation          - enter 1 to skip segmentation, or enter 0 to redo it
 % calm0_done            - enter 1 to skip M0 calculation, or enter 0 to redo it
 % spgr_pdfit_done       - enter 1 to skip PD fit, or enter 0 to redo it
-% spgr_pdbuild_done     - enter 1 to skip PD fit0 to redo it
+% spgr_pdbuild_done     - enter 1 to skip PD build, or enter 0 to redo it
 %
 % ...                  - check code for others
 %
@@ -51,6 +51,12 @@ function mrQ = mrQ_Set(mrQ,param,varargin,saveflag)
 % mrQ = mrQ_Set(mrQ,'SPGR',{ '0009' '0010' '0011' '0012' });
 % mrQ = mrQ_Set(mrQ,'seir',{ '0004' '0005' '0006' '0007' });
 % mrQ = mrQ_Set(mrQ,'proclass',1);
+%
+%
+% (C) Mezer lab, Hebrew University of Jerusalem, Israel
+% 2015
+%
+%
 
 
 % remove spaces and upper case

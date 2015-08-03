@@ -2,12 +2,12 @@ function [AnalysisInfo, Res]=mrQ_NLANTS_warp_SPGR2EPI_RB(SET1file,t1fileHM,flipA
 %
 %mrQ_NLANTS_warp_SPGR2EPI_RB(AnalysisInfo,SET1file,t1fileHM,flipAngles,outDir,AlignFile)
 %
-%  This function evaluates the ANTS affine linear registration from SPGR to
-%EPI. The ANTS will register the SPGR T1 to the SEIR EPI T1 using unix
-%functions. The code assumes ANTS and ITK code are part of the computer unix
-%sell path (./bachrc). The registration happens in two steps: First, define
-%parameters; and second, apply it and warp the images. We warp both the T1
-%and the different flip angle degree SPGR raw images (all need to be
+%  This function evaluates the ANTs affine linear registration from SPGR to
+%EPI. The ANTs will register the SPGR T1 to the SEIR EPI T1 using unix
+%functions. The code assumes ANTs and ITK code are part of the computer
+%unix sell path (./bachrc). The registration happens in two steps: First,
+%define parameters; and second, apply it and warp the images. We warp both
+%the T1 and the different flip angle degree SPGR raw images (all need to be
 %aligned first).
 %
 % The process is documented in the AnalysisInfo structure.
@@ -21,7 +21,7 @@ function [AnalysisInfo, Res]=mrQ_NLANTS_warp_SPGR2EPI_RB(SET1file,t1fileHM,flipA
 %                  T1 map). This file is used to register to the SEIR target 
 %                  because they have similar contrast (T1 maps).
 %
-%   flipAngles   - The raw data flip angles (the raw data are saved as NIfTI 
+%   flipAngles   - The raw data flip angles. (The raw data are saved as NIfTI 
 %                  so the scan parameters are not saved in that file, 
 %                  but it is needed here).
 %
@@ -35,7 +35,7 @@ function [AnalysisInfo, Res]=mrQ_NLANTS_warp_SPGR2EPI_RB(SET1file,t1fileHM,flipA
 % OUTPUTS:
 %
 %   AnalysisInfo - A structure that keeps records of the T1 fit files. The
-%                  the ANTS registration files' name and date will be 
+%                  the ANTs registration files' name and date will be 
 %                  recorded in it.
 %
 %   Res          - A structure of registered files, ready for B1 fit. This
@@ -44,8 +44,8 @@ function [AnalysisInfo, Res]=mrQ_NLANTS_warp_SPGR2EPI_RB(SET1file,t1fileHM,flipA
 % see also: mrQfit_T1M0_ver2
 %
 
-%% We first need to make matlab work with the bachrc
-% This was found to be unnecessary, but if ANTS doesn't seem to work,  
+%% I. We first need to make matlab work with the bachrc
+% This was found to be unnecessary, but if ANTs doesn't seem to work,  
 % un-comment this section to add it to the path. Don't forget to un-comment 
 % the path reset at the end of the script:
 % 
@@ -74,11 +74,11 @@ function [AnalysisInfo, Res]=mrQ_NLANTS_warp_SPGR2EPI_RB(SET1file,t1fileHM,flipA
 % 
 % setenv('LD_LIBRARY_PATH', new_path)
 
- %% run ANTS non-linear parameter to register SPGR to EPI
+ %% II. Run ANTs non-linear parameter to register SPGR to EPI
 
 %name the saved parameter file
 AnalysisInfo.WARP_SPGR_EPI_RB= fullfile(outDir,'WARP_SPGR_EPI_RB');
- disp('ANTS linear registration and warp may take about 20 min ...')
+ disp('ANTs linear registration and warp may take about 20 min ...')
  disp('...')
  
     % ANTS: make the ANTS command
@@ -93,12 +93,12 @@ AnalysisInfo.WARP_SPGR_EPI_RB= fullfile(outDir,'WARP_SPGR_EPI_RB');
     end
 
 
-%%    name and save SPGR T1 map in EPI space
+%% III. Name and save SPGR T1 map in EPI space
 
 % the T1 file name
 AnalysisInfo.T1_spgr_epi_RB=fullfile(outDir,'Warp_T1_SPGRT2EPI_RB.nii.gz');
 
-    % ANTS: make the ANTS command
+    % ANTs: make the ANTs command
     cmWarp=['xterm -e WarpImageMultiTransform  3 ' t1fileHM ' ' AnalysisInfo.T1_spgr_epi_RB ' -R '  SET1file  ' ' AnalysisInfo.WARP_SPGR_EPI_RB 'Warp.nii.gz ' AnalysisInfo.WARP_SPGR_EPI_RB 'Affine.txt'];
 
     % Run the command in unix and get back status and results:
@@ -108,36 +108,35 @@ AnalysisInfo.T1_spgr_epi_RB=fullfile(outDir,'Warp_T1_SPGRT2EPI_RB.nii.gz');
         [status, result] = system(cmWarp,'-echo')
     end
         
- %%    name and save raw SPGR flipAngles images in EPI space  
+ %% IV. Name and save raw SPGR flipAngles images in EPI space  
            
-           for d=1:length(flipAngles) %loop over flip Angles raw images
-               
-               % the name of the file we fill align
-               if (~exist('AligndSPGR','var')|| isempty(AligndSPGR)),
-               rawIm=fullfile(outDir,['Align' num2str(flipAngles(d)) 'deg.nii.gz']);
-               else
-                                  rawIm=([AligndSPGR{d} '.nii.gz']) ;
-
-               end
-               
-               %record it
-             %  AnalysisInfo.Raw_spgr_epi_RB{d}=fullfile(outDir,['WarpRB_' num2str(flipAngles(d)) 'deg_SPGRT2EPI.nii.gz']);
-               AnalysisInfo.Raw_spgr_epi_RB{d}=[AligndSPGR{d} 'WarpRB_SPGRT2EPI.nii.gz'];
-
-               %ANTS: make the ANTS command
-               cmWarp=['xterm -e WarpImageMultiTransform  3 ' rawIm  ' ' AnalysisInfo.Raw_spgr_epi_RB{d} ' -R '  SET1file ' ' AnalysisInfo.WARP_SPGR_EPI_RB 'Warp.nii.gz ' AnalysisInfo.WARP_SPGR_EPI_RB 'Affine.txt'];
-               % Run the command in unix and get back status and results:
-               [status, result] = system(cmWarp);
-               if status ~= 0 ;
-                   cmWarp=['WarpImageMultiTransform  3 ' rawIm  ' ' AnalysisInfo.Raw_spgr_epi_RB{d} ' -R '  SET1file ' ' AnalysisInfo.WARP_SPGR_EPI_RB 'Warp.nii.gz ' AnalysisInfo.WARP_SPGR_EPI_RB 'Affine.txt'];  
-                   % Run the command in unix and get back status and results:
-                   [status, result] = system(cmWarp,'-echo')
-               end
-           end
+ for d=1:length(flipAngles) %loop over flip Angles raw images
+     
+     % the name of the file we will align
+     if (~exist('AligndSPGR','var')|| isempty(AligndSPGR)),
+         rawIm=fullfile(outDir,['Align' num2str(flipAngles(d)) 'deg.nii.gz']);
+     else
+         rawIm=([AligndSPGR{d} '.nii.gz']) ;
+         
+     end
+     
+     %record it
+     %  AnalysisInfo.Raw_spgr_epi_RB{d}=fullfile(outDir,['WarpRB_' num2str(flipAngles(d)) 'deg_SPGRT2EPI.nii.gz']);
+     AnalysisInfo.Raw_spgr_epi_RB{d}=[AligndSPGR{d} 'WarpRB_SPGRT2EPI.nii.gz'];
+     
+     %ANTs: make the ANTs command
+     cmWarp=['xterm -e WarpImageMultiTransform  3 ' rawIm  ' ' AnalysisInfo.Raw_spgr_epi_RB{d} ' -R '  SET1file ' ' AnalysisInfo.WARP_SPGR_EPI_RB 'Warp.nii.gz ' AnalysisInfo.WARP_SPGR_EPI_RB 'Affine.txt'];
+     % Run the command in unix and get back status and results:
+     [status, result] = system(cmWarp);
+     if status ~= 0 ;
+         cmWarp=['WarpImageMultiTransform  3 ' rawIm  ' ' AnalysisInfo.Raw_spgr_epi_RB{d} ' -R '  SET1file ' ' AnalysisInfo.WARP_SPGR_EPI_RB 'Warp.nii.gz ' AnalysisInfo.WARP_SPGR_EPI_RB 'Affine.txt'];
+         % Run the command in unix and get back status and results:
+         [status, result] = system(cmWarp,'-echo')
+     end
+ end
         
-%% save and document 
+%% V. Save and document 
 
-    
 %make a structure to work with for B1 fit
 t1seir=readFileNifti(SET1file);
 Res{1}.im=t1seir.data;

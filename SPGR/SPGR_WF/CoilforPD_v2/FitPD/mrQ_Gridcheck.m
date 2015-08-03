@@ -1,11 +1,27 @@
 function GridFit_done=mrQ_Gridcheck(opt_Log_name,SunGrid,CallType)
-%%
-% This loop checks whether all the outputs have been saved, or waits until
-% they are all done. If needed, it will re-run for jobs that are missing.
+% function GridFit_done=mrQ_Gridcheck(opt_Log_name,SunGrid,CallType)
+%
+% This function employs a "while" loop to check whether all the outputs
+% have been saved, and will wait until they are all done. If needed, the
+% function will re-run for jobs that are missing.
+%
+%
+%  ~INPUTS~
+%          opt_Log_name: Location of the opt file
+%               SunGrid: Whether to use SunGrid (default is 0, "no")
+%              CallType: Either 1 (default), 2 or 3
+%
+%  ~OUTPUTS~
+%          GridFit_done: A true/false logical, which indicates whether the
+%                              function has run its course 
+%
+%(C) Mezer lab, the Hebrew University of Jerusalem, Israel
+%  2015
 
+%% I. Load opt file
 if (~exist(opt_Log_name,'file')),
     
-    disp(['cant find file : ' opt_Log_name  ])
+    disp(['Cannot find file : ' opt_Log_name  ])
     error
 else
     load  (opt_Log_name)

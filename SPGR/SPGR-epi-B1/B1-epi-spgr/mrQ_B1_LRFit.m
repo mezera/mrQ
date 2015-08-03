@@ -2,10 +2,10 @@ function mrQ_B1_LRFit(IDnum,jumpindex,jobindex)
 %
 % function mrQ_B1_LRFit(optName,jumpindex,jobindex)
 %
-%  This function calls the SunGrid, loads the relevant data, and fits the
-%  B1 in a specific region (volume). Herein, the imaging volume region is
-%  also called the "box". The box is a location ranging in size from a few
-%  hundred voxels to a few thousand. 
+%  This function, either through the SunGrid or alone, loads the relevant
+%  data and fits the B1 in a specific region (volume). Herein, the imaging
+%  volume region is also called the "box". The box is a location ranging in
+%  size from a few hundred voxels to a few thousand.
 %
 %    ~INPUTS~
 %         optName: This is optmization structure that was passed from
@@ -17,8 +17,7 @@ function mrQ_B1_LRFit(IDnum,jumpindex,jobindex)
 %   ~OUTPUTS~
 %  This function will save an output file with fitted parameters to a tmp
 %  directory. This will be used later to make the B1 map.
-
-% SEE ALSO:
+%
 % AM (C) Stanford University, VISTA
 %
 
@@ -109,7 +108,7 @@ for ii= st:ed,
         end; 
         toc
  %% III. Cross-Validation Fit
- % we can save some of the ratio and cross-validate the poly degree or box size.
+ % We can save some of the ratio and cross-validate the poly degree or box size.
        
         %
 

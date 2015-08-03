@@ -28,12 +28,12 @@ function [s,xform,mmPerVox,niiFiles,flipAngles,mrQ] = ...
 %                 native scan size, as the magnet output is zeroed. The
 %                 saved directory will have the resolution in its name.
 %
-%       interp:   Interpolation method. [Default = 1]
-%                 1 = trilinear,
+%       interp:   Interpolation method.
+%                 1 = trilinear (default)
 %                 7 = b-spline (resampling algorithm)
 %
-%       skip:     You can skip any of the scans in spgrDir if you want by
-%                 passing in a 1xN vector of scans to skip.
+%       skip:     You can skip any of the scans in spgrDir by entering
+%                 a 1xN vector of scans to skip.
 %
 %       clobber:  Overwrite existing data and reprocess. [Default = false]
 %
@@ -89,7 +89,7 @@ function [s,xform,mmPerVox,niiFiles,flipAngles,mrQ] = ...
 %    problem for now.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% Check INPUTS
+%% I. Check INPUTS
 
 % Data directory
 if notDefined('spgrDir') || ~exist(spgrDir,'dir')
@@ -128,7 +128,7 @@ else
 end
 
 
-%%  Get paths to NIfTI SPGR data (get niiFiles)
+%%  II. Get paths to NIfTI SPGR data (get niiFiles)
 % Get a structure that has the paths to each of the SPGR NIfTI files.
 
 if isfield(mrQ,'inputdata_spgr') %input of list of nifti files and the relevant scan parameters
@@ -150,7 +150,7 @@ else
 end
 
 
-%% More checks and housekeeping
+%% III. More checks and housekeeping
 
 % Get the flip angle for each of the series and store them in 'flip'. This
 % will be passed into mrQ_multicoil_Weights *** Make sure this will
@@ -158,11 +158,8 @@ end
 % We need this even if not processing the data again.
 
 
-
-
 % Get the TR for the T1s [1 x numel(d)]
 tr = [s(t1Inds).TR];
-
 
 % Make sure that the TRs are all the same
 if ~all(tr == tr(1))
@@ -200,19 +197,20 @@ if mrQ.check==1
     for f = 1:numel(s(t1Inds)),
         showMontage(s(f).imData,[],[],[],[],10);
         
-        an1 = input( ['Is the image  with the flip angle of ' num2str(s(f).flipAngle) ' good? Press 1 if yes 0 if no \n'])
+        an1 = input( ['Is the image  with the flip angle of ' num2str(s(f).flipAngle) ' good? Press 1 if yes, 0 if no \n'])
         
         if an1==0
             t1Inds(f) = 0;
         end
         close figure 10
     end
+    
     numData=length(find(t1Inds));
     
     if length(s)~=numData
         an = questdlg(['Would you like to continue the process? Are ' num2str(numData) ' scans enough data  ?'],' continue process ','YES','NO','YES');
         if strcmp('NO',an),
-            error('the user stopped the process');
+            error('The user stopped the process.');
         end
         mrQ.SPGR_Scan_Skiped_Num=find(t1Inds==0);
     end
@@ -238,7 +236,7 @@ if ~exist('mmPerVox','var') || isempty(mmPerVox),
 end
 %end
 
-%% AC-PC Alignment
+%% IV. AC-PC Alignment
 
 outDir = spgrDir;
 % If the reference image was not entered in, then we make the user take one
@@ -269,7 +267,7 @@ if ~exist('refImg','var') || isempty(refImg)
             if strcmp('YES',an), an = 1; else an = 0; end
         end
     else
-        % Automatically identify the ac and pc midsagittally by
+        % Automatically identify the AC and PC midsagittally by
         % computing a spatial normalization
         ni = readFileNifti(fileRaw);
         ni = niftiApplyCannonicalXform(ni);
@@ -290,7 +288,8 @@ if ~exist('refImg','var') || isempty(refImg)
     % [s,xform] = relaxAlignAll(s(find(t1Inds)),[],mmPerVox,false,interp); *** WHAT'S THIS ***
 end
 
-%% ALIGNMENT: Do the alignment of the SPGRs and save out the aligned data
+%% V. ALIGNMENT
+% Do the alignment of the SPGRs and save out the aligned data
 
 % Setup the output directory for the aligned data and make it if ~exist
 outDir = fullfile(spgrDir,['Align_'  num2str(mmPerVox(1)) '_' num2str(mmPerVox(2)) '_'  num2str(mmPerVox(3))]);
@@ -298,6 +297,9 @@ if(~exist(outDir,'dir')), mkdir(outDir); end
 
 
 % Align all the series to this subject's reference volume
+
+
+
 %% NOTES
 % Originally we used spm 8 rigid body registration code applied by RFD; for
 % details, see relaxAlignAll. This was tested and it works on GE data but
@@ -326,7 +328,6 @@ ref       = readFileNifti(refImg);
 % Save out the aligned data
 outFile = fullfile(outDir,'dat_aligned.mat');
 save(outFile,'s', 'xform', 'mmPerVox');
-
 
  mrQ.spgr_initDir=outDir;
 

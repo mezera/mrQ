@@ -14,7 +14,7 @@ function [mrQ]=mrQfit_T1M0_Lin(mrQ,B1File,MaskFile,outDir,dataDir,clobber)
 %                   corrections. 
 %       outDir:     Directory to which the data will be saved.
 %       dataDir:    Directory of the data.
-%       clobber:    Default is false.
+%       clobber:    Overwrite existing data and reprocess. [Default = false]
 % 
 % OUTPUT:
 %       mrQ:        The mrQ structure, updated.  
@@ -52,14 +52,11 @@ end
 
 %% II. Load aligned data
 
-
 outFile  = fullfile(dataDir,'dat_aligned.mat'); %without coilWeights data
 
 disp(['Loading aligned data from ' outFile '...']);
 
 load(outFile);
-
-
 
 
 %% III. Setup and save AnalysisInfo file.
@@ -99,7 +96,6 @@ else
 end
 
 
-
 %% V. Linear fit to estimate T1 and M0 no B1 (this will be used to fit B1)
 
 t1file   = fullfile(outDir,['T1_LFit.nii.gz']);
@@ -113,8 +109,8 @@ if~( exist(t1file,'file') &&  exist(M0file,'file')  && ~clobber),
     % Now we fit T1 and M0:
     disp('1. Performing linear fit of T1 and M0');
     
-    % Specify the flip angle and TR: s2 is loaded when the dat_aligned.mat
-    % file is loaded above.
+    % Specify the flip angle and TR: 
+    % s2 is loaded when the dat_aligned.mat file is loaded above.
     flipAngles = [s(:).flipAngle];
     tr         = [s(:).TR];
     
@@ -141,17 +137,17 @@ if~( exist(t1file,'file') &&  exist(M0file,'file')  && ~clobber),
             brainMask(isnan(s(dd).imData))=0;
         end;
         
-        %findind the first and the last slice of the brain
+        %find the first and the last slice of the brain
         [~, ~, z]=ind2sub(size(brainMask),find(brainMask));
         
-   % Create the head mask.
+%% VI. Create the head mask.
         % The head mask makes the registration with the SEIR images better 
-        % using ANTS software
+        % using ANTs software
         
         % Find the voxels that are more than 2 stdev below the
         % mean brain signal
         cutV=mean(s(1).imData(brainMask)) -2*std(s(1).imData(brainMask));
-        %noise estraction - we will need to genralize this somehow espesialy
+        %noise extraction - we will need to generalize this somehow especially
         
         % selecting the relevant slices (this is not beautiful)
         HM=B1;
@@ -162,13 +158,13 @@ if~( exist(t1file,'file') &&  exist(M0file,'file')  && ~clobber),
             HM(isnan(s(dd).imData))=0;
         end;
         
-        % feeling the holes in the mask.
+        % filling the holes in the mask
         for i=1:size(HM,3)
             HM(:,:,i)=imfill(HM(:,:,i),'holes');
         end;
         HM=logical(HM);
         
-%         SAVE head mask and brain mask as niftis
+%%  VII. SAVE head mask and brain mask as niftis
         dtiWriteNiftiWrapper(single(HM), xform, HMfile);
         dtiWriteNiftiWrapper(single(brainMask), xform, BMfile);
         mrQ.HeadMask=HMfile;
@@ -183,7 +179,7 @@ if~( exist(t1file,'file') &&  exist(M0file,'file')  && ~clobber),
     t1(~brainMask) = 0;
     M0(~brainMask) = 0;
     
-    % Save the T1 and PD data
+%% VIII. SAVE the T1 and PD data
     dtiWriteNiftiWrapper(single(t1), xform, t1file);
     dtiWriteNiftiWrapper(single(M0), xform, M0file);
     

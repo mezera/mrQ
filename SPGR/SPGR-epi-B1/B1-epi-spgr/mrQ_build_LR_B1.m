@@ -1,14 +1,26 @@
 function mrQ=mrQ_build_LR_B1(mrQ)
 % function mrQ=mrQ_build_LR_B1(mrQ)
-%Join the estimate of each single voxel to a 3D B1 image.
 %
-% Takes the mrQ structure as an INPUT and returns an updated mrQ structure
-% as the OUTPUT.
+%  In this function, the estimates of each single voxel are joined
+%together to form a 3D B1 image. It uses the data generated for the single
+%voxels from a previous function in the B1_LR pipeline (mrQ_B1FitMask.m),
+%as stored in the mrQ structure.
+%
+% Accepts the mrQ structure as an INPUT and returns an updated mrQ
+% structure as the OUTPUT.
+%
+%
+% See also: mrQ_B1FitMask, mrQ_PD_LRB1SPGR_GridParams
+%
+% (C) Mezer lab, the Hebrew University of Jerusalem, Israel
+%   2015
+%
+%
 
-% load the fit parameters
+%% I. Load the fit parameters
     load(mrQ.B1.logname)
       
-%% Find where the fitted values are in 3D space
+%% II. Find where the fitted values are in 3D space
 
     BM=readFileNifti(opt.tisuuemaskFile);
     xform=BM.qto_xyz;
@@ -16,7 +28,7 @@ function mrQ=mrQ_build_LR_B1(mrQ)
     BM=logical(ones(size(BM)));
 
  loc=find(BM);
-%% Loop over voxels. Load the fitted values
+%% III. Loop over voxels, and load the fitted values
 
 jumpindex=opt.jumpindex; % number of voxels in each file
 jobindexs=1:ceil(opt.N_Vox2Fit/jumpindex);  % the numbers of saved file each with jumpindex 
@@ -41,12 +53,13 @@ for ii=1:length(jobindexs);
     resnormMap(FitVoxel(skip~=1))=resnorm((skip~=1));
 end
    
-%% save 3D results as nifti
+%% IV. Save 3D results as NIfTI
 outDir = mrQ.spgr_initDir; %check that this is right
 
 % the B1 map
  B1epiFitFileName=fullfile(outDir,['B1_LR.nii.gz']);
 dtiWriteNiftiWrapper(single(B1Fit),xform,B1epiFitFileName);
+
 % the fitting error
 B1resnormFileName=fullfile(outDir,['B1resnorm_LR.nii.gz']);
 dtiWriteNiftiWrapper(single(resnormMap),xform,B1resnormFileName);
@@ -58,7 +71,7 @@ dtiWriteNiftiWrapper(single(resnormMap),xform,B1resnormFileName);
 B1NvoxFileName=fullfile(outDir,['B1_Nvox_LR.nii.gz']);
 dtiWriteNiftiWrapper(single(UseVoxNMap),xform,B1NvoxFileName);
 
-%  record the path to the B1 fit
+%  Record the path to the B1 fit
 mrQ.B1.epiFitFileName=B1epiFitFileName;
 mrQ.B1.resnormFileName=B1resnormFileName;
 mrQ.B1.NvoxFileName=B1NvoxFileName;
@@ -98,7 +111,7 @@ mrQ.B1.NvoxFileName=B1NvoxFileName;
 %             [x,y] = ind2sub(size(tmp),wh);
 %             z=double(tmp(wh));
 %             % estimate a smooth vertion of the data in the slice for original code see:
-%             % Moterdaeme et.al. Phys. Med. Biol. 54 3474-89 (2009)
+%             % Noterdaeme et.al. Phys. Med. Biol. 54 3474-89 (2009)
 %             
 %             [zg,xg,yg]= gridfit(x,y,z,1:2:size(tmp,1),1:2:size(tmp,2),'smoothness',smoothnessVal);
 %             ZI = griddata(xg,yg,zg,XI,YI);

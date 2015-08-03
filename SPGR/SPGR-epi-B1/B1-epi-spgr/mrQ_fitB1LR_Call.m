@@ -5,19 +5,29 @@ function mrQ_fitB1LR_Call(opt_logname,SunGrid,RunSelectedJob,clobber)
 % information and sends it to the computer grid if one is defined (SunGrid
 % and/or proclus). If no grid is defined, the function will send the fit
 % information to the local computer solver (SGE is faster, but it works 
-% fine with out it as well).
+% fine without it as well). Depending on whether SunGrid is called, the
+% function will either perform the voxel-wise fits using SunGrid or simply
+% alone.
 %
-%  INPUTS
+%  ~INPUTS~
 %     opt_logname: Directory to the .mat file containing the appropriate
 %                  parameters, as created in mrQ_PD_LRB1SPGR_GridParams.m
 %         SunGrid: Whether to use the SunGrid; default is no.
 %  RunSelectedJob:
-%         clobber: Default is false.
+%         clobber: Overwrite existing data and reprocess. [Default = false]
+%
+%
+% (C) Mezer lab, the Hebrew University of Jerusalem, Israel
+%   2015
+%
 
+%% I. Load and definitions
 load(opt_logname);
 dirname=opt.dirname;
 sgename=opt.SGE;
 jumpindex=opt.jumpindex ;
+fullID=sgename(isstrprop(sgename, 'digit'));
+id=str2double(fullID(1:8));
 
 if notDefined('clobber')
     clobber =false;
@@ -32,12 +42,13 @@ end
 if (~exist(dirname,'dir')),
         mkdir(dirname);
 end 
-%%   Perform the gain fits
+%% II.  Perform the gain fits
+% II-a: With SunGrid
+
 % Perform the fits for each box using the SunGrid Engine
 if SunGrid==1; %if there is a grid
     jumpindex=5000;
-    fullID=sgename(isstrprop(sgename, 'digit'));
-    id=str2double(fullID(1:8));
+
 
     if notDefined('RunSelectedJob')
         
@@ -78,10 +89,12 @@ if SunGrid==1; %if there is a grid
            % (We can also add an interactive call.
            % The code for that is commented below.)
            
-     end
+    end
           
-    
-else %if there is not a grid
+
+% II-b: Without SunGrid
+
+else %if there is no grid
     
     % Without a grid, this will take very long.
     disp('No parallel computation grid is used to fit PD. Using the local machine instead.');

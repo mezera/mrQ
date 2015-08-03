@@ -3,9 +3,9 @@ function [saveName,saveName1] =mrQ_T1wSynthesis1(mrQ,WFfile,T1file,BMfile, ...
 % [saveName,saveName1] =mrQ_T1wSynthesis1(mrQ,WFfile,T1file,BMfile, ...
 %                        outDir,symTR,symFA, saveName,saveName1,FullBMfile)
 %
-% This function creates a series of synthetic T1w images and saves them to
-% the dataDir. One set of T1w images accounts for the PD, taken from the
-% water fraction file, while the other set of T1w images does not.
+% This function creates a series of synthetic T1-weighted images and saves
+% them to the dataDir. One set of T1w images accounts for the PD, taken
+% from the water fraction file, while the other set of T1w images does not.
 % 
 %  ~INPUTS~
 %           mrQ:   The mrQ structure
@@ -17,8 +17,8 @@ function [saveName,saveName1] =mrQ_T1wSynthesis1(mrQ,WFfile,T1file,BMfile, ...
 %        BMFile:   The path to the directory where the brain mask is
 %                      located. It will be created if it doesn't yet exist.
 %        outDir:   The path to where you would like to save the data.
-%         symTR:   Default is 30.
-%         symFA:   Default is 30.
+%         symTR:   Simulated TR. [Default is 30 milliseconds]
+%         symFA:   Simulated flipAngles. [Default is 30 degrees]
 %      saveName:   The path to the directory where the synthetic T1
 %                      weighted image will be saved.
 %     saveName1:   The path to the directory where the synthetic T1
@@ -62,6 +62,7 @@ else
    [~, WFfile,~]=mrQ_get_T1M0_files(mrQ,0,1,0);
 
 end
+
 PD=readFileNifti(WFfile);PD=PD.data;
 
 if notDefined('outDir')
@@ -119,14 +120,14 @@ fa = symFA./180.*pi;
 % Calculate the synthetic t1 images 
 t1w = PD.*( (1-exp(-symTR./t1)).*sin(fa)./(1-exp(-symTR./t1).*cos(fa)));
 
-% for future exploration
+% ... For future exploration ...
 %t1w = ( (1-exp(-symTR./t1)).*sin(fa)./(1-exp(-symTR./t1).*cos(fa))); % no PD
 % t1w = t1w.*(1-PD);  % get the PD to be in our side 
 
 % scale up to have big number like a typical MRI
 % t1w = t1w.*10000;
 
-% % clip outlayers
+% % clip outliers
 % M=mean(t1w(brainMask));
 % S=std(t1w(brainMask));
 % 

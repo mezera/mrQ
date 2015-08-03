@@ -23,6 +23,7 @@ directory=fullfile(mrQpath,'sge_subjects'); % some directory with all of the mrQ
            mrQStructPath=(sge_info);
            return
        end
+       i=i+1;
     end
 
 if isempty(mrQStructPath)

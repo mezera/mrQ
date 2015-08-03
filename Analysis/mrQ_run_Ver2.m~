@@ -26,21 +26,13 @@ function mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_sei
 %       This function creates and saves the mrQ strucure to the subject's
 %       directory. New directories will be created, including directories
 %       for data and quantitative fits. Images will be registered to each
-%       other. 
-%            *  SEIR-EPI T1 will be computed (low resolution). 
-%            *  SPGR T1, M0, B1 maps, and a synthetic T1-weighted image 
-%                   will be computed.
-%            *  T1-weighted and quantitative T1 images will be combined to 
-%                   segment the brain tissue.
-%`           *  PD and coil gain will be fitted from the M0 image.
-%            *  Biophysical models will be applied to calculate VIP and 
-%                   SIR maps.
+%       other. SEIR-EPI T1 will be computed (low resultion). SPGR T1, M0,
+%       B1 maps, and a synthetic T1-weighted image will be computed.
+%       T1-weighted and quantitative T1 images will be combined to segment
+%       the brain tissue.
+%`      PD and coil gain will be fitted from the M0 image.
+%       Biophysical models will be applied to calculate VIP and SIR maps.
 % 
-%
-% (C) Mezer lab, Hebrew University of Jerusalem, Israel
-%  2015
-%
-%
 
 
 %% I. Create the initial structure
@@ -65,12 +57,14 @@ else
     mrQ = mrQ_Set(mrQ,'sungrid',useSUNGRID);
 end
 
+%%
 if mrQ.SunGrid
-%     Create a file containing mrQpath, named after its 'ID' (taken from
-%     its tempname). This allows for an easy use of SunGrid.
+%     create a file containing mrQpath, named after its 'ID' (taken from
+%     its tempname). This allows for an easy use of sungrid.
     mrQ_createIDfile(mrQ);
 end
     
+%%
 %             mrQ = mrQ_Set(mrQ,'sungrid',1);
 mrQ = mrQ_Set(mrQ,'fieldstrength',3);
 

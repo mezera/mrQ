@@ -35,6 +35,10 @@ function [s, niifiles] = mrQ_input2Stuck(input,includeIm)
 %   mrQ = mrQ_Set(mrQ,'inputdata_seir',inputData_seir)
 %   s = mrQ_input2Stuck(mrQ.inputdata_seir);
 % 
+%
+% (C) Mezer lab, the Hebrew University of Jerusalem, Israel
+% 2015
+%
 
 
 
@@ -98,6 +102,8 @@ if isfield(input,'IT')
         s(i).inversionTime=input.IT(i);
     end;
 end;
+
+%field strength
 if isfield(input,'fieldStrength')
     for i=1:length(input.name)
         s(i).fieldStrength=input.fieldStrength(i);
@@ -105,7 +111,7 @@ if isfield(input,'fieldStrength')
 end;
 
 if isfield(input,'orientation')
-    % if the convention of X, Y, and Z need to be fliped
+    % if the convention of X, Y, and Z need to be flipped
     for ii=1:length(input.name)
         s(ii).imToScanXform(1,1)=input.orientation(1)*s(ii).imToScanXform(1,1);
         s(ii).imToScanXform(2,2)=input.orientation(2)*s(ii).imToScanXform(2,2);

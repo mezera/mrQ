@@ -1,19 +1,22 @@
-function [T1 PD resNorm] = mrQ_fitT1PD_LSQ(s,brainMask,tr,flipAngles,M0,t1,Gain,B1,outDir,xform,mrQ,savenow)
-%function [T1 PD resNorm] = mrQ_fitT1PD_LSQ(s,brainMask,tr,flipAngles,M0,t1,Gain,B1,outDir,xform ,mrQ.SunGrid,[],mrQ.sub,mrQ.proclus)
-% [T1 PD resNorm] = mrQ_fitT1PD_LSQ(s,brainMask,tr,flipAngles,M0,t1,Gain,B1,outDir,xform,SGE,savenow,sb,proclass)
+function [T1 PD resNorm] = mrQ_fitT1PD_LSQ(s,brainMask,tr,flipAngles,M0, ...
+                                t1,Gain,B1,outDir,xform,mrQ,savenow)
+%[T1 PD resNorm] = mrQ_fitT1PD_LSQ(s,brainMask,tr,flipAngles,M0, ...
+%                                t1,Gain,B1,outDir,xform,mrQ,savenow)
 %
-% Perform least squares fitting of T1 and PD
+% This function calls other functions that will perform the LSQ (least
+% squares) fitting of T1 and PD. It will go much faster with the SunGrid
+% Engine.
 %
 % INPUTS:
-%       s           - contains aligned data
+%       s           - Contains aligned data
 %       brainMask   - Tissue mask delineating the brain region
 %       tr          - TR taken from the S2 structure of aligned data
 %       flipAngles  - Array of flipAngles for each scan.
-%       M0          - MAP
-%       t1          - [t1 data]
+%       M0          - M0 map
+%       t1          - T1 data
 %       Gain        -
 %       B1          -
-%       outDir      - Ouput directory where the resulting nifti files will
+%       outDir      - Output directory where the resulting NIfTI files will
 %                     be saved.
 %       xform       - Transform
 %       SGE         - Option to run using SGE [default = 0]
@@ -30,12 +33,16 @@ function [T1 PD resNorm] = mrQ_fitT1PD_LSQ(s,brainMask,tr,flipAngles,M0,t1,Gain,
 % WEB RESOURCES
 %       http://white.stanford.edu/newlm/index.php/Quantitative_Imaging
 %
-%
 % See Also:
-%       mrQfit_T1M0_ver2.m
+%       mrQfit_T1M0_ver2.m and mrQ_fitT1PD_SGE.m
+%
+%
+% (C) Mezer lab, the Hebrew University of Jerusalem, Israel
+%   2015
+%
 %
 
-%% Check inputs
+%% I. Check inputs
 % 29.7.2015 commented the following input checks and added different checks
 % if (~exist('sb','var')|| isempty(sb)),
 %     sb='UN';
@@ -69,14 +76,18 @@ sgename=[sb 'T1PD'];
 fullID=sb(isstrprop(sb, 'digit'));
 id=str2double(fullID(1:8));
 outDir=mrQ.spgr_initDir;
-%% Set options for optimization procedure
+
+
+%% II. Set options for optimization procedure
 a=version('-date');
 if str2num(a(end-3:end))==2012 || str2num(a(end-3:end))==2015
     options = optimset('Algorithm', 'levenberg-marquardt','Display', 'off','Tolx',1e-12);
 else
     options =  optimset('LevenbergMarquardt','on','Display', 'off','Tolx',1e-12);%'TolF',1e-12
     
-end% we put all the relevant data in a structure call opt. This will make it  easier to send it between the computers in the grid
+end
+% We put all the relevant data in a structure called "opt". 
+% This will make it  easier to send it between the computers in the grid
 sz=size(brainMask);
 for i=1:length(s)
     tmp=s(i).imData(brainMask);
@@ -108,7 +119,7 @@ save(opt.logname,'opt');
 %added this save of mrQ
 mrQ.LSQoptname=logname;
 save(mrQ.name,'mrQ');
-%% Perform the optimization (optionally using the SGE)
+%% III. Perform the optimization (optional: use SunGrid)
 
 % USE THE SGE
 
@@ -116,7 +127,7 @@ clear brainMask tmp Res M0 options
 if SGE==1;
     jumpindex=2000;
     if (~exist([outDir '/tmpSG'],'dir')), mkdir([outDir '/tmpSG']);
-        % the result form the grid will be saved in a temporary directory
+        % the result from the grid will be saved in a temporary directory
         for jobindex=1:ceil(length(opt.wh)/jumpindex)
             jobname=1000*str2double(fullID(1:3))+jobindex;
             command=sprintf('qsub -cwd -j y -b y -N joblsq_%g "matlab -nodisplay -r ''mrQ_fitT1PD_SGE(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
@@ -132,7 +143,7 @@ if SGE==1;
         %             sgerun('mrQ_fitT1PD_SGE(opt,2000,jobindex);',sgename,1,1:ceil(length(opt.wh)/jumpindex));
         %         end
     else
-        an1 = input( 'Unfinished SGE run found: Would you like to try and finish the existing sge run? Press 1 if yes. To start over press 0 ');
+        an1 = input( 'Unfinished SGE run found: Would you like to try and finish the existing sge run? Press 1 if yes. To start over, press 0 ');
         
         % Continue existing SGE run from where we left it last time
         % we find the fit that are missing
@@ -200,7 +211,7 @@ if SGE==1;
         end
     end
     
-    %% build the data that was fit by the SGE to a T1 nd M0 maps
+%% IV. Build the data that was fitted by the SGE to T1 and M0 maps
     % This loop checks if all the outputs have been saved and waits until
     % they are all done
     StopAndSave=0;
@@ -244,9 +255,9 @@ if SGE==1;
             [status result] = system(qStatCommand);
             tt=toc;
             if (isempty(result) && tt>60)
-                % then the are no jobs running we will need to re run it.
+                % Then there are no jobs running. We will need to re-run it.
                 
-                %we will rerun only the one we need
+                % We will re-run only the one we need
                 reval=[];
                 list=ls(opt.outDir);
                 ch=[1:jumpindex:length(opt.wh)];
@@ -335,11 +346,11 @@ if SGE==1;
         
     end
     
-    % NO SGE
-    %using the local computer to fit T1 and the sunGrid
+% NO SGE
+% Using the local computer to fit T1 and PD
 else
     
-    fprintf('\n fit the T1 map localy, may be slow. SunGrid use can be much faster             \n');
+    fprintf('\n Fitting the T1 map locally, may be slow. SunGrid use can be much faster             \n');
     
     if (~exist([outDir '/tmpSG'],'dir')),
         mkdir([outDir '/tmpSG']);
@@ -413,7 +424,7 @@ T1(opt.wh) = t11(:)./1000;
 PD(opt.wh) = pd1(:);
 resNorm(opt.wh) = resnorm1(:);
 
-%% Save out results
+%% V. Save out results
 
 if savenow==1
     dtiWriteNiftiWrapper(single(T1), xform, fullfile(outDir,['T1_lsq_last.nii.gz']));

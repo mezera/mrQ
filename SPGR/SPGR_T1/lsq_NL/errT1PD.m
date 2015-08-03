@@ -2,20 +2,20 @@ function err =errT1PD(x,flipAngles,tr,S,Gain,B1,lsq,SD)
 %
 % err =errT1PD(x,flipAngles,tr,S,Gain,B1,lsq,SD)
 %
-% estimate the fit of x(1) PD and x(2) T1 to fit the SPGR T1 data with
+% Estimate the fit of x(1) PD and x(2) T1 to fit the SPGR T1 data with
 % different flip angles
 %
-%InPut
-% x the fitted parameters
-% flipAngles the scansflipAngles 
-% tr the scans tr
-% S - the mesured SPGRs images
-% Gain the coil gain (can be also set to be one and fitted later
-% B1 the exsite inhomogenity (the error in nominal flipangles
-%lsq the kind of error calculation
-% SD a way to normalize the error by the data std.
+%  Input:
+%          x  - the fitted parameters
+% flipAngles  - the scan's flipAngles 
+%         tr  - the scan's TR
+%          S  - the measured SPGR images
+%        Gain - the coil gain (can be also set to be one and fitted later)
+%          B1 - the excite inhomogenity (the error in nominal flipAngles)
+%         lsq - the kind of error calculation
+%          SD -  a way to normalize the error by the data std dev.
 %
-%OutPut
+%Output
 %err -the error between the estimation and the data.
      
   

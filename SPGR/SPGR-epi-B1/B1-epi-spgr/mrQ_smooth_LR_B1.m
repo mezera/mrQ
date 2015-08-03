@@ -1,13 +1,23 @@
 function mrQ=mrQ_smooth_LR_B1(mrQ,smoothnessVal)
 % mrQ=mrQ_smooth_LR_B1(mrQ,smoothnessVal)
 %
+% This function smoothes the B1 fit in EPI space, before returning to SPGR
+% space. It uses the selected value for smoothing, as it loops over the
+% slices in each of the X, Y and Z directions.
+%
 % ~INPUTS~
 %              mrQ: The mrQ structure
 %    smoothnessVal: Value for the smoothness of the grid. Default is 5.
 %
 % ~OUTPUTS~
 %              mrQ: The updated mrQ structure.
-
+%
+% See also: mrQ_build_epi2SPGR_B1.m
+%
+% (C) Mezer lab, the Hebrew University of Jerusalem, Israel
+%  2015
+%
+%
 
 %% I. Load the fit information
 
@@ -225,7 +235,7 @@ tissuemask(isinf(B1(:)./B1Fit_S(:)))=0;
 Cal=median(B1(tissuemask)./B1Fit_S(tissuemask));
  B1Fit_S=B1Fit_S.*Cal;
 
-%% SAVE the result smooth B1 map
+%% V. SAVE the resulting smooth B1 map
 outDir = mrQ.spgr_initDir; % check that this is right
 
 B1epiFileName=fullfile(outDir,['B1epi_map.nii.gz']);

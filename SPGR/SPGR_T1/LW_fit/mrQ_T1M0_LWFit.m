@@ -1,8 +1,13 @@
-function [T1_WL, T1_L,PD_WL, PD_L] = mrQ_T1M0_LWFit(s,brainMask,tr,flipAngles,Gain,B1,outDir,xform,mrQ,savenow)
+function [T1_WL, T1_L,PD_WL, PD_L] = mrQ_T1M0_LWFit(s,brainMask,tr, ...
+                              flipAngles,Gain,B1,outDir,xform,mrQ,savenow)
 %
-% [T1_WL, T1_L,PD_WL, PD_L] = mrQ_T1M0_LWFit(s,brainMask,tr,flipAngles,Gain,B1,outDir,xform,SGE,savenow,sb,proclass)%
-% Perform weighted least square fitting of T1 and PD according to:
-% Linear least-squares method for unbiased estimation of T1 from SPGR signals. Chang LC, Koay CG, Basser PJ, Pierpaoli C. Magn Reson Med. 2008 Aug;60(2):496-501.
+%[T1_WL, T1_L,PD_WL, PD_L] = mrQ_T1M0_LWFit(s,brainMask,tr, ...
+%                            flipAngles,Gain,B1,outDir,xform,mrQ,savenow)
+%
+%Perform weighted least square fitting of T1 and PD according to: Linear
+% least-squares method for unbiased estimation of T1 from SPGR signals.
+% Chang LC, Koay CG, Basser PJ, Pierpaoli C. Magn Reson Med. 2008
+% Aug;60(2):496-501.
 %
 %
 % INPUTS:
@@ -10,11 +15,11 @@ function [T1_WL, T1_L,PD_WL, PD_L] = mrQ_T1M0_LWFit(s,brainMask,tr,flipAngles,Ga
 %       brainMask   - Tissue mask delineating the brain region
 %       tr          - TR taken from the S2 structure of aligned data
 %       flipAngles  - Array of flipAngles for each scan.
-%       M0          - MAP
-%       t1          - [t1 data]
+%       M0          - M0 map
+%       t1          - T1 data
 %       Gain        -
 %       B1          -
-%       outDir      - Ouput directory where the resulting nifti files will
+%       outDir      - Ouput directory where the resulting NIfTI files will
 %                     be saved.
 %       xform       - Transform
 %       SGE         - Option to run using SGE [default = 0]
@@ -41,7 +46,7 @@ function [T1_WL, T1_L,PD_WL, PD_L] = mrQ_T1M0_LWFit(s,brainMask,tr,flipAngles,Ga
 % Copyright, Stanford University 2014
 %
 
-%% Check inputs
+%% I. Check inputs
 
 % if (~exist('sb','var')|| isempty(sb)),
 %     sb='UN';
@@ -73,15 +78,20 @@ sgename=[sb '_3dT1PD'];
 
 fullID=sb(isstrprop(sb, 'digit'));
 id=str2double(fullID(1:8));
-%% Set options for optimization procedure
+
+%% II. Set options for optimization procedure
+% Adjust for different versions of matlab
 a=version('-date');
 if str2num(a(end-3:end))>=2012
     options = optimset('Algorithm', 'levenberg-marquardt','Display', 'off','Tolx',1e-12);
 else
     options =  optimset('LevenbergMarquardt','on','Display', 'off','Tolx',1e-12);%'TolF',1e-12
-    
-end % we put all the relevant data in a structure call opt. this will make it  easyer to send it between the computer in the grid
+end
+% We put all the relevant data in a structure called "opt". 
+% This will make it easier to send it between the computers in the grid
+
 sz=size(brainMask);
+
 for i=1:length(s)
     
     tmp=s(i).imData(brainMask);
@@ -113,9 +123,9 @@ save(opt.logname,'opt');
 %added this save of mrQ
 mrQ.LWoptname=logname;
 save(mrQ.name,'mrQ');
-%% Perform the optimization (optionally using the SGE)
 
-% USE THE SGE
+%% III. Perform the optimization (optional: use the SunGrid)
+%% III-a. USE THE SGE
 
 clear brainMask tmp Res M0 options
 if SGE==1;
@@ -138,10 +148,10 @@ if SGE==1;
         %         end
         
     else
-        an1 = input( 'Unfinished SGE run found: Would you like to try and finish the existing sge run? Press 1 if yes. To start over press 0 ');
+        an1 = input( 'Unfinished SGE run found: Would you like to try and finish the existing SGE run? Press 1 if yes. To start over, press 0 ');
         
         % Continue existing SGE run from where we left it last time
-        % we find the fit that are missing
+        % we find the fits that are missing
         if an1==1
             reval=[];
             list=ls(opt.outDir);
@@ -207,7 +217,8 @@ if SGE==1;
         end
     end
     
-    %% Build the data that was fit by the SGE to a T1 and M0 maps
+% Build the data that was fit by the SGE to a T1 and M0 maps
+
     % This loop checks if all the outputs have been saved and waits until
     % they are all done
     StopAndSave=0;
@@ -307,11 +318,11 @@ if SGE==1;
         
     end
     
-    % NO SGE
-    %using the local computer to fit T1 and the sunGrid
+%% III-b: NO SunGrid
+    % using the local computer to fit T1 and PD
 else
     
-    fprintf('\n Fiting the T1 map locally, may be slow. SunGrid use can be much faster             \n');
+    fprintf('\n Fitting the T1 map locally, may be slow. SunGrid use can be much faster             \n');
     
     if (~exist([outDir '/tmpSGWL'],'dir')),
         mkdir([outDir '/tmpSGWL']);
@@ -380,7 +391,7 @@ T1_L(opt.wh) = t12(:)./1000;
 PD_L(opt.wh) = pd2(:);
 
 
-%% Save out results
+%% IV. Save out results
 
 if savenow==1
     dtiWriteNiftiWrapper(single(T1_WL), xform, fullfile(outDir,['T1_WL_last.nii.gz']));

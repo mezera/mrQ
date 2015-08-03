@@ -1,7 +1,18 @@
 function mrQ=mrQ_T1M0_Fit(mrQ,B1File,MaskFile,outDir,dataDir,clobber)
 % mrQ=mrQ_T1M0_Fit(mrQ,B1File,MaskFile,outDir,dataDir,clobber)
 %
-% Different types of fit of T1 to M0: linear, least squares (LSQ), linear weighted
+% In this function, the T1-M0 fit is performed. The user is able to choose
+% from among three options: linear fit, least squares (LSQ) fit, or a
+% linear weighted fit. 
+%        1) The linear fit is most prone to bias, but it is also
+%             the fastest. The linear fit is performed automatically.
+%        2) The LSQ fit will take the longest (days) so it is
+%             recommended to use the LSQ fit only when SunGrid (or another 
+%             grid) is available. 
+%        3) The linear weighted fit is performed as described in the
+%             article by Chang et al (2008) in Magn Reson Med. The default
+%             is for the linear weighted fit, and not the LSQ fit, to be
+%             performed.
 %
 % ~INPUTS~
 %        mrQ: The mrQ structure
@@ -9,10 +20,14 @@ function mrQ=mrQ_T1M0_Fit(mrQ,B1File,MaskFile,outDir,dataDir,clobber)
 %   MaskFile: Location of the mask file (NIfTI)
 %     outDir: Directory to save the data
 %    dataDir: Directory for the spgr data
-%    clobber: Default is false 
+%    clobber: Overwrite existing data and reprocess. [Default = false]
 %
 % ~OUTPUTS~
 %        mrQ: The updated mrQ structure
+%
+%
+% (C) Mezer lab, the Hebrew University of Jerusalem, Israel
+%   2015
 %
 %
 
@@ -40,14 +55,6 @@ if isfield(mrQ,'B1FileName')
     B1File=mrQ.B1FileName;
 end
 
-if notDefined('B1File')
-    disp('Initial fits with no correction are now being calculated...');
-    B1 = ones(size(s(1).imData));
-else
-    B1=niftiRead(B1File);
-    B1=double(B1.data);
-end
-
 if isfield(mrQ,'FullMaskFile')
     MaskFile=mrQ.FullMaskFile;
 end
@@ -57,7 +64,7 @@ if notDefined('MaskFile')
 end
 
 if ~isfield(mrQ,'lsq');
-    mrQ.lsq = 1;
+    mrQ.lsq = 0;
 end
 
 lsqfit = mrQ.lsq;
@@ -81,6 +88,13 @@ disp(['Loading aligned data from ' outFile '...']);
 
 load(outFile);
 
+if notDefined('B1File')
+    disp('Initial fits with no correction are now being calculated...');
+    B1 = ones(size(s(1).imData));
+else
+    B1=niftiRead(B1File);
+    B1=double(B1.data);
+end
 %% III. Linear Fit 
 % Linear fit is used to calculate T1 and M0.
 % (Linear fitting can bias the fit, but it's very fast)
@@ -116,7 +130,7 @@ else
     % M0: PD = M0 * G * exp(-TE / T2*).
     [T1L,M0L] = relaxFitT1(cat(4,s(:).imData),flipAngles,tr,B1);
     
-    % let's calculate a new mask 
+    % Let's calculate a new mask 
     [HeadMask, mrQ]=CalculateFullMask(mrQ,T1L,M0L,outDir); %see below for function
     % Zero-out the values that fall outside of the brain mask
     T1L(~HeadMask) = 0;
@@ -156,7 +170,7 @@ if lsqfit==1,
         
     else
         if clobber && (exist([outDir '/tmpSG'],'dir'))
-            % in the case we start over and there are old fits, 
+            % In the case we start over and there are old fits, 
             % we will delete them
             eval(['! rm -r ' outDir '/tmpSG']);
         end      
@@ -233,6 +247,15 @@ end
 
        save(mrQ.name,'mrQ');
 
+       %
+      %%%
+     %%%%%
+    %%%%%%%
+     %%%%%
+      %%%
+       %
+       
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
 function [mask, mrQ]=CalculateFullMask(mrQ,t1,M0,outDir)
 %% one more mask anywhere we have signal
 
@@ -257,7 +280,9 @@ BM=  readFileNifti(mrQ.BrainMask); BM=logical(BM.data);
 %     mask1(:,:,i)=imfill(mask1(:,:,i),'holes');
 % end;
 % %%%%
-% Create a white-matter mask using a range of t1 values within the original
+
+
+% Create a white-matter mask using a range of T1 values within the original
 % brain mask
 
 wmmask    = BM & t1>0.850 & t1<1.050;
@@ -288,7 +313,6 @@ wmmask             = logical(wmmask);
 Gain = reshape(Poly*params1',Imsz);
 M0   = M0./Gain;
 
-
 % mask
 
 M=mean(M0(BM));
@@ -310,7 +334,6 @@ for i=1:size(mask,3)
 end;
 
 mask=logical(mask1+mask +HM+BM);
-
 
 % make a head mask that definitely includes the brain mask
 FullMaskFile= fullfile(outDir,'FullMask.nii.gz');

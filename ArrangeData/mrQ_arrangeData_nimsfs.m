@@ -2,26 +2,31 @@ function mrQ = mrQ_arrangeData_nimsfs(mrQ,inputData_spgr,inputData_seir)
 % 
 %  [mrQ] = mrQ_arrangeData_nimsfs(mrQ,inputData_spgr,inputData_seir)
 %
-% Arrange data from a series of scans gathered at the CNI. This function
-% will take a dataDir (mrQ.RawDir) and organize the data/folders within it
-% based upon the series numbers (SEIR_seriesNumbers & SPGR_seriesNumbers).
-% It will dump all the data to a raw directory (mrQ.outDir).
+% This function will arrange data from a series of scans gathered at the
+% CNI. It will take a dataDir (mrQ.RawDir) and organize the data/folders
+% within it based upon the series numbers (SEIR_seriesNumbers &
+% SPGR_seriesNumbers). It will dump all the data to a raw directory
+% (mrQ.outDir).
 % 
 %     INPUTS:
-%      
+%                  mrQ:     The mrQ structure
 %       inputData_spgr:     The SPGR data.
 %       inputData_seir:     The SEIR data.
 % 
-% 
+%    OUTPUTS:
+%                  mrQ:     The mrQ structure, updated
+%
+%
 % (C) Stanford University, VISTA Lab [2014]
 % Edited by Shai Berman and Jonathan Bain, June-02-2015
 
 
-%% Construct the inputData structures for SEIR and SPGR
+%% I. Construct the inputData structures for SEIR and SPGR
 
 % Given mrQ.RawDir, the following function will return all the necessary
-% paths to required nifti files in the mrQ.inputData_spgr and
+% paths to required NIfTI files in the mrQ.inputData_spgr and
 % mrQ.inputData_seir structures.
+
 if ~notDefined('inputData_seir')
     mrQ=mrQ_Set(mrQ,'inputdata_seir',inputData_seir);
 end
@@ -34,7 +39,7 @@ if ~isfield(mrQ,'inputdata_spgr') || ~isfield(mrQ,'inputdata_seir')
     mrQ = mrQ_initInputData(mrQ);
 end
 
-%% Arrange SEIR data
+%% II. Arrange SEIR data
 
 if ~isfield(mrQ,'MakeNewSEIRDir');
     mrQ.MakeNewSEIRDir=0;
@@ -70,7 +75,7 @@ if (mrQ.MakeNewSEIRDir==1)
 
 end 
     
-%% Arrange SPGR data
+%% III. Arrange SPGR data
 if ~isfield(mrQ,'MakeNewSPGRRDir');
     mrQ.MakeNewSPGRRDir=0;
 end
@@ -104,7 +109,7 @@ if (mrQ.MakeNewSPGRRDir==1)
     
 end
 
-%% Save and return
+%% IV. Save and return
 
 % This is very important, as it will trick the code into no sorting.
 mrQ.Arrange_Date = date;

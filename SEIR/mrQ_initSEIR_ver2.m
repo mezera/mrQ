@@ -63,7 +63,7 @@ function [data, extra, xform, saveName] = mrQ_initSEIR_ver2(mrQ,SEIRdir,alignFla
 % (C) Stanford University, VISTA
 %
 
-%% Check Inputs
+%% I. Check Inputs
 
 if notDefined('SEIRdir') || ~exist(SEIRdir,'dir')
     SEIRdir = uigetdir(pwd,'Select your base data directory.');
@@ -82,12 +82,11 @@ if ~exist(loadPath,'dir'), mkdir(loadPath); end
 % Set the name of the file to which we will save the results in loadPath.
 saveName = fullfile(loadPath, 'SEIR_Dat');
 
-%% Load raw data into a single structure, called "d".
+%% II. Load raw data into a single structure, called "d".
 
 d=mrQ_input2Stuck(mrQ.inputdata_seir);
 
-
-%% Align series in d and deal with complex data
+%% III. Align series in "d" and deal with complex data
 
 % Align & ~Complex
 if (alignFlag == 1) 
@@ -116,6 +115,7 @@ if (alignFlag == 1)
 %     
     
 end
+%% IV. Initialize data matrix
 % Determine the number of rows (nRows), number of Columns (nCol), number of
 % slices (nSlice), and number of series (nSeries). Initialize the data
 % matrix and extra structure.
@@ -142,13 +142,12 @@ for k = 1:nSeries
 end
 
 
-%% Save the data.
+%% V. Save the data.
 
 extra.T1Vec = 1:5000; % This can be reduced to speed up the code
 
 % TI = extra.tVec; % Not returned or used
 
 save(saveName,'data','extra','xform')
-
 
 return

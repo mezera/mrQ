@@ -2,7 +2,10 @@ function mrQ=mrQ_build_epi2SPGR_B1(mrQ,B1FileName,smoothnessVal)
 % function mrQ=mrQ_build_epi2SPGR_B1(mrQ,B1FileName,smoothnessVal)
 %
 % In this function, we will smoothe and interpolate/extrapolate the values
-% to have a solution at every location.
+% to have a solution at every location. The EPI image is warped into SPGR
+% space, and then a similar smoothing mechanism is employed (using the
+% selected value for smoothing, then looping over the slices in each of the
+% X, Y and Z directions).
 %
 % ~INPUTS~
 %              mrQ: The mrQ structure
@@ -13,6 +16,13 @@ function mrQ=mrQ_build_epi2SPGR_B1(mrQ,B1FileName,smoothnessVal)
 %
 % ~OUTPUTS~
 %              mrQ: The updated mrQ structure
+%
+% SEE ALSO: mrQ_smooth_LR_B1.m
+%
+% (C) Mezer lab, the Hebrew University of Jerusalem, Israel
+%   2015
+%
+%
 
 %% I. Load files and set parameters
 

@@ -15,8 +15,8 @@ function [s coilNum] = makeStructFromNifti(niftiFile,multiChannels,struc,permuta
 %                       use only the last channel. *** EXPLAIN IN MORE
 %                       DETAIL ***
 %     struc           - A structure that the data will be added to
-%     permutation     - Rearanges the data. Default is 1. 
-%                        Most of the time the data from multichanel needs a 
+%     permutation     - Rearranges the data. Default is 1. 
+%                        Most of the time the data from multichannel needs a 
 %                        permutation; if this is not necessary, use 0. 
 %
 %

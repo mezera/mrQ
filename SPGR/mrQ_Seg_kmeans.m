@@ -23,11 +23,17 @@ function [mrQ]=mrQ_Seg_kmeans(mrQ,BMfile,CSFVal,T1file,M0file,outDir)
 %          mrQ: The updated mrQ structure
 %
 % See also: mrQ_get_T1M0_files.m
+%
+% (C) Mezer lab, the Hebrew University of Jerusalem, Israel
+%   2015
+%
+%
 
 
-%%
+%% I. Loading and definitions
 if notDefined('CSFVal')
-    CSFVal=0.35; %R1 in -sec water in body temp  (minimum value ) any think above that will cosider as water for segmentation (the same tissue)
+    CSFVal=0.35; % R1 (in 1/sec) of water at body temp  (minimum value) 
+    %anything above that will be considered to be water for segmentation (the same tissue)
 end
 
 if~exist('outDir')
@@ -73,11 +79,12 @@ T1 = double(T1.data);
 
 R1=1./T1;
 
-%%
+%% II. Perform k-means in a "while" loop
 seg=zeros(size(R1));
 
 notdone=0;
 mask=logical(R1); mask= mask &  R1>CSFVal & BM;
+
 while notdone==0
     
     [IDX,C] =kmeans(R1(mask),3);
@@ -114,7 +121,7 @@ elseif abs(1-C(2)/C(3))<0.1
     [IDX,C] =kmeans(R1(mask),2);
 end
 
-% create segmentation file of the clipped brain 
+%% III. Create segmentation file of the clipped brain 
 seg=zeros(size(R1));
 seg(mask)=IDX;
 
@@ -135,18 +142,13 @@ GMclass=1;DEEPclass=2;WMclass=3; CSFclass=4;
 seg(seg==idx(1))=4; seg(seg==idx(2))=5;seg(seg==idx(3))=6;
 seg(seg==4)=GMclass; seg(seg==5)=DEEPclass; seg(seg==6)=WMclass; 
 
-%%
 CSF=logical(R1); CSF= CSF&  R1<CSFVal & BM;
 seg(CSF)=CSFclass; % any region that is mostly water.
 
 segfile = fullfile(outDir,'T1w_tissue.nii.gz');
 dtiWriteNiftiWrapper(single(seg), xform, segfile)
-%%
 
-
-%%
-
-% clip mask size
+% Clip mask size
 if notDefined('boxsize')
     boxsize(1)=30;
     boxsize(2)=40;
@@ -166,7 +168,7 @@ CSF(:,szH(2)+YY:end,:,:)=0;
 CSF(:,:,1:szH(3)-ZZ)=0;
 CSF(:,:,szH(3)+ZZ:end)=0;
 
-% smooth in space
+%% IV. Smoothe in space
 [CSF1] = ordfilt3D(CSF,6);
 CSF1=CSF &  CSF1;
 
@@ -178,10 +180,10 @@ end
 
 dtiWriteNiftiWrapper(single(CSF2), xform, csffile);
 
-%%
+%% V. Some issues
 
 if length(find(CSF2))<200
-           fprintf(['\n Warning: We could find only ' num2str(length(find(CSF1))) ' csf voxel this make the CSF WF estimation very noisy, cosider to edit csf_seg_T1.nii.gz fiel see below \n']);
+           fprintf(['\n Warning: We could find only ' num2str(length(find(CSF1))) ' csf voxels. This makes the CSF WF estimation very noisy. Consider editing csf_seg_T1.nii.gz file, see below \n']);
 end
 
 % Larger ventricles region. 
@@ -195,7 +197,7 @@ csffile1 = fullfile(outDir, 'csf_seg_T1_large.nii.gz');
 dtiWriteNiftiWrapper(single(CSF), xform, csffile1);
 
 
-%%
+%% VI. Save
 mrQ.csf_large=csffile1;
 mrQ.csf=csffile;
 mrQ.T1w_tissue=segfile;

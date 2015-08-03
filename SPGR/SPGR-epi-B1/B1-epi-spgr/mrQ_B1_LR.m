@@ -16,17 +16,22 @@ function mrQ=mrQ_B1_LR(mrQ)
 % The INPUT is a mrQ structure, and the OUTPUT is the updated mrQ
 % structure.
 %
-%% Get ready to fit B1 and call to fit
+%
+% (C) Mezer lab, the Hebrew University of Jerusalem, Israel
+% 2015
+%
+
+%% I. Get ready to fit B1 and call to fit
 if ~isfield(mrQ,'B1fit_done');
     mrQ.B1fit_done=0;
 end
 
 if ( mrQ.B1fit_done==0)
     
-% We build a mask for the voxel we'd like to fit with in EPI space.
+% We build a mask for the voxel we'd like to fit in EPI space.
+
 % [mrQ.maskepi_File] = mrQ_B1FitMask(mrQ.Ants_Info.dirAnts,mrQ.spgr2epiAlignFile,mrQ.SEIR_epi_fitFile,mrQ.spgr_initDir);
-% shai : there is not DirAnts in the Ants_Info, looks like you meant the
-% directory where the aligned and warped files are. 
+
 [mrQ.maskepi_File] = mrQ_B1FitMask(mrQ.spgr_initDir,mrQ.spgr2epiAlignFile,mrQ.SEIR_epi_fitFile,mrQ.spgr_initDir);
     
     %define the fit parameters
@@ -43,9 +48,8 @@ if ( mrQ.B1fit_done==0)
     
 end
     
-    %%
-    
-    % Build the grid B1 fits
+%% II. Build the grid B1 fits
+
     if isfield(mrQ,'B1Build_done');
     else
         mrQ.B1Build_done=0;

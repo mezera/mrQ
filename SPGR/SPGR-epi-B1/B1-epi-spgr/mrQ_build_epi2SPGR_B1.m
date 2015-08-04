@@ -130,7 +130,7 @@ end
         B1Fit_S(B1Fit_S<0)=0;
 
     
-%% Loop over Y slices
+%% IIc. Loop over Y slices
     
     [XI YI]=meshgrid(1:size(B1Fit_S,1),1:size(B1Fit_S,3));
 

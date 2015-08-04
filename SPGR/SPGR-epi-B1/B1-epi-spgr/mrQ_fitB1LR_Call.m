@@ -13,9 +13,12 @@ function mrQ_fitB1LR_Call(opt_logname,SunGrid,RunSelectedJob,clobber)
 %     opt_logname: Directory to the .mat file containing the appropriate
 %                  parameters, as created in mrQ_PD_LRB1SPGR_GridParams.m
 %         SunGrid: Whether to use the SunGrid; default is no.
-%  RunSelectedJob:
+%  RunSelectedJob: Default is false. If true, it will look for the missing
+%                  jobs and then run them. 
 %         clobber: Overwrite existing data and reprocess. [Default = false]
 %
+%
+% See also: mrQ_Gridcheck.m
 %
 % (C) Mezer lab, the Hebrew University of Jerusalem, Israel
 %   2015
@@ -64,8 +67,8 @@ if SunGrid==1; %if there is a grid
             command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_B1_LRFit(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
            [stat,res]= system(command);
            
-           if ~mod(jobindex,25)
-               fprintf('%g jobs out of %g have been submitted',jobindex,ceil(opt.N_Vox2Fit/jumpindex))
+           if ~mod(jobindex,50)
+               fprintf('%g jobs out of %g have been submitted   \n',jobindex,ceil(opt.N_Vox2Fit/jumpindex))
            end
             
         end
@@ -73,15 +76,15 @@ if SunGrid==1; %if there is a grid
 %         sgerun('mrQ_B1_LRFit(opt_logname,jumpindex,jobindex);',sgename,1,1:ceil(opt.N_Vox2Fit/jumpindex),[],[],5000);
     else
         % Run only the selected jobs
-           MissingFileNumber=mrQ_multiFit_HowIsMissing( dirname,opt.N_Vox2Fit,jumpindex); % the job to run
+           MissingFileNumber=mrQ_multiFit_WhoIsMissing( dirname,opt.N_Vox2Fit,jumpindex); % the job to run
            for kk=1:length(MissingFileNumber)
                jobindex=MissingFileNumber(kk);
                jobname=100*str2double(fullID(1:3))+jobindex;
                command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_B1_LRFit(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
               [stat,res]= system(command);
               
-              if ~mod(kk,25)
-                  fprintf('%g jobs out of %g have been submitted',kk,length(MissingFileNumber));
+              if ~mod(kk,50)
+                  fprintf('%g jobs out of %g have been submitted    \n',kk,length(MissingFileNumber));
               end
            end
 %            sgerun('mrQ_B1_LRFit(opt_logname,jumpindex,jobindex);',sgename,1,MissingFileNumber,[],[],5000);

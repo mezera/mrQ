@@ -7,12 +7,14 @@ function mrQ=mrQ_smooth_LR_B1(mrQ,smoothnessVal)
 %
 % ~INPUTS~
 %              mrQ: The mrQ structure
-%    smoothnessVal: Value for the smoothness of the grid. Default is 5.
+%    smoothnessVal: A scalar value for the smoothness of the grid. Default
+%                          is 5, and was selected through trial and error.  
+%                          See gridfit.m for additional information.
 %
 % ~OUTPUTS~
 %              mrQ: The updated mrQ structure.
 %
-% See also: mrQ_build_epi2SPGR_B1.m
+% See also: mrQ_build_epi2SPGR_B1.m and gridfit.m.
 %
 % (C) Mezer lab, the Hebrew University of Jerusalem, Israel
 %  2015

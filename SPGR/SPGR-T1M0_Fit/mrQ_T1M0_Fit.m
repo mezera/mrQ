@@ -75,6 +75,8 @@ end
 
 if lsqfit==0 
     mrQ.LW = true;
+elseif lsqfit==1
+    mrQ.LW = false;
 end
 
 LWfit = mrQ.LW;

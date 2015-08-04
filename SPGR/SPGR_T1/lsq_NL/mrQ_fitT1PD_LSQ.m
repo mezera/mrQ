@@ -132,8 +132,8 @@ if SGE==1;
             jobname=1000*str2double(fullID(1:3))+jobindex;
             command=sprintf('qsub -cwd -j y -b y -N joblsq_%g "matlab -nodisplay -r ''mrQ_fitT1PD_SGE(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
             [stat,res]=  system(command);
-            if ~mod(jobindex,50)
-                fprintf('%g jobs out of %g have been submitted',jobindex,ceil(length(opt.wh)/jumpindex))
+            if ~mod(jobindex,100)
+                fprintf('%g jobs out of %g have been submitted    \n',jobindex,ceil(length(opt.wh)/jumpindex))
             end
         end
         
@@ -143,7 +143,7 @@ if SGE==1;
         %             sgerun('mrQ_fitT1PD_SGE(opt,2000,jobindex);',sgename,1,1:ceil(length(opt.wh)/jumpindex));
         %         end
     else
-        an1 = input( 'Unfinished SGE run found: Would you like to try and finish the existing sge run? Press 1 if yes. To start over, press 0 ');
+        an1 = input( 'Unfinished SGE run found: Would you like to try and finish the existing SGE run? Press 1 if yes. To start over, press 0 ');
         
         % Continue existing SGE run from where we left it last time
         % we find the fit that are missing
@@ -173,8 +173,8 @@ if SGE==1;
                     jobname=1000*str2double(fullID(1:3))+jobindex;
                     command=sprintf('qsub -cwd -j y -b y -N joblsq_%g "matlab -nodisplay -r ''mrQ_fitT1PD_SGE(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
                     [stat,res]=  system(command);
-                    if ~mod(kk,50)
-                        fprintf('%g jobs out of %g have been submitted',kk,length(reval));
+                    if ~mod(kk,100)
+                        fprintf('%g jobs out of %g have been submitted     \n',kk,length(reval));
                     end
                 end
                 
@@ -197,8 +197,8 @@ if SGE==1;
                 jobname=1000*str2double(fullID(1:3))+jobindex;
                 command=sprintf('qsub -cwd -j y -b y -N joblsq_%g "matlab -nodisplay -r ''mrQ_fitT1PD_SGE(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
                 [stat,res]= system(command);
-                if ~mod(jobindex,50)
-                    fprintf('%g jobs out of %g have been submitted',jobindex,ceil(length(opt.wh)/jumpindex))
+                if ~mod(jobindex,100)
+                    fprintf('%g jobs out of %g have been submitted     \n',jobindex,ceil(length(opt.wh)/jumpindex))
                 end
             end
             %             if proclass==1
@@ -283,8 +283,8 @@ if SGE==1;
                         jobname=1000*str2double(fullID(1:3))+jobindex;
                         command=sprintf('qsub -cwd -j y -b y -N joblsq_%g "matlab -nodisplay -r ''mrQ_fitT1PD_SGE(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
                         [stat,res]=   system(command);
-                        if ~mod(kk,50)
-                            fprintf('%g jobs out of %g have been submitted',kk,length(reval));
+                        if ~mod(kk,100)
+                            fprintf('%g jobs out of %g have been submitted            \n',kk,length(reval));
                         end
                         %                             sgerun2('mrQ_fitT1PD_SGE(opt,2000,jobindex);',[sgename num2str(kk)],1,reval(kk)); % we run the missing oupput again
                     end

@@ -9,7 +9,12 @@ function GridFit_done=mrQ_Gridcheck(opt_Log_name,SunGrid,CallType)
 %  ~INPUTS~
 %          opt_Log_name: Location of the opt file
 %               SunGrid: Whether to use SunGrid (default is 0, "no")
-%              CallType: Either 1 (default), 2 or 3
+%              CallType: Determines what type of function will be
+%                        performed, assuming RunSelectedJobs is true. It
+%                        will be performed in the SunGrid. Enter 1 for
+%                        mrQ_fitM0boxesCall_Multi.m (default), 2 for
+%                        mrQ_fitB1boxesCall.m (currently non-operational), 
+%                        or 3 for mrQ_fitB1LR_Call.m.
 %
 %  ~OUTPUTS~
 %          GridFit_done: A true/false logical, which indicates whether the
@@ -32,7 +37,6 @@ if notDefined('SunGrid');SunGrid=0;end
 if notDefined('CallType');CallType=1;end
 
 GridFit_done=false;
-fullID=sgename(isstrprop(sgename, 'digit'));
 %%
 if CallType==1 || CallType==2
     fNum=ceil(length(opt.wh)/opt.jumpindex);
@@ -41,6 +45,7 @@ elseif CallType==3
 end
 
 sgename=opt.SGE;
+fullID=sgename(isstrprop(sgename, 'digit'));
 
 tic
 while GridFit_done~=true

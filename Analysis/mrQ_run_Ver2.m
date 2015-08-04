@@ -37,7 +37,7 @@ function mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_sei
 %                   SIR maps.
 % 
 %
-% (C) Mezer lab, Hebrew University of Jerusalem, Israel
+% (C) Mezer lab, the Hebrew University of Jerusalem, Israel
 %  2015
 %
 %
@@ -65,11 +65,10 @@ else
     mrQ = mrQ_Set(mrQ,'sungrid',useSUNGRID);
 end
 
-if mrQ.SunGrid
 %     Create a file containing mrQpath, named after its 'ID' (taken from
 %     its tempname). This allows for an easy use of SunGrid.
-    mrQ_createIDfile(mrQ);
-end
+mrQ_createIDfile(mrQ);
+
     
 %             mrQ = mrQ_Set(mrQ,'sungrid',1);
 mrQ = mrQ_Set(mrQ,'fieldstrength',3);
@@ -93,7 +92,7 @@ if ~isfield(mrQ,'Arrange_Date');
         
     end
 else
-    fprintf('Data was already arranged at %s \n',mrQ.Arrange_Date)
+    fprintf('Data was already arranged on %s \n',mrQ.Arrange_Date)
 end
 %% III. Perform SEIR fit
 
@@ -119,7 +118,7 @@ if notDefined('B1file')
         fprintf('Fit SEIR  - done! \n');
         
     else
-        fprintf('\n  Load fit SEIR data! \n');
+        fprintf('\n Loading previously fitted SEIR data \n');
         
     end
     
@@ -146,10 +145,9 @@ if     mrQ.SPGR_init_done==0
     save(mrQ.name,'mrQ');
     fprintf('\n  init SPGR - done!           \n');
 else
-    fprintf(' \n load init SPGR data            \n');
+    fprintf(' \n Loading init SPGR data            \n');
     
 end
-
 
 %%  V. Fit SPGR PD
 
@@ -167,9 +165,9 @@ if (mrQ.SPGR_LinearT1fit_done==0);
     
     save(mrQ.name,'mrQ');
     
-    fprintf('\n fit linear T1 SPGR  - done!              \n');
+    fprintf('\n Fit linear T1 SPGR  - done!              \n');
 else
-    fprintf('\n load linearly fitted SPGR T1                \n');
+    fprintf('\n Loading linearly fitted SPGR T1                \n');
     
 end
 
@@ -189,12 +187,11 @@ if ( mrQ.SPGR_EPI_align_done==0)
     mrQ.SPGR_EPI_align_done=1;
     
     save(mrQ.name,'mrQ');
-    fprintf('\n alignment of EPI to T1  - done!              \n');
+    fprintf('\n Alignment of EPI to T1  - done!              \n');
 else
-    fprintf(['\n using alignment of EPI to T1, precalculated on '    mrQ.Ants_Info. spgr2epi_Align_date           '\n']);
+    fprintf(['\n Using alignment of EPI to T1, calculated on '    mrQ.Ants_Info. spgr2epi_Align_date           '\n']);
     
 end
-
 
 %% VII. Build B1
 
@@ -215,13 +212,13 @@ if notDefined('B1file')
         fprintf('\n Building B1 - done!       \n');
         
     else
-        fprintf(['Using existing  B1  map  file '   mrQ.B1FileName        '  \n']);
+        fprintf(['Using existing B1 map file '   mrQ.B1FileName        '  \n']);
         
     end
 else
     mrQ.B1FileName=B1file;
 end
-%
+
 %% VIII. T1M0 fit with B1
 
 if ~isfield(mrQ,'SPGR_T1fit_done');
@@ -342,6 +339,7 @@ end
 
 %% XIV. Organize the OutPut directory
 mrQ=mrQ_arrangeOutPutDir(mrQ);
+mrQ_deleteIDfile(mrQ);% delete the temporary ID file stored in mrQ/sge_subjects
 
 %done
 mrQ.AnalysisDone=1;

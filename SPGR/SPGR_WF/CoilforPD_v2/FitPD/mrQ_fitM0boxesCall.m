@@ -34,8 +34,8 @@ if SunGrid==1;
             command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_CoilPD_gridFit(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
             [stat,res]= system(command);
               
-              if ~mod(jobindex,50)
-                  fprintf('%g jobs out of %g have been submitted',jobindex,ceil(length(opt.wh)/jumpindex));
+              if ~mod(jobindex,100)
+                  fprintf('%g jobs out of %g have been submitted     \n',jobindex,ceil(length(opt.wh)/jumpindex));
               end
         end
         
@@ -74,8 +74,8 @@ if SunGrid==1;
                         %   sgerun2('mrQ_CoilPD_gridFit(opt,jumpindex,jobindex);',[sgename num2str(kk)],1,reval(kk),                       [],[],5000);
                         command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_CoilPD_gridFit(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
                         [stat,res]=system(command);
-                        if ~mod(kk,50)
-                            fprintf('%g jobs out of %g have been submitted',kk,length(reval));
+                        if ~mod(kk,100)
+                            fprintf('%g jobs out of %g have been submitted      \n',kk,length(reval));
                         end
                     end
 %                 else
@@ -95,8 +95,8 @@ if SunGrid==1;
                 jobname=100*str2double(fullID(1:3))+jobindex;
                 command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_CoilPD_gridFit(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
                 [stat,res]=system(command);
-                if ~mod(jobindex,50)
-                  fprintf('%g jobs out of %g have been submitted',jobindex,ceil(length(opt.wh)/jumpindex));
+                if ~mod(jobindex,100)
+                  fprintf('%g jobs out of %g have been submitted         \n',jobindex,ceil(length(opt.wh)/jumpindex));
                 end
             end
             %             if proclass==1
@@ -157,8 +157,8 @@ if SunGrid==1;
                         %   sgerun2('mrQ_CoilPD_gridFit(opt,jumpindex,jobindex);',[sgename num2str(kk)],1,reval(kk),                       [],[],5000);
                         command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_CoilPD_gridFit(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
                         [stat,res]=system(command);
-                        if ~mod(kk,50)
-                            fprintf('%g jobs out of %g have been submitted',kk,length(reval));
+                        if ~mod(kk,100)
+                            fprintf('%g jobs out of %g have been submitted         \n',kk,length(reval));
                         end
                    
                     end

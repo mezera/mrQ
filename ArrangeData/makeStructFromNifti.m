@@ -12,8 +12,8 @@ function [s coilNum] = makeStructFromNifti(niftiFile,multiChannels,struc,permuta
 %                       channels and separate them. If it's a different
 %                       number, then we will work only on those channels
 %                       named in multiChannels (vector). If it = -2, then we
-%                       use only the last channel. *** EXPLAIN IN MORE
-%                       DETAIL ***
+%                       use only the last channel, which in many cases is
+%                       the combined coils.
 %     struc           - A structure that the data will be added to
 %     permutation     - Rearranges the data. Default is 1. 
 %                        Most of the time the data from multichannel needs a 

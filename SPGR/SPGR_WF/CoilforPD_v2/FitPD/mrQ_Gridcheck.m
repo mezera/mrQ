@@ -1,4 +1,4 @@
-function GridFit_done=mrQ_Gridcheck(opt_Log_name,SunGrid,CallType)
+function GridFit_done=mrQ_Gridcheck(opt_Log_name,SunGrid,CallType,GridOutputDir)
 % function GridFit_done=mrQ_Gridcheck(opt_Log_name,SunGrid,CallType)
 %
 % This function employs a "while" loop to check whether all the outputs
@@ -35,7 +35,9 @@ end
 
 if notDefined('SunGrid');SunGrid=0;end
 if notDefined('CallType');CallType=1;end
-
+if notDefined('GridOutputDir')
+    GridOutputDir=pwd;
+end
 GridFit_done=false;
 %%
 if CallType==1 || CallType==2
@@ -70,7 +72,7 @@ while GridFit_done~=true
             
             RunSelectedJob=true;
             if CallType==1
-                if isfield(opt,'Reg') % ALWO DIFFERNT FITS METHODS
+                if isfield(opt,'Reg') % ALOW DIFFERENT FIT METHODS
                     mrQ_fitM0boxesCall_Multi(opt_Log_name,SunGrid,RunSelectedJob)
                 else
                     mrQ_fitM0boxesCall(opt_Log_name,SunGrid,RunSelectedJob)
@@ -84,3 +86,10 @@ while GridFit_done~=true
         
     end
 end
+% if the job was finished, remove all gris outputs. 
+if  GridFit_done
+    filesPath=[GridOutputDir,'/job_',num2str(jobname),'*'];
+    delCommand=sprintf('rm %s', filesPath);
+    [status, result]=system(delCommand);
+end
+

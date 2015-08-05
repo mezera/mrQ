@@ -255,7 +255,8 @@ opt.smoothkernel=0;
 sgename    = [subName '_MultiCoilM0'];
 dirname    = [outDir '/tmpSGM0' ];
 dirDatname = [outDir '/tmpSGM0dat'];
-jumpindex  = 5; %number of boxes for each SGE run
+jumpindex  = 1000; %number of boxes for each SGE run
+% jumpindex  = 5; %number of boxes for each SGE run
 
 opt.dirDatname = dirDatname;
 opt.name = [dirname '/M0boxfit_iter'] ;

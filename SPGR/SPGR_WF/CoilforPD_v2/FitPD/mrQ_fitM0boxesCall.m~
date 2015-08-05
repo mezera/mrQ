@@ -1,7 +1,7 @@
 function mrQ_fitM0boxesCall(opt_logname,SunGrid,RunSelectedJob,GridOutputDir)
 % this function load the opt straction that have all the fit information
-% and send it in to the computer grid if one is defined (SunGrid).  If not
-% it will send it to local compoter solver
+% and send it in to the computer grid if one is defined (SunGrid and/or
+% proclass).  If not it will send it to local compoter solver
 %
 
 
@@ -35,7 +35,7 @@ if SunGrid==1;
         %         end
         for jobindex=1:ceil(length(opt.wh)/jumpindex)
             jobname=1000*str2double(fullID(1:3))+jobindex;
-            command=sprintf('qsub -cwd -j y -b y -N job_%g -o %s "matlab -nodisplay -r ''mrQ_CoilPD_gridFit(%f,%g,%g); exit'' >log"', jobname,GridOutputDir, id,jumpindex,jobindex);
+            command=sprintf('qsub -cwd -j y -o %s -b y -N job_%g "matlab -nodisplay -r ''mrQ_CoilPD_gridFit(%f,%g,%g); exit'' >log"',GridOutputDir, jobname, id,jumpindex,jobindex);
             [stat,res]= system(command);
             
             if ~mod(jobindex,100)

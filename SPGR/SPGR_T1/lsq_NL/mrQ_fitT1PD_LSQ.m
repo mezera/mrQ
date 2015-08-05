@@ -1,5 +1,5 @@
 function [T1 PD resNorm] = mrQ_fitT1PD_LSQ(s,brainMask,tr,flipAngles,M0, ...
-                                t1,Gain,B1,outDir,xform,mrQ,savenow)
+    t1,Gain,B1,outDir,xform,mrQ,GridOutputDir,savenow)
 %[T1 PD resNorm] = mrQ_fitT1PD_LSQ(s,brainMask,tr,flipAngles,M0, ...
 %                                t1,Gain,B1,outDir,xform,mrQ,savenow)
 %
@@ -76,7 +76,9 @@ sgename=[sb 'T1PD'];
 fullID=sb(isstrprop(sb, 'digit'));
 id=str2double(fullID(1:8));
 outDir=mrQ.spgr_initDir;
-
+if notDefined('GridOutputDir')
+    GridOutputDir=pwd;
+end
 
 %% II. Set options for optimization procedure
 a=version('-date');
@@ -86,7 +88,7 @@ else
     options =  optimset('LevenbergMarquardt','on','Display', 'off','Tolx',1e-12);%'TolF',1e-12
     
 end
-% We put all the relevant data in a structure called "opt". 
+% We put all the relevant data in a structure called "opt".
 % This will make it  easier to send it between the computers in the grid
 sz=size(brainMask);
 for i=1:length(s)
@@ -125,12 +127,14 @@ save(mrQ.name,'mrQ');
 
 clear brainMask tmp Res M0 options
 if SGE==1;
-    jumpindex=2000;
+    %  check if there's an existing SGE job we can finish. if there's no existing job:
+    
     if (~exist([outDir '/tmpSG'],'dir')), mkdir([outDir '/tmpSG']);
         % the result from the grid will be saved in a temporary directory
+        
         for jobindex=1:ceil(length(opt.wh)/jumpindex)
             jobname=1000*str2double(fullID(1:3))+jobindex;
-            command=sprintf('qsub -cwd -j y -b y -N joblsq_%g "matlab -nodisplay -r ''mrQ_fitT1PD_SGE(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
+            command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_fitT1PD_SGE(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
             [stat,res]=  system(command);
             if ~mod(jobindex,100)
                 fprintf('%g jobs out of %g have been submitted    \n',jobindex,ceil(length(opt.wh)/jumpindex))
@@ -142,47 +146,24 @@ if SGE==1;
         %         else
         %             sgerun('mrQ_fitT1PD_SGE(opt,2000,jobindex);',sgename,1,1:ceil(length(opt.wh)/jumpindex));
         %         end
-    else
+        
+    else  % if there's an existing SGE job, ask user if to restart this job or start from scratch
         an1 = input( 'Unfinished SGE run found: Would you like to try and finish the existing SGE run? Press 1 if yes. To start over, press 0 ');
         
         % Continue existing SGE run from where we left it last time
         % we find the fit that are missing
         if an1==1
-            reval=[];
-            list=ls(opt.outDir);
-            ch=[1:jumpindex:length(opt.wh)];
-            k=0;
-            for ii=1:length(ch),
-                
-                ex=['_' num2str(ch(ii)) '_'];
-                if length(regexp(list, ex))==0,
-                    k=k+1;
-                    reval(k)=(ii);
+            MissingFileNumber=mrQ_multiFit_WhoIsMissing( dirname,opt.N_Vox2Fit,jumpindex); % the job to run
+            for kk=1:length(MissingFileNumber)
+                jobindex=MissingFileNumber(kk);
+                jobname=1000*str2double(fullID(1:3))+jobindex;
+                command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_fitT1PD_SGE(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
+                [stat,res]=  system(command);
+                if ~mod(kk,100)
+                    fprintf('%g jobs out of %g have been submitted    \n',kk,length(MissingFileNumber));
                 end
             end
             
-            if length(find(reval))>0
-                % clean the sge output dir and run the missing fit
-                eval(['!rm -f ~/sgeoutput/*' sgename '*'])
-                %                 if proclass==1
-                a=num2str(ceil(rand(1)*10));
-                %sgerun2('mrQ_fitT1PD_SGE(opt,2000,jobindex);',[sgename a],1,reval)
-                for kk=1:length(reval)
-                    %                         sgerun2('mrQ_fitT1PD_SGE(opt,2000,jobindex);',[sgename num2str(kk)],1,reval(kk)); % we run the missing oupput again
-                    jobindex=reval(kk);
-                    jobname=1000*str2double(fullID(1:3))+jobindex;
-                    command=sprintf('qsub -cwd -j y -b y -N joblsq_%g "matlab -nodisplay -r ''mrQ_fitT1PD_SGE(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
-                    [stat,res]=  system(command);
-                    if ~mod(kk,100)
-                        fprintf('%g jobs out of %g have been submitted     \n',kk,length(reval));
-                    end
-                end
-                
-                %                 else
-                %                     sgerun('mrQ_fitT1PD_SGE(opt,2000,jobindex);',sgename,1,reval);
-                %                 end
-            end
-            list=ls(opt.outDir);
             
             % Restart the SGE processing from the beginning
         elseif an1==0
@@ -195,7 +176,7 @@ if SGE==1;
             mkdir([outDir '/tmpSG']);
             for jobindex=1:ceil(length(opt.wh)/jumpindex)
                 jobname=1000*str2double(fullID(1:3))+jobindex;
-                command=sprintf('qsub -cwd -j y -b y -N joblsq_%g "matlab -nodisplay -r ''mrQ_fitT1PD_SGE(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
+                command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_fitT1PD_SGE(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
                 [stat,res]= system(command);
                 if ~mod(jobindex,100)
                     fprintf('%g jobs out of %g have been submitted     \n',jobindex,ceil(length(opt.wh)/jumpindex))
@@ -211,7 +192,7 @@ if SGE==1;
         end
     end
     
-%% IV. Build the data that was fitted by the SGE to T1 and M0 maps
+    %% IV. Build the data that was fitted by the SGE to T1 and M0 maps
     % This loop checks if all the outputs have been saved and waits until
     % they are all done
     StopAndSave=0;
@@ -249,142 +230,74 @@ if SGE==1;
             eval(['!rm -f ~/sgeoutput/*' sgename '*'])
             
             
-        else
+        else % if there are missing jobs, see if they are still in the queue
             jobname=fullID(1:3);
-            qStatCommand    = [' qstat | grep -i  joblsq_' jobname];
+            qStatCommand    = [' qstat | grep -i  job_' jobname];
             [status result] = system(qStatCommand);
             tt=toc;
             if (isempty(result) && tt>60)
-                % Then there are no jobs running. We will need to re-run it.
+                % There are no jobs running. We will need to re-run it.
                 
                 % We will re-run only the one we need
-                reval=[];
-                list=ls(opt.outDir);
-                ch=[1:jumpindex:length(opt.wh)];
-                k=0;
-                for ii=1:length(ch),
-                    
-                    ex=['_' num2str(ch(ii)) '_'];
-                    if length(regexp(list, ex))==0,
-                        k=k+1;
-                        reval(k)=(ii);
+                MissingFileNumber=mrQ_multiFit_WhoIsMissing( dirname,opt.N_Vox2Fit,jumpindex); % the job to run
+                for kk=1:length(MissingFileNumber)
+                    jobindex=MissingFileNumber(kk);
+                    jobname=1000*str2double(fullID(1:3))+jobindex;
+                    command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_fitT1PD_SGE(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
+                    [stat,res]=  system(command);
+                    if ~mod(kk,100)
+                        fprintf('%g jobs out of %g have been submitted    \n',kk,length(MissingFileNumber));
                     end
                 end
                 
-                if length(find(reval))>0
-                    % clean the sge output dir and run the missing fit
-                    eval(['!rm -f ~/sgeoutput/*' sgename '*'])
-                    %                     if proclass==1
-                    
-                    % sgerun2('mrQ_fitT1PD_SGE(opt,2000,jobindex);',[sgename 'redo'],1,reval); % we run the missing oupput again
-                    
-                    for kk=1:length(reval)
-                        jobindex=reval(kk);
-                        jobname=1000*str2double(fullID(1:3))+jobindex;
-                        command=sprintf('qsub -cwd -j y -b y -N joblsq_%g "matlab -nodisplay -r ''mrQ_fitT1PD_SGE(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
-                        [stat,res]=   system(command);
-                        if ~mod(kk,100)
-                            fprintf('%g jobs out of %g have been submitted            \n',kk,length(reval));
-                        end
-                        %                             sgerun2('mrQ_fitT1PD_SGE(opt,2000,jobindex);',[sgename num2str(kk)],1,reval(kk)); % we run the missing oupput again
-                    end
-                    
-                    %                     else
-                    %                         sgerun('mrQ_fitT1PD_SGE(opt,2000,jobindex);',sgename,1,reval);
-                    %                     end
-                end
-                
-            else
+            else % there are still jobs running or at the grid queue
                 %  keep waiting
             end
             
-            
-            
-            
-            
         end
-        
-        
-        
-        
-        
-        % Record how much time has elapsed since the call to the grid.
-        %             t = toc;
-        %             % If too much time has elapsed then we recall the grid;
-        %             if t > 86400% 24hours
-        %                 reval=[]
-        %                 ch=[1:jumpindex:length(opt.wh)]; %the nude filre name
-        %                 k=0;
-        %                 reval=[];
-        %
-        %                 for ii=1:length(ch),
-        %
-        %                     ex=['_' num2str(ch(ii)) '_'];
-        %                     if length(regexp(list, ex))==0,
-        %                         k=k+1;
-        %                         reval(k)=(ii); % we make a list of the grid run that are not done yet
-        %
-        %                     end
-        %                 end;
-        %                 if length(find(reval))>0
-        %                     eval(['!rm ~/sgeoutput/*' sgename '*']) % we delete all our relevant grid jobs
-        %                     if proclass==1
-        %
-        %
-        %                         for kk=1:length(reva)
-        %                         sgerun2('mrQ_fitT1PD_SGE(opt,500,jobindex);',sgename,1,reval(kk),[],[],3000); % we run the missing oupput again
-        %                         end
-        %                     else
-        %
-        %                         sgerun('mrQ_fitT1PD_SGE(opt,500,jobindex);',sgename,1,reval,[],[],3000); % we run the missing oupput again
-        %                     end
-        %                     else
-        %                         display('somting is wrong in SGE run')
-        %                         error
-        %                     end
-        %                 end
-        
+        %%% code at the bottom can be added her if we want to time SGE
     end
     
-% NO SGE
-% Using the local computer to fit T1 and PD
-else
+    
+else  % NO SGE
+    % Using the local computer to fit T1 and PD
     
     fprintf('\n Fitting the T1 map locally, may be slow. SunGrid use can be much faster             \n');
     
     if (~exist([outDir '/tmpSG'],'dir')),
         mkdir([outDir '/tmpSG']);
-        jobindex=1:ceil(length(opt.wh)/jumpindex);
+        MissingFileNumber=1:ceil(length(opt.wh)/jumpindex);
     else
-        jobindex=[];
-        list=ls(opt.outDir);
-        ch= 1:jumpindex:length(opt.wh) ;
-        k=0;
-        for ii=1:length(ch),
-            
-            ex=['_' num2str(ch(ii)) '_'];
-            if length(regexp(list, ex))==0,
-                k=k+1;
-                jobindex(k)=(ii);
-            end
-        end
+        MissingFileNumber=mrQ_multiFit_WhoIsMissing( opt.outDir,length(opt.wh),jumpindex);
+        
+        %         jobindex=[];
+        %         list=ls(opt.outDir);
+        %         ch= 1:jumpindex:length(opt.wh) ;
+        %         k=0;
+        %         for ii=1:length(ch),
+        %
+        %             ex=['_' num2str(ch(ii)) '_'];
+        %             if length(regexp(list, ex))==0,
+        %                 k=k+1;
+        %                 jobindex(k)=(ii);
+        %             end
+        %         end
     end
     
-    
-    if ~isempty(jobindex)
-        for i=jobindex
-            mrQ_fitT1PD_SGE(id,2000,i);
+    if ~isempty(MissingFileNumber)
+        for kk=1:length(MissingFileNumber)
+            jobindex=MissingFileNumber(kk);
+            mrQ_fitT1PD_SGE(id,jumpindex,jobindex);
         end
     end
+    %     if ~isempty(jobindex)
+    %         for i=jobindex
+    %             mrQ_fitT1PD_SGE(id,2000,i);
+    %         end
+    %     end
     
     %Build the  T1 and M0 maps
     fNum=ceil(length(opt.wh)/jumpindex);
-    % List all the files that have been created from the call to the
-    % grid
-    
-    list=ls(opt.outDir);
-    % Check if all the files have been made.  If they are, then collect
-    % all the nodes and move on.
     
     % Loop over the nodes and collect the output
     for i=1:fNum
@@ -431,3 +344,88 @@ if savenow==1
     dtiWriteNiftiWrapper(single(PD), xform, fullfile(outDir,['PD_lsq_last.nii.gz']));
     dtiWriteNiftiWrapper(single(resNorm), xform, fullfile(outDir,['lsqT1PDresnorm_last.nii.gz']));
 end
+
+%% VI remove grid outputs if there are any
+if SGE==1
+    jobname=fullID(1:3);
+    filesPath=[GridOutputDir,'/job_',num2str(jobname),'*'];
+    delCommand=sprintf('rm %s', filesPath);
+    [status, result]=system(delCommand);
+end
+
+
+%% changed code for the use of mrQ_multifit_WhoIMissing
+%             reval=[];
+%             list=ls(opt.outDir);
+%             ch=[1:jumpindex:length(opt.wh)];
+%             k=0;
+%             for ii=1:length(ch),
+%
+%                 ex=['_' num2str(ch(ii)) '_'];
+%                 if length(regexp(list, ex))==0,
+%                     k=k+1;
+%                     reval(k)=(ii);
+%                 end
+%             end
+%
+%             if length(find(reval))>0
+%                 % clean the sge output dir and run the missing fit
+%                 eval(['!rm -f ~/sgeoutput/*' sgename '*'])
+%                 %                 if proclass==1
+%                 a=num2str(ceil(rand(1)*10));
+%                 %sgerun2('mrQ_fitT1PD_SGE(opt,2000,jobindex);',[sgename a],1,reval)
+%                 for kk=1:length(reval)
+%                     %                         sgerun2('mrQ_fitT1PD_SGE(opt,2000,jobindex);',[sgename num2str(kk)],1,reval(kk)); % we run the missing oupput again
+%                     jobindex=reval(kk);
+%                     jobname=1000*str2double(fullID(1:3))+jobindex;
+%                     command=sprintf('qsub -cwd -j y -b y -N joblsq_%g "matlab -nodisplay -r ''mrQ_fitT1PD_SGE(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
+%                     [stat,res]=  system(command);
+%                     if ~mod(kk,100)
+%                         fprintf('%g jobs out of %g have been submitted     \n',kk,length(reval));
+%                     end
+%                 end
+%
+%                 %                 else
+%                 %                     sgerun('mrQ_fitT1PD_SGE(opt,2000,jobindex);',sgename,1,reval);
+%                 %                 end
+%             end
+%             list=ls(opt.outDir);
+%% if we want to add right before the last end of the SGE=1 loop
+
+
+
+% Record how much time has elapsed since the call to the grid.
+%             t = toc;
+%             % If too much time has elapsed then we recall the grid;
+%             if t > 86400% 24hours
+%                 reval=[]
+%                 ch=[1:jumpindex:length(opt.wh)]; %the nude filre name
+%                 k=0;
+%                 reval=[];
+%
+%                 for ii=1:length(ch),
+%
+%                     ex=['_' num2str(ch(ii)) '_'];
+%                     if length(regexp(list, ex))==0,
+%                         k=k+1;
+%                         reval(k)=(ii); % we make a list of the grid run that are not done yet
+%
+%                     end
+%                 end;
+%                 if length(find(reval))>0
+%                     eval(['!rm ~/sgeoutput/*' sgename '*']) % we delete all our relevant grid jobs
+%                     if proclass==1
+%
+%
+%                         for kk=1:length(reva)
+%                         sgerun2('mrQ_fitT1PD_SGE(opt,500,jobindex);',sgename,1,reval(kk),[],[],3000); % we run the missing oupput again
+%                         end
+%                     else
+%
+%                         sgerun('mrQ_fitT1PD_SGE(opt,500,jobindex);',sgename,1,reval,[],[],3000); % we run the missing oupput again
+%                     end
+%                     else
+%                         display('somting is wrong in SGE run')
+%                         error
+%                     end
+%                 end

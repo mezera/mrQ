@@ -1,5 +1,5 @@
 function [T1_WL, T1_L,PD_WL, PD_L] = mrQ_T1M0_LWFit(s,brainMask,tr, ...
-    flipAngles,Gain,B1,outDir,xform,mrQ,savenow)
+    flipAngles,Gain,B1,outDir,xform,mrQ,GridOutputDir,savenow)
 %
 %[T1_WL, T1_L,PD_WL, PD_L] = mrQ_T1M0_LWFit(s,brainMask,tr, ...
 %                            flipAngles,Gain,B1,outDir,xform,mrQ,savenow)
@@ -76,6 +76,9 @@ sgename=[sb '_3dT1PD'];
 fullID=sb(isstrprop(sb, 'digit'));
 id=str2double(fullID(1:8));
 
+if notDefined('GridOutputDir')
+    GridOutputDir=pwd;
+end
 %% II. Set options for optimization procedure
 % Adjust for different versions of matlab
 a=version('-date');
@@ -142,14 +145,14 @@ if SGE==1;
         %             sgerun('mrQ_fitT1PDLW_SGE(opt,8000,jobindex);',sgename,1,1:ceil(length(opt.wh)/jumpindex));
         %         end
         
-    else
+    else   % if there's an existing SGE job, ask user if to restart this job or start from scratch
         an1 = input( 'Unfinished SGE run found: Would you like to try and finish the existing SGE run? Press 1 if yes. To start over, press 0 ');
         
         % Continue existing SGE run from where we left it last time
         % we find the fits that are missing
         if an1==1
             MissingFileNumber=mrQ_multiFit_WhoIsMissing(opt.outDir,length(opt.wh),jumpindex);
-            if length(find(MissingFileNumber))>0
+            if ~isempty(MissingFileNumber)
                 
                 for kk=1:length(MissingFileNumber)
                     jobindex=MissingFileNumber(kk);
@@ -186,7 +189,7 @@ if SGE==1;
             %                 sgerun('mrQ_fitT1PDLW_SGE(opt,8000,jobindex);',sgename,1,1:ceil(length(opt.wh)/jumpindex));
             %             end
         else
-            error;
+            error('user cancelled');
         end
     end
     
@@ -249,7 +252,7 @@ if SGE==1;
                         end
                     end
                 end
-                %we will rerun only the one we need
+                
             else
                 %  keep waiting
             end
@@ -266,33 +269,32 @@ else
     
     if (~exist([outDir '/tmpSGWL'],'dir')),
         mkdir([outDir '/tmpSGWL']);
-        jobindex=1:ceil(length(opt.wh)/jumpindex);
+        MissingFileNumber=1:ceil(length(opt.wh)/jumpindex); % all of the files are 'missing'
     else
-        jobindex=[];
-        list=ls(opt.outDir);
-        ch= 1:jumpindex:length(opt.wh) ;
-        k=0;
-        for ii=1:length(ch),
-            
-            ex=['_' num2str(ch(ii)) '_'];
-            if length(regexp(list, ex))==0,
-                k=k+1;
-                jobindex(k)=(ii);
-            end
-        end
+        MissingFileNumber= mrQ_multiFit_WhoIsMissing( opt.outDir,length(opt.wh),jumpindex);
+        %         jobindex=[];
+        %         list=ls(opt.outDir);
+        %         ch= 1:jumpindex:length(opt.wh) ;
+        %         k=0;
+        %         for ii=1:length(ch),
+        %
+        %             ex=['_' num2str(ch(ii)) '_'];
+        %             if length(regexp(list, ex))==0,
+        %                 k=k+1;
+        %                 jobindex(k)=(ii);
+        %             end
+        %         end
     end
     
-    if ~isempty(jobindex)
-        for i=jobindex
-            mrQ_fitT1PDLW_SGE(id,jumpindex,i);
+    if ~isempty(MissingFileNumber)
+        for kk=1:length(MissingFileNumber)
+            jobindex=MissingFileNumber(kk);
+            mrQ_fitT1PDLW_SGE(id,jumpindex,jobindex);
         end
     end
     
     %Build the  T1 and M0 maps
     fNum=ceil(length(opt.wh)/jumpindex);
-    
-    % Check if all the files have been made.  If they are, then collect
-    % all the nodes and move on.
     
     % Loop over the nodes and collect the output
     for i=1:fNum
@@ -331,4 +333,11 @@ if savenow==1
     dtiWriteNiftiWrapper(single(PD_WL), xform, fullfile(outDir,['PD_WL_last.nii.gz']));
     dtiWriteNiftiWrapper(single(T1_L), xform, fullfile(outDir,['T1_L_last.nii.gz']));
     dtiWriteNiftiWrapper(single(PD_L), xform, fullfile(outDir,['PD_L_last.nii.gz']));
+end
+
+if SGE
+        jobname=fullID(1:3);
+    filesPath=[GridOutputDir,'/job_',num2str(jobname),'*'];
+    delCommand=sprintf('rm %s', filesPath);
+    [status, result]=system(delCommand);
 end

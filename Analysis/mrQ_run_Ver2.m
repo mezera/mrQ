@@ -339,7 +339,7 @@ end
 
 %% XIV. Organize the OutPut directory
 mrQ=mrQ_arrangeOutPutDir(mrQ);
-mrQ_deleteIDfile(mrQ);% delete the temporary ID file stored in mrQ/sge_subjects
+mrQ_deleteIDfile;% delete the temporary ID file stored in mrQ/sge_subjects
 
 %done
 mrQ.AnalysisDone=1;

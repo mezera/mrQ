@@ -1,4 +1,4 @@
-function mrQ_deleteIDfile(mrQ)
+function mrQ_deleteIDfile()
 
 funcpath=which('mrQ_arrangeOutPutDir.m'); 
 [mrQpath,~]=fileparts(funcpath); 

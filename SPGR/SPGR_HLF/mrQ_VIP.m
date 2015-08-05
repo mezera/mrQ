@@ -1,6 +1,6 @@
 function [AnalysisInfo]=mrQ_VIP(mrQ,outDir,WFfile,T1file,mField,T1freeval,Fullerton)
 % 
-% mrQ_VIP(mrQ,outDir,WFfile,T1file,mField,T1freeval,Fullerton)
+% [AnalysisInfo]= mrQ_VIP(mrQ,outDir,WFfile,T1file,mField,T1freeval,Fullerton)
 %
 % This function loads the T1 and WF maps and calculates VIP and SIR maps.
 %
@@ -32,8 +32,8 @@ function [AnalysisInfo]=mrQ_VIP(mrQ,outDir,WFfile,T1file,mField,T1freeval,Fuller
 % 
 %       T1h = 0.934 x f + 93.03
 % 
-%   Where f is the Larmor frequency for the given magnetic field. 
-%   * Model estimation std for our values are 0.0252 and 1.8035
+%          where f is the Larmor frequency for the given magnetic field. 
+%   * Model estimation std dev for our values are 0.0252 and 1.8035
 % 
 %   Rearranging the equation above, the water fraction (fh) is given by: 
 %       
@@ -52,7 +52,7 @@ function [AnalysisInfo]=mrQ_VIP(mrQ,outDir,WFfile,T1file,mField,T1freeval,Fuller
 %       mField    - The strength of the magnetic field. Default taken from 
 %                   the dicom header. 
 % 
-%       T1freeval - Defaults to 4.3 seconds.
+%       T1freeval - The T1 value for free water [Default is 4.3 seconds]
 % 
 %       Fullerton - Boolean: 1 = use the Fullerton model for the
 %                   calculation; 0 = don't use it. 

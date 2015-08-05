@@ -8,13 +8,13 @@ function [AnalysisInfo]=mrQ_CSF(outDir,freesurfer,T1file,AnalysisInfo)
 % gain estimation with polynomial with a degree (default 3) and save clean
 % PD and WF maps.
 % 
-% Provide a freesurfer raw segmentation image in nii.gz format
+% Provide a FreeSurfer raw segmentation image in nii.gz format
 % (aparc+aseg.nii.gz ) and the directory of the data analysis and a M0file
 % and T1 images.
 %
 % INPUTS:
-%       outDir      - the directory of the data analysis
-%       freesurfer  - Freesufarer raw segmentation image in nii.gz format
+%       outDir      - The directory of the data analysis
+%       freesurfer  - FreeSurfer raw segmentation image in nii.gz format
 %                     (aparc+aseg.nii.gz )
 %       T1File      - E.g., 'T1_lsq_GLr.nii.gz'
 % 
@@ -29,8 +29,7 @@ function [AnalysisInfo]=mrQ_CSF(outDir,freesurfer,T1file,AnalysisInfo)
 
 %#ok<*FNDSB>
 
-
-%% CHECK INPUTS
+%% I. CHECK INPUTS
 
 if notDefined('outDir')
     outDir = uigetdir(pwd,'Choose your analysis directory');
@@ -57,7 +56,7 @@ else
 end
 
 if notDefined('freesurfer') || ~exist(freesurfer,'file')
-    freesurfer = mrvSelectFile('r','Select Freesurfer segmentation');
+    freesurfer = mrvSelectFile('r','Select FreeSurfer segmentation');
 end
 
 BMfile = fullfile(outDir,'brainMask.nii.gz');
@@ -65,9 +64,9 @@ if ~exist(BMfile,'file')
     BMfile = mrvSelectFile('r','Select the Brain Mask');
 end
 
-%% Load Data
+%% II. Load Data
 
-% Load the Analysis info file and append it with the info provided
+% Load the AnalysisInfo file and append it with the info provided
 infofile = fullfile(outDir,'AnalysisInfo.mat');
 load(infofile);
 
@@ -81,21 +80,18 @@ AnalysisInfo.WFdate         = date;
 save(infofile,'AnalysisInfo');
 
 % Load the brain mask from the outDir
-disp(['Loading brain Mask data from ' BMfile '...']);
+disp(['Loading Brain Mask data from ' BMfile '...']);
 brainMask = readFileNifti(BMfile);
 xform = brainMask.qto_xyz;
 mmPerVox = brainMask.pixdim;
 brainMask = logical(brainMask.data);
 
+%% III. Handle the Freesurfer Segmentation
 
-
-
-%% Handle the Freesurfer Segmentation
-
-% Load the segmentation nifti file - output from freesurfer
+% Load the segmentation NIfTI file - output from FreeSurfer
 fs = readFileNifti(freesurfer);
 
-% Dimenstionality check 
+% Dimensionality check 
 if fs.dim(1)==size(T1,1) && fs.dim(2)==size(T1,2) && fs.dim(3)==size(T1,3)
 else
     bb = mrAnatXformCoords(xform,[1 1 1;size(T1)]);
@@ -104,32 +100,30 @@ end
 
 fs = double(fs.data);
 
-% Do some more dimensionality checks between the T1 and the freesurfer
-% segmentation
+% Do some more dimensionality checks between the T1 and the FreeSurfer segmentation
 if size(fs,1)==size(T1,1)+1;
-    disp('freesurfer is different in size from the T1 we will clip the extra x voxels and hope its right')
+    disp('FreeSurfer is different in size from the T1. We will clip the extra X voxels and hope it''s right.')
     fs1 = fs; clear fs
     fs(1:size(T1,1),:,:)=fs1(1:size(T1,1),:,:); clear fs1;
 end
 
 if size(fs,2)==size(T1,2)+1;
-    disp('freesurfer is differe in size from the data we clip the extra y voxels. we hope it right')
+    disp('FreeSurfer is different in size from the data. We will clip the extra Y voxels and hope it''s right.')
     fs1=fs;clear fs
     fs(:,1:size(T1,2),:)=fs1(:,1:size(T1,2),:); clear fs1;
 end
 
 if size(fs,3)==size(T1,3)+1;
-    disp('freesurfer is differe in size from the data we clip the extra z voxels. we hope it right')
+    disp('FreeSurfer is different in size from the data. We will clip the extra Z voxels and hope it''s right.')
     fs1=fs;clear fs
     fs(:,:,1:size(T1,3))=fs1(:,:,1:size(T1,3)); clear fs1;
 end
 
 if size(fs,1)~=size(T1,1) || size(fs,2)~=size(T1,2) || size(fs,3)~=size(T1,3)
-    error('The freesurfer segmentation file does not match the T1 data size!')
+    error('The FreeSurfer segmentation file does not match the T1 data size!')
 end
 
-
-%% Calculate the masks using the FS labels
+%% IV. Calculate the masks using the FreeSurfer labels
 
 CSF = zeros(size(brainMask));
 
@@ -168,7 +162,7 @@ M = dd(find(d==max(d)));
 wm = wm &  T1>(M-0.03) & T1<(M+0.03);
 mask(find(wm)) = 2;
 
-% Create Tissue Mask from those FS label values above 1000
+% Create a Tissue Mask from those FreeSurfer label values above 1000
 cortex = fs>1000;
 [d dd] = ksdensity(T1(cortex), (min(T1(cortex)):0.01:max(T1(cortex))) );
 M      = dd(find(d==max(d))); 
@@ -177,7 +171,6 @@ cortex = cortex & T1 > (M-0.03) & T1 < (M+0.03);
 mask(find(cortex)) = 3;
 fileFS = fullfile(outDir,'T1w_tissue.nii.gz');
 dtiWriteNiftiWrapper(single(mask), xform, fileFS);
-
  
 mask = zeros(size(brainMask));
 mask(fs==43) = 1; % Right-Lateral-Ventricle
@@ -193,12 +186,4 @@ mask(fs>1000) = 2; %GM
 segfile=fullfile(outDir,'t1_bet_seg.nii.gz');
 dtiWriteNiftiWrapper(single(mask), xform, segfile);
 
-
 return
- 
-
-
-
-
-
-

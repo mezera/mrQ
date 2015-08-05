@@ -1,14 +1,14 @@
 function [mrQ]=mrQ_Seg_kmeans(mrQ,BMfile,CSFVal,T1file,M0file,outDir)
 % function [mrQ,seg]=mrQ_Seg_kmeans(mrQ,BMfile,CSFVal,T1file,M0file,outDir)
 %
-% Clip brain to ventricles area, then segment using k-means with three
+% Clips brain to ventricles area, then segments using k-means with three
 % clusters.
 %
 % This function uses FSL to segment into three tissues. It takes the CSF
 % tissue and restricts it by the T1 values. The CSF is also restricted to
 % be in the center of the brain in a box of approximately 60mm x 80mm x
 % 40mm. Assuming that the brain is in AC-PC space, this is where the
-% ventricles are.
+% ventricles should be.
 %
 % ~INPUTS~
 %          mrQ: The mrQ structure.

@@ -14,113 +14,160 @@ function mrQ = mrQ_Set(mrQ,param,varargin,saveflag)
 %
 % See also:  mrQ_Create
 %
+%   ~INPUTS~
+%       mrQ:   The mrQ structure
+%  saveflag:   The default is to save; to not save, enter 0
+%     param:    {  SEE  }
+%  varargin:    { BELOW }
+%
+% ~OUTPUTS~
+%      mrQ:    The updated mrQ structure 
+%
 %    Parameter list and associated arguments:
-% saveflag         - the default is to save; to not save, enter 0
 %
-% ~PARAM~          ~VARARGIN~ (the key parameters are):
-% rawdir               - directory of raw image: a string 'path', as defined in mrQ_Create
-% seir                 - list of SEIR scan number: a cell of strings, e.g. {'001' 002'}
-% SPGR                 - list of SPGR scan number: a cell of strings, e.g. {'001' 002'}
-% sub                  - a name of subject: a string 'name'
-% clobber              - enter "true" or "false" to redo the anlysis
-% refim                - a path to an image to use as a refernce: a string 'path'
-% check                - enter 1, if an interactive image is used to detect movement
-% proclus              - enter 1, to use the proclus calls
-% sungrid              - enter 1, to use the sungrid calls
-% polydeg              - the polynomial degree to fit to the Gain (default is 3)
+%     ~PARAM~              ~VARARGIN~ 
+%  1) alignflag
+%  2) arrangerawflag
+%  3) autoacpc
+%  4) brakeaftert1            - [no longer in use]
+%  5) brakeaftervisualization - [no longer in use]
+%  6) channels
+%  7) check                   - enter 1, if an interactive image is used to detect movement
+%  8) clobber                 - enter "true" or "false" to redo the analysis
+%  9) coilweights
+% 10) complexflag
+% 11) fieldstrength
+% 12) freesurfer
+% 13) inputdata_seir
+% 14) inputdata_spgr
+% 15) interp
+% 16) lsq
+% 17) lw
+% 18) mmpervox
+% 19) muti_coil_im
+% 20) pdfit_method           - for M0-to-PD fit. 1= T1 single coil (default); 2= multi-coils; 3= both
+% 21) permutation
+% 22) polydeg                - the polynomial degree to fit to the Gain (default is 3)
+% 23) proclus                - [no longer in use]
+% 24) reset_raw_dir
+% 25) rawdir                 - directory of raw image: a string 'path', as defined in mrQ_Create
+% 26) refim                  - a path to an image to use as a refernce: a string 'path'
+% 27) runfreesurfer
+% 28) seir                   - list of SEIR scan numbers: a cell of strings, e.g. {'001' 002'}
+% 29) siemens                - [no longer in use]
+% 30) siemensdicom           - [no longer in use]
+% 31) skip
+% 32) spgr                   - list of SPGR scan numbers: a cell of strings, e.g. {'001' 002'}
+% 33) sub                    - the name of subject: a string 'name'
+% 34) sungrid                - enter 1, to use the SunGrid calls
+% 35) useabs
 %
-% brakeaftervisualization or viewbrake 
-%                       - use that to start the data
-% visual the images with the check flag and then stop the code from
-% To reverse sewpesipic steps in the fir
+% The following are checkers to determine whether or not a step has been
+% performed. Inputting 1 means the step has been done, so don't redo it,
+% and inputting 0 means the step hasn't been done, so do (or redo) it.
+%     ~PARAM~              ~VARARGIN~ 
+% 36) calm0_done             - M0 calculation         (1 or 0)
+% 37) segmentation           - segmentation           (1 or 0)
+% 38) seir_done              - SEIR T1 fit            (1 or 0)
+% 39) spgr_coilweight_done   - SPGR coil weighting    (1 or 0)
+% 40) spgr_init_done         - SPGR init step         (1 or 0)
+% 41) spgr_pdbuild_done      - PD build               (1 or 0)
+% 42) spgr_pdfit_done        - PD fit                 (1 or 0)
+% 43) spgr_t1fit_done        - T1 fit SPGR            (1 or 0)
 %
-% seir_done             - enter 1 to skip the SEIR T1 fit, or enter 0 to redo it
-% spgr_init_done        - enter 1 to skip the SPGR init step, or enter 0 to redo it
-% spgr_coilweight_done  - enter 1 to skip weighting, or enter 0 to redo it
-% spgr_t1fit_done       - enter 1 to skip T1 fit SPGR, or enter 0 to redo it
-% segmentation          - enter 1 to skip segmentation, or enter 0 to redo it
-% calm0_done            - enter 1 to skip M0 calculation, or enter 0 to redo it
-% spgr_pdfit_done       - enter 1 to skip PD fit, or enter 0 to redo it
-% spgr_pdbuild_done     - enter 1 to skip PD build, or enter 0 to redo it
 %
-% ...                  - check code for others
 %
-% example:
+% Examples:
 % mrQ = mrQ_Set(mrQ,,'raw','/biac2/wandell2/data/WMDevo/ambliopia/sub7/QuantativeImaging/20121102_3488')
 % mrQ = mrQ_Set(mrQ,'sub','sub7');
 % mrQ = mrQ_Set(mrQ,'SPGR',{ '0009' '0010' '0011' '0012' });
 % mrQ = mrQ_Set(mrQ,'seir',{ '0004' '0005' '0006' '0007' });
-% mrQ = mrQ_Set(mrQ,'proclass',1);
 %
-%
-% (C) Mezer lab, Hebrew University of Jerusalem, Israel
+% (C) Mezer lab, the Hebrew University of Jerusalem, Israel
 % 2015
 %
 %
 
 
-% remove spaces and upper case
+% Remove spaces and upper case
 param = mrvParamFormat(param);
+% This ensures that regardless of the user's input, mrQ_Set will always
+% check the lower-case version of the string against the cases listed below
 
 switch(param)
     
-    
+    case {'alignflag','align'}
+        mrQ.alignFlag=varargin;
+    case {'arrangerawflag'}
+        mrQ.arrangeRawFlag=varargin;  
+    case{ 'autoacpc'}
+        mrQ.autoacpc = varargin;       
+    case {'brakeaftert1' ,'t1brake'}
+        mrQ.brakeAfterT1=varargin;         
+    case {'brakeaftervisualization' ,'viewbrake'}
+        mrQ.brakeAfterVisualization=varargin;
+    case {'channels'}
+        mrQ.channels=varargin;
+    case {'check'}
+        mrQ.check=varargin;        
+    case {'clobber'}
+        mrQ.clobber=varargin;        
+    case {'coilweights', 'coilweight'}
+        mrQ.coilWeights=varargin;        
+    case {'complexflag','complex' }
+        mrQ.complexFlag=varargin;        
+    case{ 'field','stregth','fieldstrength'}
+        mrQ.fieldstrength = varargin;
+    case{ 'freesurfer'}
+        mrQ.freesurfer=varargin;        
+    case {'inputdata_seir'}
+        mrQ.inputdata_seir=varargin;
+    case {'inputdata_spgr'}
+        mrQ.inputdata_spgr=varargin;        
+    case {'interp'}
+        mrQ.interp=varargin;        
+    case {'lsq', 'lsqfit'}
+        mrQ.lsq=varargin;        
+    case{ 'lw','wl'}
+        mrQ.LW= varargin; 
+    case {'mmpervox', 'pixdim'}
+        mrQ.mmPerVox=varargin;             
+    case{ 'muti_coil_im'}
+        mrQ.muti_coil_im=varargin;             
+    case{'pdfit_method'}
+      mrQ.PDfit_Method=varargin;               
+    case {'permutation'}
+       mrQ.permutation=varargin;            
+    case {'polydeg' ,'poly','deg'}
+       mrQ.PolyDeg=varargin;       
+    case {'proclus' ,'proclass'}
+        mrQ.proclus=varargin;            
+    case{ 'reset_raw_dir'}
+        mrQ.RawDir=fileparts(mrQ.name);              
     case {'rawdir','raw'}
         mrQ.RawDir=varargin;
+    case {'refim','ref'}
+        mrQ.refIm=varargin;
+    case {'runfreesurfer' }
+        mrQ.runfreesurfer=varargin;                    
     case {'seir_seriesnumbers','seir'}
         mrQ.SEIR_seriesNumbers=varargin;
+    case {'siemens'}
+        mrQ.siemens=varargin;
+    case {'siemensdicom'}
+        mrQ.SiemensDicom=varargin;    
+    case {'skip'}
+        mrQ.skip=varargin;        
     case {'spge_seriesNumbers','spgr'}
         mrQ.SPGR_seriesNumbers=varargin;
     case {'sub','name'}
         mrQ.sub=varargin;
-    case {'clobber'}
-        mrQ.clobber=varargin;
-    case {'arrangerawflag'}
-        mrQ.arrangeRawFlag=varargin;
-    case {'channels'}
-        mrQ.channels=varargin;
-    case {'complexflag','complex' }
-        mrQ.complexFlag=varargin;
-    case {'useabs', 'magnitude' 'abs'}
-        mrQ.useAbs=varargin;
-    case {'coilweights', 'coilweight'}
-        mrQ.coilWeights=varargin;
-    case {'alignflag','align'}
-        mrQ.alignFlag=varargin;
-    case {'interp'}
-        mrQ.interp=varargin;
-    case {'refim','ref'}
-        mrQ.refIm=varargin;
-    case {'mmpervox', 'pixdim'}
-        mrQ.mmPerVox=varargin;
-    case {'skip'}
-        mrQ.skip=varargin;
-    case {'check'}
-        mrQ.check=varargin;
-    case {'lsq', 'lsqfit'}
-        mrQ.lsq=varargin;
-    case {'runfreesurfer' }
-        mrQ.runfreesurfer=varargin;
-    case {'proclus' ,'proclass'}
-        mrQ.proclus=varargin;
     case {'sungrid' ,'grid'}
         mrQ.SunGrid=varargin;
-    case {'polydeg' ,'poly','deg'}
-        mrQ.PolyDeg=varargin;
-    case {'brakeaftervisualization' ,'viewbrake'}
-        mrQ.brakeAfterVisualization=varargin;
-    case {'brakeaftert1' ,'t1brake'}
-        mrQ.brakeAfterT1=varargin;
-    case {'siemens'}
-        mrQ.siemens=varargin;
-    case {'siemensdicom'}
-        mrQ.SiemensDicom=varargin;
-    case {'permutation'}
-        mrQ.permutation=varargin;
-    case {'inputdata_seir'}
-        mrQ.inputdata_seir=varargin;
-    case {'inputdata_spgr'}
-        mrQ.inputdata_spgr=varargin;
+    case {'useabs', 'magnitude' 'abs'}
+        mrQ.useAbs=varargin;
+     
+        %Check: Has mrQ recorded it as done?
     case {'seir_done' }
         mrQ.SEIR_done=varargin;
     case {'spgr_init_done' }
@@ -129,28 +176,16 @@ switch(param)
         mrQ.SPGR_coilWeight_done=varargin;
     case{ 'spgr_t1fit_done'}
         mrQ.SPGR_T1fit_done=varargin;
-    case{ 'segmentation','seg'}
-        mrQ.segmentation=varargin;
     case{ 'calm0_done'}
         mrQ.calM0_done=varargin;
     case{ 'spgr_pdfit_done'}
         mrQ.SPGR_PDfit_done=varargin;
     case{ 'spgr_pdbuild_done'}
-        mrQ.SPGR_PDBuild_done=varargin;
-    case{ 'freesurfer'}
-        mrQ.freesurfer=varargin;
-    case{ 'reset_raw_dir'}
-        mrQ.RawDir=fileparts(mrQ.name);
-    case{ 'muti_coil_im'}
-        mrQ.muti_coil_im=varargin;
-    case{ 'autoacpc'}
-        mrQ.autoacpc = varargin;
-    case{ 'field','stregth','fieldstrength'}
-        mrQ.fieldstrength = varargin;
-    case{ 'wl'}
-             mrQ.LW= varargin;  
+        mrQ.SPGR_PDBuild_done=varargin;  
+    case{ 'segmentation','seg'}
+        mrQ.segmentation=varargin;   
+      
     otherwise
-        
         error('Unknown mrQ parameter!');
 end
 

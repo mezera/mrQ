@@ -65,9 +65,9 @@ function [logname]=mrQ_PD_Fit_saveParams(outDir,subName,degrees,M0file,T1file,..
 %
 
 %% I. Check inputs and set defaults
-%  Saving parameters and relevant information for the Gain fit in the opt
-%  structure. This allows us to send them to all the
-%  grid calls running in parallel
+%  Saving parameters and relevant information for the Gain fit in the "opt"
+%  structure. This allows us to send them to all the grid calls running 
+%  in parallel
 
 if (notDefined('outDir') || ~exist(outDir,'dir'))
     outDir = uigetDir(pwd,'Select outDir');

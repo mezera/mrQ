@@ -1,10 +1,20 @@
 function [mrQ]=mrQ_M0_ToPD(mrQ)
 % function [mrQ]=mrQ_M0_ToPD(mrQ)
 %
-%
+% This function performs the M0-PD fit. It can be done using T1 single-coil
+% data, multi-coil data, or both. The local fits are joined together into
+% one PD image.
 %
 % This function accepts a mrQ structure as its INPUT, and returns an
 % updated mrQ structure as its OUTPUT.
+%
+% See also: mrQ_fitM0boxesCall_T1PD
+%           mrQ_fitM0boxesCall
+%           mrQ_multicoilM0
+%
+% (C) Mezer lab, the Hebrew University of Jerusalem, Israel
+%   2015
+%
 %
 
 %% I. Define inputs
@@ -12,9 +22,9 @@ function [mrQ]=mrQ_M0_ToPD(mrQ)
 
 if ~isfield(mrQ,'PDfit_Method');    
     mrQ.PDfit_Method=1; 
-    % 1. Use only T1 to fit (default; old 5); 
-    % 2. Use only multi-coils to fit (old 2); 
-    % 3. Use both T1 and multi-coils to fit (old 1);
+    % 1. Use only T1 single-coil data to fit (default)
+    % 2. Use only multi-coils to fit
+    % 3. Use both T1 single-coil data *and* multi-coils to fit
 end
 
 if mrQ.PDfit_Method~=1

@@ -73,6 +73,8 @@ mrQ_createIDfile(mrQ);
 %             mrQ = mrQ_Set(mrQ,'sungrid',1);
 mrQ = mrQ_Set(mrQ,'fieldstrength',3);
 
+mrQ = mrQ_Set(mrQ, 'pdfit_method',1);
+
 if ~notDefined('refFile')
     mrQ = mrQ_Set(mrQ,'ref',refFile);
 else
@@ -236,7 +238,7 @@ if ( mrQ.SPGR_T1fit_done==0)
     
 else
     
-    fprintf('\n using previously fitted SPGR T1                \n');
+    fprintf('\n Using previously fitted SPGR T1                \n');
     
 end
 
@@ -260,7 +262,7 @@ if mrQ.synthesis==0
     
     fprintf('\n Synthesis of T1  - done!              \n');
 else
-    fprintf('\n using previously synthesized T1              \n');
+    fprintf('\n Using previously synthesized T1              \n');
 end
 
 
@@ -291,9 +293,9 @@ if mrQ.segmentation==0;
     end
     
     save(mrQ.name,'mrQ');
-    fprintf('\n segmentation and CSF  - done!              \n');
+    fprintf('\n Segmentation and CSF  - done!              \n');
 else
-    fprintf('\n using previously segmented data              \n');
+    fprintf('\n Using previously segmented data              \n');
     
     
 end

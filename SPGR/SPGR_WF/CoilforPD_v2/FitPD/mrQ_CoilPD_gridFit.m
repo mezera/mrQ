@@ -110,7 +110,7 @@ for ii= st:ed,
     [M01, t1, BM1, SZ, skip(Iter), Segmask]= mrQ_GetM0_boxData(opt,T1,M0,BM,fb(Iter,1,:),smoothkernel,seg);
     
     if  skip(Iter)==1
-        disp(['skipping box ' num2str(ii) ' bad data'])
+%         disp(['skipping box ' num2str(ii) ' bad data'])
         
     else
         
@@ -182,8 +182,8 @@ for ii= st:ed,
         %       [X_valdationErrF,  X_gEstF]=pdX_valdationLoop_2(opt.lambda,opt.Kfold,M0_v(BM1,opt.Clist), pBasis(BM1,:),R1basis(BM1,:),g0,Segmask(BM1));
         X_valdationErr(:,:,Iter)=X_valdationErrF;
         % minimum X_valdation error
-        best1 = find(X_valdationErrF(1,:)==min(X_valdationErrF(1,:))) % sum of abs err
-        best2 = find(X_valdationErrF(2,:)==min(X_valdationErrF(2,:)))% RMSE
+        best1 = find(X_valdationErrF(1,:)==min(X_valdationErrF(1,:))); % sum of abs err
+        best2 = find(X_valdationErrF(2,:)==min(X_valdationErrF(2,:))); % RMSE
         %figure;  semilogy(opt.lambda,X_valdationErrF(2,:),'*-'); X_valdationErrF(2,:)./min(X_valdationErrF(2,:))
         %figure;  semilogy(opt.lambda,X_valdationErrF(1,:),'*-'); X_valdationErrF(1,:)./min(X_valdationErrF(1,:))
         BestReg(Iter,:)=[best1 best2];

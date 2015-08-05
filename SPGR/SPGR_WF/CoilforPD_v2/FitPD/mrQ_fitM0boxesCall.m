@@ -22,8 +22,8 @@ if SunGrid==1;
     % Check to see if there is an existing SGE job that can be
     % restarted. If not start the job, if yes prompt the user.
     
-    %     if (~exist(dirname,'dir')),
-    if notDefined('RunSelectedJob')
+    if (~exist(dirname,'dir'))
+        %     if notDefined('RunSelectedJob')
         %          this a fresh run, process all boxes.
         mkdir(dirname);
         eval(['!rm -f ~/sgeoutput/*' sgename '*'])
@@ -61,7 +61,7 @@ if SunGrid==1;
                     jobname=1000*str2double(fullID(1:3))+jobindex;
                     %   sgerun2('mrQ_CoilPD_gridFit(opt,jumpindex,jobindex);',[sgename num2str(kk)],1,reval(kk),                       [],[],5000);
                     command=sprintf('qsub -cwd -j y -o %s -b y -N job_%g "matlab -nodisplay -r ''mrQ_CoilPD_gridFit(%f,%g,%g); exit'' >log"',GridOutputDir, jobname, id,jumpindex,jobindex);
-%                     command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_CoilPD_gridFit(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
+                    %                     command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_CoilPD_gridFit(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
                     [stat,res]=system(command);
                     if ~mod(kk,100)
                         fprintf('%g jobs out of %g have been submitted       \n',kk,length(MissingFileNumber));
@@ -82,8 +82,8 @@ if SunGrid==1;
             mkdir(dirname);
             for jobindex=1:ceil(length(opt.wh)/jumpindex)
                 jobname=1000*str2double(fullID(1:3))+jobindex;
-                                               command=sprintf('qsub -cwd -j y -o %s -b y -N job_%g "matlab -nodisplay -r ''mrQ_CoilPD_gridFit(%f,%g,%g); exit'' >log"',GridOutputDir, jobname, id,jumpindex,jobindex);
-%                                                command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_CoilPD_gridFit(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
+                command=sprintf('qsub -cwd -j y -o %s -b y -N job_%g "matlab -nodisplay -r ''mrQ_CoilPD_gridFit(%f,%g,%g); exit'' >log"',GridOutputDir, jobname, id,jumpindex,jobindex);
+                %               command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_CoilPD_gridFit(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
                 [stat,res]=system(command);
                 if ~mod(jobindex,100)
                     fprintf('%g jobs out of %g have been submitted         \n',jobindex,ceil(length(opt.wh)/jumpindex));
@@ -119,25 +119,30 @@ if SunGrid==1;
             [status result] = system(qStatCommand);
             tt=toc;
             if (isempty(result) && tt>60)
-                % then the are no jobs running or on queue but not all jobs
-                % are there so we will need to run the missing jobs.
-                MissingFileNumber=mrQ_multiFit_WhoIsMissing(dirname,length(opt.wh),jumpindex);
-                if ~isempty(MissingFileNumber)
-                    % clean the sge output dir and run the missing fit
-                    eval(['!rm -f ~/sgeoutput/*' sgename '*'])
-                    for kk=1:length(MissingFileNumber)
-                        jobindex=MissingFileNumber(kk);
-                        jobname=1000*str2double(fullID(1:3))+jobindex;
-                        %   sgerun2('mrQ_CoilPD_gridFit(opt,jumpindex,jobindex);',[sgename num2str(kk)],1,reval(kk),                       [],[],5000);
-                                                        command=sprintf('qsub -cwd -j y -o %s -b y -N job_%g "matlab -nodisplay -r ''mrQ_CoilPD_gridFit(%f,%g,%g); exit'' >log"',GridOutputDir, jobname, id,jumpindex,jobindex);
-%                                                         command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_CoilPD_gridFit(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
-                        [stat,res]=system(command);
-                        if ~mod(kk,100)
-                            fprintf('%g jobs out of %g have been submitted       \n',kk,length(MissingFileNumber));
+                pause(5);
+                qStatCommand    = [' qstat | grep -i  job_' jobname];
+                [status result] = system(qStatCommand);
+                if (isempty(result))
+                    
+                    % then the are no jobs running or on queue but not all jobs
+                    % are there so we will need to run the missing jobs.
+                    MissingFileNumber=mrQ_multiFit_WhoIsMissing(dirname,length(opt.wh),jumpindex);
+                    if ~isempty(MissingFileNumber)
+                        % clean the sge output dir and run the missing fit
+                        eval(['!rm -f ~/sgeoutput/*' sgename '*'])
+                        for kk=1:length(MissingFileNumber)
+                            jobindex=MissingFileNumber(kk);
+                            jobname=1000*str2double(fullID(1:3))+jobindex;
+                            %   sgerun2('mrQ_CoilPD_gridFit(opt,jumpindex,jobindex);',[sgename num2str(kk)],1,reval(kk),                       [],[],5000);
+                            command=sprintf('qsub -cwd -j y -o %s -b y -N job_%g "matlab -nodisplay -r ''mrQ_CoilPD_gridFit(%f,%g,%g); exit'' >log"',GridOutputDir, jobname, id,jumpindex,jobindex);
+                            %                                                         command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_CoilPD_gridFit(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
+                            [stat,res]=system(command);
+                            if ~mod(kk,100)
+                                fprintf('%g jobs out of %g have been submitted       \n',kk,length(MissingFileNumber));
+                            end
                         end
                     end
                 end
-                
                 
             else
                 % if there are jobs running or on queue, we should wait untill
@@ -164,13 +169,13 @@ end
 
 
 if SunGrid
-     jobname=fullID(1:3);
+    jobname=fullID(1:3);
     filesPath=[GridOutputDir,'/job_',num2str(jobname),'*'];
     delCommand=sprintf('rm %s', filesPath);
     [status, result]=system(delCommand);
 end
 
-    
+
 
 %% the runselected job was used a tad differently
 %         if notDefined('RunSelectedJob')

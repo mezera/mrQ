@@ -54,6 +54,9 @@ end
 %% II. Set parameters for the fit
 
 [T1file, M0file,BMfile] = mrQ_get_T1M0_files(mrQ);
+if mrQ.PDfit_Method~=1
+    M0file=mrQ.M0combineFile;
+end
 
 [mrQ.opt_logname] = mrQ_PD_Fit_saveParams(mrQ.spgr_initDir,mrQ.sub,mrQ.PolyDeg,M0file,T1file,BMfile,mrQ.PDfit_Method,mrQ);
 save(mrQ.name,'mrQ');

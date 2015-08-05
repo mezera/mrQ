@@ -4,13 +4,15 @@ function [s,xform,mmPerVox,niiFiles,flipAngles,mrQ] = ...
 % [s,xform,mmPerVox,niiFiles,flipAngles,mrQ] = ...
 %     mrQ_initSPGR_ver2(spgrDir,refImg,mmPerVox,interp,skip,clobber,mrQ)
 % 
-% Loads and aligns all the SPGR DICOMs in the spgrDir. (It won't work
+% Loads and aligns all the SPGR NIfTIs in the spgrDir. (It won't work
 % for multi-coil data, so take care of that in mrQ_arrangeData.m).
 %
-% This function will align DICOMs with the same TR and TE (for T1-M0 linear
-% fit). So if there is a different TR or TE, you will have to select the 
-% correct TR and TE. Note that you can also work with multiple TR's, but then
-% the relevant line needs to be commented. *** MORE INFO ON THIS NEEDED ***
+% This function will align NIfTIs with the same TR and TE (for T1-M0 linear
+% fit). So if there is a different TR or TE, you will have to select the
+% correct TR and TE. Note that you can also work with multiple TR's, but
+% then the relevant line needs to be commented. A nonlinear function can
+% account for different TR's and/or TE's, but this function does not do
+% that, though it may be a future direction for additional coding.
 %
 %
 % INPUTS
@@ -23,7 +25,7 @@ function [s,xform,mmPerVox,niiFiles,flipAngles,mrQ] = ...
 %                 asked to mark the ac-pc using mrAnatAverageAcpcNifti.m.
 %
 %       mmPerVox: The resolution at which you want to resample the data.
-%                 This is a 3X1 vector. If empty, the DICOM
+%                 This is a 3X1 vector. If empty, the NIfTI
 %                 resolution will be used -- this does not have to be the
 %                 native scan size, as the magnet output is zeroed. The
 %                 saved directory will have the resolution in its name.

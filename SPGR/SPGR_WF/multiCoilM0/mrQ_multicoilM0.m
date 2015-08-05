@@ -1,6 +1,7 @@
 function combineFile = mrQ_multicoilM0(datDir,T1file,B1file,niifile,flip_Angles,mrQ)
 % 
-% combineFile = mrQ_multicoilM0(datDir,T1file,B1file,niifile,flip_Angles,sics)
+% combineFile = mrQ_multicoilM0(datDir,T1file,B1file,niifile,flip_Angles,mrQ)
+%
 % 
 % Align individual channels to the reference image and perform the fit for
 % each channel/coil. Calculate M0 and combine the data from each channel
@@ -12,15 +13,15 @@ function combineFile = mrQ_multicoilM0(datDir,T1file,B1file,niifile,flip_Angles,
 %                 data.
 %   T1file      - Full path to 'T1_lsq_GLr.nii.gz'
 %   B1file      - Full path to 'B1_fit_lregGx3.nii.gz'
-%   niifile     - A cellstr array of nifti file names for each of the F_A 
-%                 acquisitions 
+%   niifile     - A cellstr array of NIfTI file names for each of the 
+%                 flip_Angle acquisitions 
 %   flip_Angles - An array of flip angles in the order that the data should
 %                 be combined.
-
+%   mrQ         - The mrQ structure
 % 
 % 
 % OUTPUTS:
-%   combineFile - File name of the nifti file containing the combined
+%   combineFile - File name of the NIfTI file containing the combined
 %                 channel data
 % 
 % SEE ALSO:
@@ -32,7 +33,7 @@ function combineFile = mrQ_multicoilM0(datDir,T1file,B1file,niifile,flip_Angles,
 % 
 
 
-%% Check and Load INPUTS 
+%% I. Check and Load INPUTS 
 
 outFile = fullfile(datDir,'dat_aligned.mat');
 disp(['Loading aligned data from ' outFile '...']);
@@ -72,10 +73,9 @@ B1 = readFileNifti(B1file);
 B1 = double(B1.data);
 
 
-%% Align the channels to the reference image and combine them
+%% II. Align the channels to the reference image and combine them
 
-
-% For each flip angle align the individual channel data to the reference
+% For each flip angle, align the individual channel data to the reference
 % image and combine them
 imN=0;
 FAU= unique(flipAngles);
@@ -84,7 +84,7 @@ for j=1:numel(FAU)
     
     kkk=0;
     % find all images with flip anlge j
-    kk = find(flipAngles == FAU(j)); % won't kk always = j? *** originaly it was not the order of the flipangle as an input does not have to be the order of flipangle images saved in the s structure.
+    kk = find(flipAngles == FAU(j)); % won't kk always = j? *** originally, it was not: the order of the flip_Angle as an input does not have to be the order of flip_Angle images saved in the s structure.
   %  ref   = fullfile(datDir,['Align' num2str(flipAngles(j)) 'deg']);
     
     % Loop over images with the same flip angle
@@ -140,8 +140,7 @@ for j=1:numel(FAU)
     Files{nk} = SaveFilename;
 end
 end
-% Combine the data for each coil using the multi channel data and save it to
-% disk
+% Combine the data for each coil using the multi channel data and save it to disk
  combineFile = mrQ_AvcoilM0(Files,datDir);
  
  return

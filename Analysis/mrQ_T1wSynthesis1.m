@@ -7,7 +7,7 @@ function [saveName,saveName1] =mrQ_T1wSynthesis1(mrQ,WFfile,T1file,BMfile, ...
 % them to the dataDir. One set of T1w images accounts for the PD, taken
 % from the water fraction file, while the other set of T1w images does not.
 % 
-%  ~INPUTS~
+% ~INPUTS~
 %           mrQ:   The mrQ structure
 %        WFfile:   The path to the directory where the water fraction map
 %                      is located. If unavailable, the default will take
@@ -27,7 +27,7 @@ function [saveName,saveName1] =mrQ_T1wSynthesis1(mrQ,WFfile,T1file,BMfile, ...
 %    FullBMfile:   The path to the directory where the full brain mask is
 %                      located. It will be created if it doesn't yet exist.
 %
-%  ~OUTPUTS~
+% ~OUTPUTS~
 %      saveName:   The path to the directory where the synthetic T1
 %                      weighted NIfTI image was saved.
 %     saveName1:   The path to the directory where the synthetic T1
@@ -142,7 +142,7 @@ t1w = PD.*( (1-exp(-symTR./t1)).*sin(fa)./(1-exp(-symTR./t1).*cos(fa)));
  % clip what we define as notbrain
   t1w(~mask)=0;
   
- %% III. Now calculate the synthetic T1 images, without PD
+%% III. Now calculate the synthetic T1 images, without PD
   t1ww = zeros(size(t1));
 
 % Calculate values for t1 and fa

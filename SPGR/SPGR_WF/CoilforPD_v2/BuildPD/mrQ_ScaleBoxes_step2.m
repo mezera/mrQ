@@ -1,50 +1,49 @@
-function [Boxes, scaleFactor]=mrQ_ScaleBoxes_step2(Boxes,BoxesToUse,opt,errTres,BMfile)
+function [Boxes, scaleFactor]=mrQ_ScaleBoxes_step2(Boxes,BoxesToUse,opt,errThresh,BMfile)
 %
 % [Boxes, scaleFactor]=mrQ_ScaleBoxes_step2(Boxes,BoxesToUse,opt,errTres,BMfile)
 %
-% This is step 2 of 6 for building the WF map.
-%     Step 2: Find the scalar between each box's PD      
+% This is Step 3 of 6 (including Step 0) in the pipeline to build the WF
+% (water fraction) map. In this step, the ratio between each box's PD and
+% its neighbors is calculated. The scaling is further adjusted in
+% mrQ_boxScaleGlobLinear, a subsequent function that is part of this step.
 %
 % ~INPUTS~ 
-%        Boxes:
-%   BoxesToUse:
-%          opt:
-%      errTres: Default is 0.01.
-%       BMfile:
+%            Boxes:
+%       BoxesToUse:
+%              opt:
+%      ErrorThresh:   The acceptable error when assessing the overlap when 
+%                               pairing adjacent boxes. It is a number 
+%                               between 0 and 1. [Default is 0.01]
+%           BMfile:
 %
 % ~OUTPUTS~
-%        Boxes:
-%  scaleFactor:
+%            Boxes:
+%      scaleFactor:
 %
 % See also: mrQ_buildPD_ver2
+%           Step_0: none
+%           Step_1: mrQ_CalBoxPD_step1a
+%           Step_3: mrQ_BoxJoinBox
+%           Step_4: mrQ_smoothGain_step4b
+%           Step_5: mrQ_PD2WF_step5
 %
 % AM (C) Stanford University, VISTA
+%
+%
 
-if notDefined('errTres')
-        % default for any other case (include T1 reg) 1% error
-    errTres=0.01;
 
-%     % the max median present error between two boxes that we still combine.
-%     if isfield(opt,'T1reg');
-%         % in case we don't use T1 regularization themedian present error defult
-%         % treshold is higher. (5%)
-%         if opt.T1reg==0
-%             errTres=0.05;
-%         end
-%         
-%     end
-
+%%
+if notDefined('errThresh')
+    errThresh=0.01;
 end
 
 kk=0;
 
-%LinScaleMat=zeros(32*length(Boxes), length(Boxes));
-%LinScaleMat=zeros(length(Boxes), length(Boxes));
 scaleFactor=zeros(length(Boxes), length(Boxes));
 
 donemask=ones(length(Boxes), length(Boxes));
 donemask(BoxesToUse,BoxesToUse)=0;
-%Ref=randperm(BoxesToUse);
+
 if notDefined('BMfile')
     BMfile=opt.BMfile;
 end
@@ -111,7 +110,7 @@ for ii=BoxesToUse %loop over boxes
 err= median(abs(Boxes(jj).PD(overlap_jj)*Ratio -Boxes(ii).PD(overlap_ii)) ./ Boxes(ii).PD(overlap_ii)  );
             %err=median((Boxes(jj).PD(overlap_jj)*Ratio -Boxes(ii).PD(overlap_ii)   ).^2 );
             %err=median(abs(Boxes(jj).PD(overlap_jj)*Ratio -Boxes(ii).PD(overlap_ii) ./ Boxes(ii).PD(overlap_ii)  ));
-            if err<errTres && Ratio>0
+            if err<errThresh && Ratio>0
                
 %                 if Ratio<0.1 || Ratio>3
 %                                     keyboard;

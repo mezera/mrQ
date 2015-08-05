@@ -1,48 +1,95 @@
 function opt=mrQ_PD2WF_step5(opt,csffile,segfile)
+
 % opt=mrQ_PD2WF_step5(opt,csffile,segfile)
-% calculate Water fraction map from unclaibrated PD map using the segmentation images
+%
+% This is Step 6 of 6 (including Step 0) in the pipeline to build the WF
+% (water fraction) map. In this step, the WF map is constructed from the
+% uncalibrated PD map using the segmentation images "csffile" and
+% "segfile".
+%
+%  ~INPUTS~
+%              opt:   The "opt" structure of optimized parameters
+%          csffile:   The CSF segmentation file. If no csffile is selected,
+%                              the default is to take from opt's outDir, 
+%                              csf_seg_T1.nii.gz
+%          segfile:   The T1-weighted tissue segmentation file. If no
+%                              segfile is selected, the default is to take 
+%                              from opt's outDir,T1w_tissue.nii.gz            
+%
+%  ~OUTPUTS~
+%              opt:   The updated opt structure of optimized parameters
+%
+% See also: mrQ_buildPD_ver2
+%           Step_0: none
+%           Step_1: mrQ_CalBoxPD_step1a
+%           Step_2: mrQ_ScaleBoxes_step2
+%           Step_3: mrQ_BoxJoinBox
+%           Step_4: mrQ_smoothGain_step4b
 %
 % AM (C) Stanford University, VISTA
 
-%% get the CSF (ventricals) full tissue segmetation and PD maps to calcultate Water fraction (WF)
+%% I. Load files 
+% Get the CSF (ventricles) full-tissue segmetation and get the PD maps to
+% calcultate the water fraction
+
 if notDefined('csffile'); csffile = fullfile(opt.outDir, 'csf_seg_T1.nii.gz');end
 if notDefined('segfile'); segfile = fullfile(opt.outDir, 'T1w_tissue.nii.gz');end
 
-if(exist(csffile,'file')); fprintf(['Loading CSF data from: ' csffile '\n']); CSF = readFileNifti(csffile);CSF=double(CSF.data);
-else   error(['error , can not find the file: '  csffile])    ;end
-% 
-if(exist(segfile,'file'));fprintf(['Loading segmentation data from: ' segfile '\n']);seg = readFileNifti(segfile);seg=double(seg.data);
-else error(['error , can not find the file: '  segfile]);end
+if (exist(csffile,'file'));
+    fprintf(['Loading CSF data from: ' csffile '\n']); 
+    CSF = readFileNifti(csffile);
+    CSF=double(CSF.data);
+else
+    error(['Error, cannot find the file: '  csffile]);
+end
 
-PD=readFileNifti(opt.PDfile); xform=PD.qto_xyz;PD=PD.data;
+if(exist(segfile,'file'))
+    fprintf(['Loading segmentation data from: ' segfile '\n'])
+    seg = readFileNifti(segfile);
+    seg=double(seg.data);
+else
+    error(['Error, cannot find the file: '  segfile])
+end
 
-%% calcute the CSF PD
+PD=readFileNifti(opt.PDfile);
+xform=PD.qto_xyz;
+PD=PD.data;
 
-% find the white matter mean pd value from segmetation.
+%% II. Calculate the CSF PD, and calibrate
+
+% Find the white matter mean PD value from segmentation.
+
+% Make sure the CSF ROI has reasonable PD values.  
+
+% The CSF ROI is a result of a segmentation algorthm run on the T1-weighted
+% image and cross section with T1 values. Yet the ROI may have some
+% contaminations or segmentation faults, so we will create some low and
+% high boundaries. Thus, PD values that are equivalent to that of the white
+% matter (too low) or are double that of the white matter (too high) will
+% not be considered CSF.
 wmV=mean(PD(seg==3 & PD>0)); 
 
-
-% make sure the CSF ROI have pd value that are resonable.  The csf roi is a result of segmentation algorthm run on the
-% T1 weighted image and cross section with T1 values. Yet  the ROI may have some contaminations or segmentation faults .
-%Therefore, we create some low and up bonderies. No CSF with PD values that are the white matter PD value(too low) or double the white matter values (too high).
 CSF1=CSF & PD>wmV & PD< wmV*2;
 
-%To calibrate the PD we find the scaler that shift the csf ROI to be eqal to 1. --> PD(CSF)=1;
-% To find the scale we look at the histogram of PD value in the CSF. Since it's not trivial to find the peak we compute the kernel density (or
-% distribution estimates). for detail see ksdensity.m
-%The Calibrain vhistogram of the PD values in the let find the scalre from the maxsimum of the csf values histogram
-[csfValues csfDensity]= ksdensity(PD(find(CSF1)), [min(PD(find(CSF1))):0.001:max(PD(find(CSF1)))] );
-CalibrationVal= csfDensity(find(csfValues==max(csfValues)));% median(PD(find(CSF)));
+%% III. Calibrate the PD by the PD of the CSF ROI
+% To calibrate the PD, we find the scalar that shifts the CSF ROI values to
+% be equal to 1, that is, PD(CSF)=1.  To find the scalar, we look at the
+% histogram of PD values in the CSF, focusing on its maximum. Since it's
+% not trivial to find the peak, we compute the kernel density (or
+% distribution estimates). For additional information, see ksdensity.m
+% (standard Matlab function).
 
-%% calibrate the pd by the pd of the csf roi
+[csfValues csfDensity]= ksdensity(PD(find(CSF1)), [min(PD(find(CSF1))):0.001:max(PD(find(CSF1)))] );
+CalibrationVal= csfDensity(find(csfValues==max(csfValues))); %median(PD(find(CSF)));
+
 WF=PD./CalibrationVal(1);
 
-% let cut outlayers
-WF(WF<0)=0;
-WF(WF>2)=2;
+% Removing outliers
+WF(WF<0)=0; %too low
+WF(WF>2)=2; %too high
 
-%% save the WM map
+%% IV. Save the WF map
 WFfile=fullfile(opt.outDir,'WF_map.nii.gz');
 dtiWriteNiftiWrapper(single(WF), xform, WFfile);
 opt.WFfile=WFfile;
- save(opt.logname,'opt')
+   save(opt.logname,'opt')

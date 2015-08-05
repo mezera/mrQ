@@ -17,13 +17,18 @@ function [Boxes, PositiveBoxs, UnCorBoxs, UnSTDBoxs]=mrQ_CalBoxPD_step1a(opt,Box
 %    UnSTDBoxs:
 %
 % See also: mrQ_buildPD_ver2
+%           Step_0: none
+%           Step_2: mrQ_ScaleBoxes_step2
+%           Step_3: mrQ_BoxJoinBox
+%           Step_4: mrQ_smoothGain_step4b
+%           Step_5: mrQ_PD2WF_step5
 %
 % AM Vistalab team 2013
 
 
 %% I. Book keeping
 
-% bookkeeping of box fit that went wrong
+% bookkeeping of the box fits that went wrong
 PositiveBoxs=zeros(length(opt.wh),1);
 UnCorBoxs=zeros(length(opt.wh),1);
 UnSTDBoxs=zeros(length(opt.wh),1);

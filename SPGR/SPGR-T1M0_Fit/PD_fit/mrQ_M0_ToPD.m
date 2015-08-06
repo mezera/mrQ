@@ -85,7 +85,7 @@ end
 %% IV. Build the local fits
 %Join the local overlap area to one PD image.
 
-mrQ.opt=mrQ_buildPD_ver2(mrQ.opt_logname,[],[],[],[],0.01);
+mrQ.opt_logname=mrQ_buildPD_ver2(mrQ.opt_logname,[],[],[],[],0.01);
 %
 
 %4 build

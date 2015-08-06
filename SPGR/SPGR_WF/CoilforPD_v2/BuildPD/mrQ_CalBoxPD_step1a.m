@@ -147,7 +147,7 @@ if length(SZ)==4
     PDSTD=std(PD(mask));
     
     if DatSTD*1.1<PDSTD
-        UnSTDBoxs(ii)=1
+        UnSTDBoxs(ii)=1;
     end
 else
     UnSTDBoxs(ii)=0;

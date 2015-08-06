@@ -104,7 +104,10 @@ cmd =(['! mv ' mrQ.spgr_initDir '/SIR_map.nii.gz ' mapDir '/.']) ;
 eval(cmd);
 
 mrQ.mapsDir=mapDir;
+%Which T1 need a fix
 mrQ.maps.T1path=fullfile(mapDir,'T1_map_Wlin.nii.gz');
+%% 
+
 mrQ.maps.WFpath=fullfile(mapDir,'WF_map.nii.gz');
 mrQ.maps.TVpath=fullfile(mapDir,'TV_map.nii.gz');
 mrQ.maps.SIRpath=fullfile(mapDir,'SIR_map.nii.gz');

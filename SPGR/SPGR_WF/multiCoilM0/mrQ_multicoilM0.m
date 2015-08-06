@@ -126,7 +126,9 @@ for j=1:numel(FAU)
     for i = 1:channels
         M0c(:,:,:,i) = s1(i).imData(:,:,:) ./ ( (1-exp(-tr./T1)).*sin(fa) ./ (1-exp(-tr./T1).*cos(fa)) );
     end
-    
+    %%
+    do sos of raw data and save
+    %%
     clear s1 s11 refIM fa szref szdat
     
     % Save out the data for each channel

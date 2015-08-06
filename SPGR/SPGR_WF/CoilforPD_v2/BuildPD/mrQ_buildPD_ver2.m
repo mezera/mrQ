@@ -1,4 +1,4 @@
-function opt=mrQ_buildPD_ver2(opt_Log_name,csffile,segfile,RepErrTreshold,PrcCutOff,ErrorTresh)
+function opt_Log_name=mrQ_buildPD_ver2(opt_Log_name,csffile,segfile,RepErrTreshold,PrcCutOff,ErrorTresh)
 % this function colect all the fitted coil gains in different small voulumes (box) that was fitted in paraller
 %and join them back to a PD map and calculate the WF map. Strfilenameis the log file of the parralel fits.
 %   opt=mrQ_buildPD(opt_Log_name,csffile,segfile)
@@ -238,7 +238,7 @@ save(tmpfile,'BoxesToUse','CoilGains','Boxes','ScaleMat','PD_fit')
 
 %% calculate WF by normalize PD to CSF==1
 if unique( ~csffile==0) %% i think it will only go in here if ther are NO zeros in 'csffile'because 
-    opt=mrQ_PD2WF_step5(opt,csffile,segfile);
+    opt=mrQ_PD2WF_step5_ver2(opt,csffile,segfile);
 end
 
 

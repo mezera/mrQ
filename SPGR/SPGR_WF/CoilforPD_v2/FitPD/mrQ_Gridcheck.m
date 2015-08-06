@@ -88,6 +88,7 @@ while GridFit_done~=true
 end
 % if the job was finished, remove all gris outputs. 
 if  GridFit_done
+    jobname=(fullID(1:3));
     filesPath=[GridOutputDir,'/job_',num2str(jobname),'*'];
     delCommand=sprintf('rm %s', filesPath);
     [status, result]=system(delCommand);

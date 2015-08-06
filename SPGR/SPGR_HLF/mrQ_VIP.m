@@ -1,4 +1,4 @@
-function [AnalysisInfo]=mrQ_VIP(mrQ,outDir,WFfile,T1file,mField,T1freeval,Fullerton)
+function [AnalysisInfo,mrQ]=mrQ_VIP(mrQ,outDir,WFfile,T1file,mField,T1freeval,Fullerton)
 % 
 % [AnalysisInfo]= mrQ_VIP(mrQ,outDir,WFfile,T1file,mField,T1freeval,Fullerton)
 %
@@ -252,6 +252,12 @@ if Fullerton==1
     dtiWriteNiftiWrapper(single(VIP), xform, fullfile(outDir,'VIP_fitFullerton.nii.gz'));
     dtiWriteNiftiWrapper(single(TV), xform, fullfile(outDir,'TV_map.nii.gz'));
     
+    if exist(mrQ,'var');
+        mrQ.maps.Fullerton.fh=fullfile(outDir,'T1wVIP_fitFullerton.nii.gz');
+        mrQ.maps.Fullerton.VIPpath=fullfile(outDir,'VIP_fitFullerton.nii.gz');
+        mrQ.maps.TVpath=fullfile(outDir,'TV_map.nii.gz');
+    end
+
 else
     
     dtiWriteNiftiWrapper(single(fh), xform, fullfile(outDir,'T1wVIP_fit.nii.gz'));
@@ -259,6 +265,19 @@ else
     dtiWriteNiftiWrapper(single(TV), xform, fullfile(outDir,'TV_map.nii.gz'));
     dtiWriteNiftiWrapper(single(SIR), xform, fullfile(outDir,'SIR_map.nii.gz'));
     
+      if exist(mrQ,'var');
+        mrQ.maps.fh=fullfile(outDir,'T1wVIP_fit.nii.gz');
+        mrQ.maps.VIPpath=fullfile(outDir,'VIP_map.nii.gz');
+        mrQ.maps.TVpath=fullfile(outDir,'TV_map.nii.gz');
+        mrQ.maps.SIRpath=fullfile(outDir,'SIR_map.nii.gz');
+
+      end
+
+    
+       if ~exist(mrQ,'var');
+           mrQ=[];
+       end
 end
+
 
 return

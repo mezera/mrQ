@@ -20,7 +20,7 @@ if notDefined('G_filename');G_filename=fullfile(opt.outDir, 'Gains.nii.gz');end
 %dimention is the image of each coil
 % M0=Gain X PD  --> Gain= M0 / PD;
 % PD fit is not full image. we have values only where the boxes fit where done
-% and got a "good sulotion". hopfully we have most of the image.
+% and got a "good solution". hopfully we have most of the image.
 % It is given that the gain function vart smoothly in space.
 % Therefore to fill the area where PD data is missing we will model the
 % Gain as a smooth function in space.
@@ -368,4 +368,9 @@ end
 
 opt.PDfile=PD_filename;
 opt.Gainfile=G_filename;
+
+
+%%
+
+
 %save(opt.logname,'opt')

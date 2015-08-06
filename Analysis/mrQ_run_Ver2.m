@@ -325,7 +325,10 @@ end
 if (mrQ.SPGR_PDBuild_done==0)
     fprintf('\n Calculate VIP, TV and SIR form T1 and WF maps               \n');
     
-    [mrQ.AnalysisInfo] = mrQ_VIP(mrQ);
+    [mrQ.AnalysisInfo] = mrQ_WF(mrQ);
+    
+    
+    [mrQ.AnalysisInfo, mrQ] = mrQ_VIP(mrQ);
     save(mrQ.name,'mrQ');
     mrQ.SPGR_PDBuild_done=1;
     fprintf('\n Calculation of VIP, TV and SIR  - done!              \n');

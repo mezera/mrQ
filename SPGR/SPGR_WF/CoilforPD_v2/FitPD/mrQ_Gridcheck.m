@@ -7,14 +7,15 @@ function GridFit_done=mrQ_Gridcheck(opt_Log_name,SunGrid,CallType,GridOutputDir)
 %
 %
 %  ~INPUTS~
-%          opt_Log_name: Location of the opt file
-%               SunGrid: Whether to use SunGrid (default is 0, "no")
-%              CallType: Determines what type of function will be
-%                        performed, assuming RunSelectedJobs is true. It
-%                        will be performed in the SunGrid. Enter 1 for
-%                        mrQ_fitM0boxesCall_Multi.m (default), 2 for
-%                        mrQ_fitB1boxesCall.m (currently non-operational), 
-%                        or 3 for mrQ_fitB1LR_Call.m.
+%       opt_Log_name:    Location of the "opt" structure
+%            SunGrid:    Whether to use SunGrid (default is 0, "no")
+%           CallType:    Determines what type of function will be
+%                           performed, assuming RunSelectedJobs is true. It
+%                           will be performed in the SunGrid. Enter 1 for
+%                           mrQ_fitM0boxesCall_Multi.m (default), 2 for
+%                           mrQ_fitB1boxesCall.m (currently
+%                           non-operational), or 3 for mrQ_fitB1LR_Call.m.
+%      GridOutputDir:    The 
 %
 %  ~OUTPUTS~
 %          GridFit_done: A true/false logical, which indicates whether the
@@ -48,31 +49,35 @@ end
 
 sgename=opt.SGE;
 fullID=sgename(isstrprop(sgename, 'digit'));
+jobname=(fullID(1:3));
 
 tic
 while GridFit_done~=true
-    % List all the files that have been created from the call to the
-    % grid
+    
+    % List all the files that have been created from the call to the SGE
     list=ls(opt.dirname);
+    
     % Check if all the files have been made.  If they are, then collect
     % all the nodes and move on.
     if length(regexp(list, '.mat'))>=fNum,
         GridFit_done=true;
-        % Once we have collected all the nodes we delete the sge output
+        
+        % Once we have collected all the nodes, we delete the SGE output
         eval(['!rm -f ~/sgeoutput/*' sgename '*'])
+        
     else
-        % check if there are jobs on the sun grid queue list
-        jobname=(fullID(1:3));
+        % Check if there are jobs in the SGE queue
         qStatCommand    = [' qstat | grep -i  job_' jobname];
         [status result] = system(qStatCommand);
         tt=toc;
         if (isempty(result) && tt>60)
-            % check if 1 min pass and there are no job waiting to be finish (and we don't have all the jobdone)
-            %then we will need to re run it.
+            % Check if 1 minute has passed. If there are no jobs waiting to
+            % be finished (and we don't have all the jobdone) then we will
+            % need to re-run it.
             
             RunSelectedJob=true;
             if CallType==1
-                if isfield(opt,'Reg') % ALOW DIFFERENT FIT METHODS
+                if isfield(opt,'Reg') % Allow different fit methods
                     mrQ_fitM0boxesCall_Multi(opt_Log_name,SunGrid,RunSelectedJob)
                 else
                     mrQ_fitM0boxesCall(opt_Log_name,SunGrid,RunSelectedJob)
@@ -86,7 +91,8 @@ while GridFit_done~=true
         
     end
 end
-% if the job was finished, remove all gris outputs. 
+
+% If the job was finished, remove all SGE outputs. 
 if  GridFit_done
     jobname=(fullID(1:3));
     filesPath=[GridOutputDir,'/job_',num2str(jobname),'*'];

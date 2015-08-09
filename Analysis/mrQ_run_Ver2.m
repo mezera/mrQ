@@ -316,6 +316,8 @@ else
     fprintf('\n Using previously calculated PD              \n');
 end
 
+return
+
 %% XII. Calculate VIP, TV, and SIR
 
 if ~isfield(mrQ,'SPGR_PDBuild_done')

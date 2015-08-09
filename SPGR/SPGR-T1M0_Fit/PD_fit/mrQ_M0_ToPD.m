@@ -41,7 +41,7 @@ if mrQ.PDfit_Method~=1
    % If we use multi-coil data, we need to calculate the M0 of each coil,
    % build a multi-coil M0 image for the coil's raw data, and then fit T1.
         
-        [mrQ.M0combineFile] = mrQ_multicoilM0(mrQ.spgr_initDir,[],[],mrQ.SPGR_niiFile,mrQ.SPGR_niiFile_FA,mrQ);
+        [mrQ.M0combineFile, mrQ.MultiCoilSummedFiles] = mrQ_multicoilM0(mrQ.spgr_initDir,[],[],mrQ.SPGR_niiFile,mrQ.SPGR_niiFile_FA,mrQ);
         
         save(mrQ.name,'mrQ');
     else

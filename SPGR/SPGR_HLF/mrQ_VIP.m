@@ -1,5 +1,5 @@
 function [AnalysisInfo,mrQ]=mrQ_VIP(mrQ,outDir,WFfile,T1file,mField,T1freeval,Fullerton)
-% 
+%
 % [AnalysisInfo]= mrQ_VIP(mrQ,outDir,WFfile,T1file,mField,T1freeval,Fullerton)
 %
 % This function loads the T1 and WF maps and calculates VIP and SIR maps.
@@ -15,49 +15,49 @@ function [AnalysisInfo,mrQ]=mrQ_VIP(mrQ,outDir,WFfile,T1file,mField,T1freeval,Fu
 % and was tested also at 0.5T (this won't work for different magnetic field
 % data).
 %
-% 
+%
 % ABOUT THE MODEL:
-% 
+%
 %   The T1 value is modeled as a weighted sum of two fast exchanging pools;
 %   a free pool (with T1f = ~4.3 sec) and a hydration pool (T1h).
-%       
+%
 %       1/T1 = fh/T1h + (1-fh)/T1f
-% 
+%
 %   T1h is estimated as a linear function of the magnetic field (Fullerton,
 %   1984). (calculated in-vitro with different tissue types)
-% 
-%       T1h = 1.83 x f + 25, 
-% 
+%
+%       T1h = 1.83 x f + 25,
+%
 %   OR our new model: (calculated with in-vivo brain data)
-% 
+%
 %       T1h = 0.934 x f + 93.03
-% 
-%          where f is the Larmor frequency for the given magnetic field. 
+%
+%          where f is the Larmor frequency for the given magnetic field.
 %   * Model estimation std dev for our values are 0.0252 and 1.8035
-% 
-%   Rearranging the equation above, the water fraction (fh) is given by: 
-%       
+%
+%   Rearranging the equation above, the water fraction (fh) is given by:
+%
 %       fh = (1/T1-1/T1f) x (1/T1h-1/T1f).
-% 
-% 
+%
+%
 % INPUTS:
 %       mrQ       - The mrQ structure
 %
 %       outDir    - Directory containing the aligned SPGR data.
-% 
+%
 %       WFfile    - The Water Fraction file from mrQ_WF
-% 
+%
 %       T1file    - The T1 fit NIfTI
-% 
-%       mField    - The strength of the magnetic field. Default taken from 
-%                   the dicom header. 
-% 
+%
+%       mField    - The strength of the magnetic field. Default taken from
+%                   the dicom header.
+%
 %       T1freeval - The T1 value for free water [Default is 4.3 seconds]
-% 
+%
 %       Fullerton - Boolean: 1 = use the Fullerton model for the
-%                   calculation; 0 = don't use it. 
-% 
-% 
+%                   calculation; 0 = don't use it.
+%
+%
 % OUTPUTS:
 %   AnalysisInfo  - an information structure
 %
@@ -65,17 +65,17 @@ function [AnalysisInfo,mrQ]=mrQ_VIP(mrQ,outDir,WFfile,T1file,mField,T1freeval,Fu
 % if Fullerton==1
 %     dtiWriteNiftiWrapper(single(fh), xform, fullfile(outDir,'T1wVIP_fitFullerton.nii.gz'));
 %     dtiWriteNiftiWrapper(single(VIP), xform, fullfile(outDir,'VIP_fitFullerton.nii.gz'));
-%     
+%
 % else
-%     
+%
 %    dtiWriteNiftiWrapper(single(fh), xform, fullfile(outDir,'T1wVIP_fit.nii.gz'));
 %     dtiWriteNiftiWrapper(single(VIP), xform, fullfile(outDir,'VIP_map.nii.gz'));
 %     dtiWriteNiftiWrapper(single(TV), xform, fullfile(outDir,'TV_map.nii.gz'));
 %     dtiWriteNiftiWrapper(single(SIR), xform, fullfile(outDir,'SIR_map.nii.gz'));
 %
-% 
+%
 % (C) Stanford University, VISTA Lab
-% 
+%
 
 
 %% I. CHECK INPUTS
@@ -103,53 +103,31 @@ end
 if(exist('T1file','var') && ~isempty(T1file))
     disp(['Loading T1 data from ' T1file '...']);
 else
-   [ T1file,~,~]=mrQ_get_T1M0_files(mrQ,1,0,0);
+    [ T1file,~,~]=mrQ_get_T1M0_files(mrQ,1,0,0);
 end
-
-%         T1file1= fullfile(outDir,'maps/T1_map_lsq.nii.gz');
-%     T1file= fullfile(outDir,'T1_map_lsq.nii.gz');
-%     if(exist(T1file,'file'))
-%         disp(['Loading T1 data from ' T1file '...']);
-%    
-%     elseif(exist(T1file1,'file') &&  ~exist(T1file,'file') )
-%           disp(['Loading T1 data from ' T1file1 '...']);
-%           T1file=T1file1;
-%         
-%     else
-%         T1file = mrvSelectFile('r','*.nii.gz','Select T1 fit file',outDir);
-%         if isempty(T1file)
-%             error('User cancelled.')
-%         else
-%             disp(['Loading T1 data from ' T1file '...']);
-%         end
-%     end
-% end
 
 
 % Get the Water Fraction File
 if(exist('WFfile','var') &&  ~isempty(WFfile))
     disp(['Loading WF data from ' WFfile '...']);
 else
-    WFfile = fullfile(outDir,'WF_map.nii.gz');
-    WFfile1 = fullfile(outDir,'maps/WF_map.nii.gz');
-    
-    disp(['Trying  to load WF from ' WFfile '...']);
-    
-    if(exist(WFfile,'file'))
-        disp(['Loading WF data from ' WFfile '...']);
-    elseif(exist(WFfile1,'file') && ~exist(WFfile,'file'))
-        disp(['Loading WF data from ' WFfile1 '...']);
-        WFfile=WFfile1;
+    if isfield(mrQ,'maps')
+        WFfile=mrQ.maps.WFpath;
     else
-        WFfile = mrvSelectFile('r','*.nii.gz','Select WF file',outDir);
-        if isempty(WFfile)
-            error('User cancelled.')
-        else
-            disp(['Loading WF data from ' WFfile '...']);
-        end
+        WFfile = mrQ.WFfile;
     end
-    tmp = 0;
 end
+if(exist(WFfile,'file'))
+    disp(['Loading WF data from ' WFfile '...']);
+else
+    WFfile = mrvSelectFile('r','*.nii.gz','Select WF file',outDir);
+    if isempty(WFfile)
+        error('User cancelled.')
+    else
+        disp(['Loading WF data from ' WFfile '...']);
+    end
+end
+tmp = 0;
 
 
 %% II. LOAD DATA
@@ -184,13 +162,13 @@ save(infofile,'AnalysisInfo');
 
 %% III. SWITCH on magnet field strength and set the larmour frequency (L)
 
-switch mField    
+switch mField
     case 3
-        L = 127.74;      
+        L = 127.74;
     case 1.5
         L = 63.87;
     case .5
-        L = 21.29;       
+        L = 21.29;
 end
 
 if notDefined('L')
@@ -207,20 +185,20 @@ disp('Calculating VIP ... ');
 mask = (find(WF));
 fh   = zeros(size(T1));
 
-if Fullerton == 1 
+if Fullerton == 1
     % Fullerton model
     fh(mask) = (1./T1(mask)- 1/T1freeval)./(1000./(1.83.*L + 25.02)-1/T1freeval);
 else
-  % fh(mask) = (1./T1(mask)- 1/T1freeval)./(1000./(0.934.*L+ 93.38)-1/T1freeval);
-    fh(mask) = (1./T1(mask)- 1/T1freeval)./(1000./(0.934.*L+ 93.03)-1/T1freeval); 
+    % fh(mask) = (1./T1(mask)- 1/T1freeval)./(1000./(0.934.*L+ 93.38)-1/T1freeval);
+    fh(mask) = (1./T1(mask)- 1/T1freeval)./(1000./(0.934.*L+ 93.03)-1/T1freeval);
     % THIS is the right one. For some reason, I used the other one, so
     % better to redo it.
 end
-% fh is the fraction of interacting protons. 
+% fh is the fraction of interacting protons.
 % T1 is the weighted sum of the proton population under the fast exchange system.
 % 1/T1= fh*(1/T1h)+ (1-fh)1/T1free.
 
-%% IV-b. Threshold 
+%% IV-b. Threshold
 % Set values that are too high, too low, Inf, or Nan all to be zero.
 fh(isnan(fh))   = 0;
 fh(isinf(fh))   = 0;
@@ -257,7 +235,7 @@ if Fullerton==1
         mrQ.maps.Fullerton.VIPpath=fullfile(outDir,'VIP_fitFullerton.nii.gz');
         mrQ.maps.TVpath=fullfile(outDir,'TV_map.nii.gz');
     end
-
+    
 else
     
     dtiWriteNiftiWrapper(single(fh), xform, fullfile(outDir,'T1wVIP_fit.nii.gz'));
@@ -265,18 +243,18 @@ else
     dtiWriteNiftiWrapper(single(TV), xform, fullfile(outDir,'TV_map.nii.gz'));
     dtiWriteNiftiWrapper(single(SIR), xform, fullfile(outDir,'SIR_map.nii.gz'));
     
-      if exist(mrQ,'var');
+    if exist(mrQ,'var');
         mrQ.maps.fh=fullfile(outDir,'T1wVIP_fit.nii.gz');
         mrQ.maps.VIPpath=fullfile(outDir,'VIP_map.nii.gz');
         mrQ.maps.TVpath=fullfile(outDir,'TV_map.nii.gz');
         mrQ.maps.SIRpath=fullfile(outDir,'SIR_map.nii.gz');
-
-      end
-
+        
+    end
     
-       if ~exist(mrQ,'var');
-           mrQ=[];
-       end
+    
+    if ~exist(mrQ,'var');
+        mrQ=[];
+    end
 end
 
 

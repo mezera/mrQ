@@ -148,6 +148,8 @@ switch(param)
         mrQ.RawDir=varargin;
     case {'refim','ref'}
         mrQ.refIm=varargin;
+        mrQ.autoacpc=0; 
+        % if a ref image is given, the alignmant is mannual acpc
     case {'runfreesurfer' }
         mrQ.runfreesurfer=varargin;                    
     case {'seir_seriesnumbers','seir'}

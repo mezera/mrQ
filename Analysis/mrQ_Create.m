@@ -123,12 +123,20 @@ if setDefault
     mrQ.calM0_done=false;
     mrQ.SPGR_PDfit_done=false;    
     mrQ.SPGR_PDBuild_done=false;
-    
+    mrQ = mrQ_Set(mrQ, 'pdfit_method',1);
+
     mrQ.PolyDeg=3; 
     mrQ.SunGrid=false;
     
    % mrQ.proclus=1;
+   %% general scan params
    
+   mrQ = mrQ_Set(mrQ,'fieldstrength',3);
+   mrQ = mrQ_Set(mrQ,'autoacpc',1);
+   % if a reference file is added as input this value will change to 0, as
+   % no automatic ac pc alignment will be desired
+
+   %%
    % Save the file.
     save(mrQ.name,'mrQ');
     

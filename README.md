@@ -1,5 +1,5 @@
 # mrQ manual (version 2) #
-mrQ is a software package designed to calculate MR parameters (T1 and PD) using spoiled gradient echo scans (SPGR, FLASH). Using T1 and PD maps mrQ enables the evaluation of macromolecular tissue volume (MTV) and the apparent volume of the interacting water protons (VIP) as well as the water-surface interaction rate (SIR). 
+mrQ is a software package designed to calculate MR parameters (T1 and PD) using spoiled gradient echo scans (SPGR, FLASH). Using T1 and PD maps, mrQ performs the evaluation of macromolecular tissue volume (MTV) and the apparent volume of the interacting water protons (VIP) as well as the water-surface interaction rate (SIR). 
 
 The software and the tissue parameters are described in the following article:
 
@@ -8,9 +8,7 @@ http://www.nature.com/nm/journal/v19/n12/full/nm.3390.html?WT.ec_id=NM-201312
 
 and the following patent:
 
-
->Methods for detecting abnormalities and degenerative processes in soft tissue using magnetic resonance imaging (MRI)
-US 20120197105 A1
+>Mezer, Aviv A., Robert F. Dougherty, and Brian A. Wandell. Methods for Detecting Abnormalities and Degenerative Processes in Soft Tissue Using Magnetic Resonance Imaging (MRI). The Board Of Trustees Of The Leland Stanford Junior University, assignee. Patent US9002428 B2. 7 Apr. 2015.
 
 For an application of mrQ, see:
 
@@ -18,10 +16,10 @@ For an application of mrQ, see:
 
 For more information, please contact: 
 
->Aviv Mezer, aviv.mezer(AT)elsc.huji.ac.il
-
+>Aviv Mezer: aviv.mezer(AT)elsc.huji.ac.il
+>
 >Shai Berman: shai.berman(AT)mail.huji.ac.il  
-
+>
 >Jonathan Bain: jonathan.bain(AT)mail.huji.ac.il
 
 
@@ -39,41 +37,43 @@ For more information, please contact:
 - <a href=#mr-scanning->MR Scanning</a>
     - <a href=#spoiled-gradient-echo-scans-spgrflash>Spoiled gradient echo scans (SPGR, FLASH)</a>
     - <a href=#epi-spin-echo-inversion-recovery-scans-b1-mapping>EPI spin-echo inversion recovery scans (B1 mapping)</a>
-- <a href=#data-organization>Data Organization</a>
 - <a href=#running-mrq>Running mrQ</a>
   - <a href=#overview>Overview</a>
+  - <a href=#example-directories>Example Directories</a>
   - <a href=#running-mrq-with-scitran-nifti-files>Running mrQ with SciTran NIfTI files</a>
   - <a href=#running-mrq-with-other-nifti-files>Running mrQ with other NIfTI files</a>
 - <a href=#T1-fit-non-linear-vs-weighted-least-squares>T1 fit: non-linear vs. weighted least-squares</a>
 - <a href=#parallel-computing>Parallel computing</a>
 
 
-Running mrQ with SciTran NIfTI files
 
 
 ### Versions ###
 ##### Version 1 #####
-Version 1 (v.1) is the code that was used by Mezer et al. in their Nature Medicine (2013) article. It is available at: https://github.com/mezera/mrQ/tree/v1.0
+Version 1 (v.1) is the code that was used by Mezer et al. in their [Nature Medicine article](http://www.nature.com/nm/journal/v19/n12/full/nm.3390.html?WT.ec_id=NM-201312) (2013). The code is available at: https://github.com/mezera/mrQ/tree/v1.0
 
 ##### Version 2 #####
-Version 2 (v.2) was released in autumn 2015 and was developed by the Mezer lab of the Hebrew University of Jerusalem, Israel. 
+Version 2 (v.2) was released in autumn 2015 and was developed by the [Mezer lab](http://elsc.huji.ac.il/mezer/home) of the Hebrew University of Jerusalem, Israel, in collaboration with the [VISTA lab](https://vistalab.stanford.edu/) of Stanford University, USA. 
 
 Some of the important changes are highlighted below: 
 - A cleaner and more streamlined code, whose modular structure makes it easier to run and whose extensive commenting makes it easier to read.
 - Only NIfTI files are accepted as input. DICOM files are no longer compatible with mrQ. We recommend the SciTran DICOM-to-NIfTI converter (see <a href=#optional-software>Optional Software</a>), which preserves key header information. If you use another converter, you will have to manually enter this information imto the mrQ structure (see <a href=#running-mrq-with-other-nifti-files>Running mrQ with other NIfTI files</a>).
-- The code runs without the need of parallel computing (though it will go much faster with parallel computing). The code is built to utilize SunGrid, though the default for SunGrid is “off”. See <a href=#parallel-computing>Parallel computing</a>.
-- More new defaults include using the weighted linear least squares for the T1-M0 fit; using local regression for the B1 fit; and using a local T1 regularization for the M0-PD fit.
-- The B1 fit, which is performed using a one-parameter local regression.
-- Changes to the PD-CSF normalization, yielding more robust results.
+- In past versions, setting up mrQ necessitated the use of three functions (mrQ_Create, mrQ_Set, mrQ_run). Now, these functions are all rolled into mrQ_run_Ver2. See <a href=#running-mrq>Running mrQ</a>.
+- Though it will decrease the run time, the use of parallel computing is no longer required. The code is built to utilize SunGrid, though the default for SunGrid is “off”. See <a href=#parallel-computing>Parallel computing</a>.
+- The default for the T1-M0 fit is now the weighted linear least squares method, replacing the nonlinear least squares method in past versions. This reduces the run time and is comparable to the nonlinear method in both precision and accuracy. See <a href=#T1-fit-non-linear-vs-weighted-least-squares>T1 fit: non-linear vs. weighted least-squares</a> for more information and citation.
+- The B1 fit, which is performed using a one-parameter local regression and whose calculation is faster and more robust.
+- For the M0-PD fit, a a local T1 regularization is used.
+- Changes to the PD-CSF normalization yield more robust results.
 - A nice synthetic T1-weighted image, which is good for segmentation.
+- Multi-coil information can be advantageous, but is no longer required.
 
-mrQ v.2 can be found at the link: _**[[[INSERT LINK HERE]]]]**_. We recommend you use the most recent, up-to-date version of mrQ.
+mrQ v.2 can be found at the link: _**[[[INSERT LINK HERE]]]**_. We recommend you use the most recent, up-to-date version of mrQ.
 
 ### mrQ analysis overview ###
 - mrQ will use the mrQ structure you create and save it to the subject’s directory.
 - New directories will be created, including directories for data and quantitative fits.
 - Images will be registered to each other.
-- SEIR-EPI T1 will be computed (low resultion) 
+- SEIR-EPI T1 will be computed (low resolution) 
 - SPGR T1, M0, B1 maps, and a synthetic T1-weighted image will be computed.
 - T1-weighted and quantitative T1 images will be combined to segment the brain tissue. 
 - PD and coil gain will be fitted from the M0 image.
@@ -90,7 +90,7 @@ mrQ v.2 can be found at the link: _**[[[INSERT LINK HERE]]]]**_. We recommend yo
 - FreeSurfer - http://surfer.nmr.mgh.harvard.edu/ 
     - *Earlier versions of the code relied on FreeSurfer, but it is no longer required. You can choose to use FreeSurfer at particular junctions in the code, e.g. Segmentation.* 
 - Parallel computing environment (e.g. SunGrid Engine)
-    - *Not required, but it will make a big difference for running time.*
+    - *Not required, but it will reduce running time.*
 - A DICOM-to-NIfTI converter
     - *We recommend using the code that was developed by [Scientific Transparency](http://scitran.github.io/) (SciTran), a project at Stanford University. This code preserves key header information that is required by mrQ. To get the code, you will need to use [Docker](http://docs.docker.com/windows/started/). The code is short and is available at: https://hub.docker.com/r/vistalab/nimsdata/*
     - *You can use other types of NIfTI files, but you will need to manually enter the missing header information.  See* <a href=#running-mrq-with-other-nifti-files>Running mrQ with other NIfTI files</a>. 
@@ -110,9 +110,12 @@ mrQ requires the following openly distributed code repositories:
 ##### Spoiled gradient echo scans (SPGR, FLASH) #####
 
 1. 2-4 SPGR (not fast SPGR) scans with multiple flip angles recommended (e.g., 4, 10, 20 and 30 degrees).  
-2. All scans should have a single TR (note that a higher TR will increase the SNR).
-3. Minimal TE (less than or equal to 2 msec)
-4. Save the multi-coil information. To do this on GE scanners, change the scanner default by editing the saveinter cv: saveinter=1.
+2. All scans should have a single TR.
+3. Scans should have a minimal TE, about 2 msec. (Longer TE generates T2* in PD.)
+4. *Optional*: Save the multi-coil information. 
+   - GE scanners: Change the scanner default by editing the saveinter cv: saveinter=1.
+   - Siemens scanners:
+   - Philips scanners: *If you know how to implement these settings, please email us.* 
 5. Scan with the same prescan parameters for all SPGR scans. To do this, scan the highest SNR image first (flip angle = 10). For the next scan, choose manual pre-scan and perform the scan without changing the pre-scan parameters.
 
 ##### EPI spin-echo inversion recovery scans (B1 mapping) #####
@@ -120,78 +123,69 @@ mrQ requires the following openly distributed code repositories:
 Low-resolution T1 maps are used to correct for the B1 bias. We will acquire data to fit unbiased T1 maps and correct the bias in the SPGR scans. The T1 fit is based on the <a href=#matlab-code>aforementioned</a> article by Barral et al. (2010).
 
 1. Scan four SEIR-EPI readout scans with four different inversion times (50, 400, 1200 and 2400 msec).
-2. Each scan needs to be acquired with slab inversion. For GE scanners, change the scanner default by editing the a_gzrf0 cv: a_gzrf0=0
-3. Use fat suppression. Fat suppression should be spatial-spectral to avoid any slice-selective imperfections. Note: This is the default for GE scanners when slices are less than 4 mm thick.
+2. Each scan needs to be acquired with slab inversion. 
+   - GE scanners: Change the scanner default by editing the a_gzrf0 cv: a_gzrf0=0
+   - Siemens scanners:
+   - Philips scanners: *If you know how to implement these settings, please email us.* 
+3. Use fat suppression. Fat suppression is recommended to be spatial-spectral to avoid any slice-selective imperfections. Note: This is the default for GE scanners when slices are less than 4 mm thick.
+   - GE scanners: This is the default when slices are less than 4 mm thick.
+   - Siemens scanners:
+   - Philips scanners: *If you know how to implement these settings, please email us.* 
 
-### Data Organization ###
-#### Follow these guidelines when organizing your data: ####
-
-- Data should be in a single directory, “DATA”.
-- Within the DATA directory, a DICOMs directory is needed.
-- Within the DICOMs directory, each scan should be in a separate directory.
-- All SEIR DICOMs need to be in the DICOM directory.  
-- A single DICOM is needed for each scan in that scan's directory so that the header can be read by mrQ. 
-- All SPGR files need to be in NIfTI format within the DATA directory.
-
-See http://purl.stanford.edu/qh816pc3429 for an example of directory organization.
-
+Alternatively, you can provide your own B1 map (NIfTI) if it is in SPGR space.
 
 ### Running mrQ ###
 ##### Overview #####
-To run mrQ, a mrQ structure (a .mat file) needs to be created, set and executed. These steps are done using the mrQ functions **mrQ_Create**, **mrQ_Set** and **mrQ_run_Ver2**, respectively. 
-- The function **mrQ_Create** takes the data files' location ("dataDir"), creates an output directory ("outDir") and initializes the mrQ structure.
-  ```matlab           
-  mrQ = mrQ_Create(dataDir, [], outDir)
-  ```       
-- The function **mrQ_Set** allows the user to set a number of parameters, such as the desired method of the PD fit or whether the SunGrid is available. If your NIfTI files were not created using the SciTran code, you will need to enter the missing information here.
-    ```matlab
-    mrQ = mrQ_Set(mrQ,parameter_name,paramter_value)
-    % for example:
-    mrQ = mrQ_Set(mrQ, pdfit_method, 2)
-     ```
-- The function **mrQ_run_Ver2** will run mrQ. If the NIfTI files were created using the SciTran code, the location of the NIfTI files is sufficient to run the code with the default parameters. 
-   ```matlab
-   mrQ_run(mrQ.name)
-   ```
-   The mrQ_run_Ver2 code is modular, so it is easy to go step by step and see what is being computed when. 
-   
-   An added functionality of the v.2 run code is parameters can be set directly as input of mrQ_run_Ver2, and not only through mrQ_Set. For example:
-   ```matlab
-   mrQ_run(mrQ.name, pdfit_method, 2)
-   ```
+In v.1, running mrQ necessitated that the mrQ structure be created, set and executed. These steps were done using the mrQ functions mrQ_Create, mrQ_Set and mrQ_run, respectively. In v.2, these functions have all been incorporated into **mrQ_run_Ver2**, although mrQ_Create and mrQ_Set are still operational as standalone functions and can be called before running mrQ_run_Ver2.    
 
-For an example of this structure, see ‘runScript’ at: http://purl.stanford.edu/qh816pc3429
+The mrQ_run_Ver2 code is modular, so it is easy to go step by step and see what is being computed when. 
 
-#### Running mrQ with SciTran NIfTI files ####
-We recommend using SciTran to convert your DICOM files to NIfTI files (see <a href=#optional-software>Optional Software</a>), as it preserves the key header information for use in mrQ. Once the NIfTI files are in their directory, you can run mrQ. For example:
+
+##### Example directories #####
+The example directory and runscript for v.1 can be found at: http://purl.stanford.edu/qh816pc3429.
+
+The example directory and runscript for v.2 can be found at: _**[[[[INSERT LINK HERE]]]]**_.  
+ - Note that the files in the v.2 directory are NIfTIs while those in the v.1 directory are DICOMs.
+
+
+##### Running mrQ with SciTran NIfTI files #####
+We recommend using SciTran to convert your DICOM files to NIfTI files (see <a href=#optional-software>Optional Software</a>), as it preserves the key header information for use in mrQ. 
+
+If the SciTran-processed NIfTI files are located in the directory "dataDir" and the desired output folder is "outDir", you can run mrQ with the following code:
 
 ```matlab
-% Create mrQ structure and define the datadir where the NIfTI are saved, 
-% and outdir where mrQ output will be saved.
-mrQ = mrQ_Create(dataDir,[],outDir);
-%
-% One can set many different fit properties via mrQ_set.m
-% 
-% Get the image and hdr info from the NIfTI:
-mrQ = mrQ_arrangeData_nimsfs(mrQ);
-%
-% Run it:
-mrQ_run(mrQ.name)
+mrQ_run_Ver2(dataDir, outDir) 
 ```
 
-#### Running mrQ with other NIfTI files ####
-If you are using NIfTI files that were not generated by the SciTran code, you will need to manually enter key header information using mrQ_Set. 
+In past versions, changing a default parameter would be done in mrQ_Set, before running mrQ_run. Now, such changes can be done directly as mrQ_run_Ver2 input. In the following syntax, the parameter "autoacpc" is being changed to 0 (default was 1):
+
+```matlab
+mrQ_run_Ver2(dataDir, outDir, [],[],[], autoacpc, 0)
+```
+
+Enter as many parameters as you want to change, listing the parameter name followed by its value, with everything separated by commas:
+```matlab
+mrQ_run_Ver2(dataDir, outDir, [],[],[], autoacpc, 0, sungrid, 1, interp, 7, polydeg, 4)
+```
+
+Alternatively, these can be performed in the mrQ_Set function, though they would have to be in separate commands:
+```matlab
+mrQ = mrQ_Set(autoacpc, 0);
+mrQ = mrQ_Set(sungrid, 1);
+mrQ = mrQ_Set(interp, 7);
+mrQ = mrQ_Set(polydeg, 4);
+```
+
+##### Running mrQ with other NIfTI files #####
+If you are using NIfTI files that were not generated by the SciTran code, you will need to manually enter key header information (using mrQ_Set) before you can run mrQ_run_Ver2. 
 - For the SPGR data, in addition to the location of the files and a unique name string for each, you will need each one's TR, TE, flip angle and field strength. 
 - For the SEIR data, in addition to the location of the files and a unique name string for each, you will need each one's TR, TE and IT. 
 
-Example:
+If the NIfTI files are located in the directory "dataDir" and the desired output folder is "outDir", you can use the following code.
+
+First, create a structure called "inputData_spgr". Set the required SPGR parameters: 
+
 ```matlab
-% Create mrQ structure and define the datadir where the NIfTI are saved,
-% and outdir where mrQ output will be saved.
-mrQ = mrQ_Create(dataDir,[],outDir);
-%
-% Set different properties via mrQ_Set, if desired.
-%
 %        A. Define the SPGR header info:
 %
 % mrQ.RawDir is the location where the NIfTI are saved.
@@ -211,7 +205,10 @@ inputData_spgr.flipAngle = [4 10 20 30];
 %
 % The field strength of each NIfTI in the list (in Teslas)
 inputData_spgr.fieldStrength = [3 3 3 3];
-%
+```
+
+Next, create a structure called "inputData_seir". Set the required SEIR parameters:
+```matlab
 %        B. Define the SEIR header info:
 %
 % mrQ.RawDir is the location where the NIfTI are saved
@@ -228,45 +225,56 @@ inputData_seir.TE = [49 49 49 49];
 %
 % The inversion time of each NIfTI in the list (in msec)
 inputData_seir.IT = [50 400 1200 2400];
-%
-% Add the NIfTI info to the mrQ structure:
-mrQ = mrQ_arrangeData_nimsfs(mrQ,inputData_spgr,inputData_seir);
-%
-% Run it:
-mrQ_run(mrQ.name)
+```
+
+Now we are ready to run mrQ:
+```matlab
+mrQ_run_Ver2(dataDir, outDir, inputData_spgr, inputdata_seir,[])
+```
+
+You can also change the parameters in this command:
+```matlab
+mrQ_run_Ver2(dataDir, outDir, inputData_spgr, inputdata_seir, [], autoacpc, 0) 
+% or add as many parameters you want, as before, separated by commas
 ```
 
 ##### Visualization #####
 To interactively watch the data after it's been aligned, define a *check* field and set it to 1. 
 (It will activate the interaction in mrQ_initSPGR_ver2.m)
+```matlab
+mrQ_run_Ver2(dataDir, outDir, [],[],[], check, 1) 
+% or, using mrQ_Set (before mrQ_run_Ver2):
+mrQ = mrQ_Set(mrQ, check, 1); 
+```
 
 ##### Alignment #####
 The default alignment of the images is an automatic AC-PC alignment. 
 It can be semi-manual or non-AC-PC. Settings can be changed when calling mrQ_run or by changing the settings later with mrQ_Set.
 
 ### T1 fit: non-linear vs. weighted least-squares ###
-The most demanding computation in mrQ is the T1 fit. To avoid the long computing time of the non-linear method (which may take days on a single CPU for a whole brain with 1 mm<sup>3</sup> voxels), one can use the weighted-least square method as good alternative.
+The most demanding computation in mrQ is the T1 fit. To avoid the long computing time of the nonlinear least squares method (which may take days on a single CPU for a whole brain with 1 mm<sup>3</sup> voxels), one can use the weighted-linear least-squares method as good alternative. The weighted linear method's accuracy and precision are comparable to those of the nonlinear method.
 
 See: [Linear least-squares method for unbiased estimation of T1 from SPGR signals. Chang LC, Koay CG, Basser PJ, Pierpaoli C. Magn Reson Med. 2008 Aug;60(2):496-501. doi: 10.1002/mrm.21669.](http://www.ncbi.nlm.nih.gov/pubmed/18666108)
 
-To run the weighted least-squares:
+The default is to run the weighted-linear least-squares (and not the nonlinear least-squares). To reverse these settings (i.e. weighted-linear is off and nonlinear is on), use the following example code:
 ```matlab
-mrQ = mrQ_Set(mrQ,'wl',1);
-mrQ = mrQ_Set(mrQ,'lsq',0);
+mrQ_run_Ver2(dataDir, outDir, [],[],[], wl, 0, lsq, 1)
+% or, using mrQ_Set (before mrQ_run_Ver2):
+mrQ = mrQ_Set(mrQ, wl, 0);
+mrQ = mrQ_Set(mrQ, lsq ,1);
 ```
 
 ### Parallel computing ###
-Previous versions of the code relied on parallel computing for certain steps. However, mrQ does not require parallel computing in v.2 and later. If parallel computing such as the SunGrid engine is available, we recommend using it as a way of greatly reducing the run time.
+Previous versions of the code relied on parallel computing for certain steps. However, mrQ does not require parallel computing in v.2 and later. If parallel computing such as the SunGrid engine is available, we recommend using it as a way of reducing the run time.
 
 mrQ takes advantage of parallel computing during three steps within the analysis:
 1. Calculating the transmit inhomogeneity for each voxel.
 2. Calculating the T1 and M0 for each voxel.
 3. Calculating the coil gain for different blocks in image space.
 
-mrQ is written to take advantage of the SunGrid Engine for parallel computing, though its default is "off". Each user will need to change the specific calls to the grid, according to the parallel computing environment available. The user can turn off or on all of those parallel jobs when creating the mrQ structure:
+mrQ is written to take advantage of the SunGrid Engine for parallel computing, though its default is "off". Each user will need to change the specific calls to the grid, according to the parallel computing environment available. To turn SunGrid on, use the following example code:
 ```matlab
-mrQ=mrQ_Set(mrQ,'sungrid',0); % off, default
-% or
-mrQ=mrQ_Set(mrQ,'sungrid',1); % on
+mrQ_run_Ver2(dataDir, outDir, [],[],[], sungrid, 1) 
+% or, using mrQ_Set (before mrQ_run_Ver2):
+mrQ = mrQ_Set(mrQ,sungrid, 1); 
 ```
-

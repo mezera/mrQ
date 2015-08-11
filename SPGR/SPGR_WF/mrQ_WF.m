@@ -60,7 +60,7 @@ end
 % end
 % BM=readFileNifti(BMfile); BM=BM.data;
 
-%% II. Load aligned data
+%% II. Load aligned raw data
 
 % next we load the file that contains the aligned raw data
 % this file contains: xform, mmPerVox, and the struct 's'
@@ -69,8 +69,7 @@ outFile  = fullfile(dataDir,'dat_aligned.mat'); %without coilWeights data
 disp(['Loading aligned data from ' outFile '...']);
 load(outFile);
 
-%% I
-% find area of high T1=[4 -5]  around the vetricles
+%% III. find area of high T1=[4 - 5]  around the vetricles
 
 WFmask=ones(size(T1));
 
@@ -96,28 +95,21 @@ WFmask(:,:,szH(3)+ZZ:end)=0;
 
 % find areas within the ventricles area with high value of T1
 WFmask= WFmask & T1<=5 & T1>=4.2 ;
-
-for ii=1:length(s), CSF_Sig(ii)=median(s(ii).imData(WFmask)); end
-
-[~,SelectedFA]=(max(CSF_Sig));
-
-%%  data for WF:
-
-datForPD=s(SelectedFA).imData;
-TR=s(SelectedFA).TR;
-fa=s(SelectedFA).flipAngle;
-% if multicoil:
-
-%% III : exclude M0 outliers in the ROI
-
-WFmask=WFmask & PD<prctile(PD(WFmask),99) & PD>prctile(PD(WFmask),1) & datForPD< prctile(datForPD(WFmask),99) &  datForPD>prctile(datForPD(WFmask),1);
-
-
-%% II
+%% IV. data for WF:
 % % loop over raw (aligned and combined) data and find the flip angle(s) with
 % % the best SNR. it is hard to measure noise. so we will use the signal in WM
 % % as a reference because it's a place with good signal across flip angles)
-%    
+
+for ii=1:length(s)
+    CSF_Sig(ii)=median(s(ii).imData(WFmask)); 
+end
+
+[~,SelectedFA]=(max(CSF_Sig));
+
+%%
+
+%  Instead of finding the best FA within CSF, another option is using WM
+%  ROI, 
 % %     WMmask=?
 % WMmask=ones(size(T1));
 % WMmask(T1<0.7)=0;
@@ -131,21 +123,32 @@ WFmask=WFmask & PD<prctile(PD(WFmask),99) & PD>prctile(PD(WFmask),1) & datForPD<
 %     %     per file??
 %     %     mean?
 %     
-%     WMrawDat=rawDat(WMmask);
-%     WMdata(ii)=mean(WMrawDat(:));
-%     
+%      WM_Sig(ii)=median(s(ii).imData(WMmask)); 
+
 % end
 % 
 % FAloc=find(WMdata==max(WMdata));
 
 
 
+%% V. data for WF:
+
+datForPD=s(SelectedFA).imData;
+TR=s(SelectedFA).TR;
+fa=s(SelectedFA).flipAngle;
+
+%% VI : exclude M0 outliers in the ROI
+
+WFmask=WFmask & PD<prctile(PD(WFmask),99) & PD>prctile(PD(WFmask),1) & datForPD< prctile(datForPD(WFmask),99) &  datForPD>prctile(datForPD(WFmask),1);
 
 
-%% IV
+%% VII. calculate PD
 % calculate  PD within the selected ROI and flip angle(s) (using the SPGR
-% equation, T1, and gain [note gain for multi coil is define for the sum of
-% multi coils, and for the combine as arrived from the scanner])
+% equation, T1, and gain 
+
+
+% [note gain for multi coil is define for the sum of multi coils, and for
+% the combine as arrived from the scanner])
 
 if notDefined('Gainfile')
     if mrQ.PDfit_Method==1
@@ -162,21 +165,22 @@ if notDefined('Gainfile')
     end
 end
 Gain=readFileNifti(Gainfile); Gain=Gain.data;
+
 % calculate PD for the FA with the best Signal
 
-
+% change FA into radians
 fa = (fa.*B1)./180.*pi;
+
+% calculate PD assuming we're in CSF (so T1 is 4300ms)
 PDcsf=datForPD./(Gain.* ( (1-exp(-TR./4300)).*sin(fa)./(1-exp(-TR./4300).*cos(fa))));
+ 
+%% VIII. scale this roi to have pd of 1. --> this is our global scale
 
-
-       
-%% V
-% scale this roi to have pd of 1. --> this is our global scale
 [csfValues, csfDensity]= ksdensity(PDcsf((WFmask)), [min(PDcsf((WFmask))):0.001:max(PDcsf((WFmask)))] ); % figure;plot(csfDensity,csfValues)
 CalibrationVal= csfDensity(csfValues==max(csfValues)); %median(PD(find(CSF)));
 CalibrationVal=1./CalibrationVal;
-%% VI
-% apply to PD images to make WFfile --> done
+
+%% IX. apply to PD images to make WFfile --> save
 
 WF=PD.*CalibrationVal(1);
 

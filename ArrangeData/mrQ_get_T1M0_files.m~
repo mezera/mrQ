@@ -76,20 +76,13 @@ if whT1
             T1file= mrQ.T1_B1_lsqFit;
         end
     end
-    %% II-d. Maybe it is already in the outputDir?
-    if isfield(mrQ, 'maps')
-        if isfield(mrQ.maps,'T1path')
-            if exist(mrQ.maps.T1path,'file')
-                T1file= mrQ.maps.T1path;
-            end
-        end
-    end
-%% II-e. Select manually
+    
+%% II-d. Select manually
     if isempty(T1file)
         T1file = mrvSelectFile('r','*.nii.gz','Select T1 fit file',mrQ.spgr_initDir);
     end
     
-%% II-f. Still can't find it (error)
+%% II-e. Still can't find it (error)
     
     if isempty(T1file)
         error('Cannot find the T1file')
@@ -160,7 +153,15 @@ if whM0
         end
     end
 
-%   
+%% III-d. Maybe it is already in the outputDir?
+    if isfield(mrQ, 'maps')
+        if isfield(mrQ.maps,'T1path')
+            if exist(mrQ.maps.T1path,'file')
+                T1file= mrQ.maps.T1path;
+            end
+        end
+    end
+    
     % Note that we are not moving the M0 image to the output Dir, so we are
     % not looking for it there.
     
@@ -194,14 +195,14 @@ if whBM
             BMfile= mrQ.BrainMask;
         end
     end
-    
-    if isfield(mrQ,'HMfile')    
+    if isfield(mrQ,'HMfile')
+        
         if  exist(mrQ.HMfile,'file')
             BMfile= mrQ.HMfile;
         end
     end
-    
-    if isfield(mrQ,'FullMaskFile')    
+    if isfield(mrQ,'FullMaskFile')
+        
         if  exist(mrQ.FullMaskFile,'file')
             BMfile= mrQ.FullMaskFile;
         end

@@ -332,6 +332,7 @@ if (mrQ.VIP_WF_done==0)
     
     
     [mrQ.AnalysisInfo, mrQ] = mrQ_VIP(mrQ);
+    
     save(mrQ.name,'mrQ');
     mrQ.VIP_WF_done=1;
     fprintf('\n Calculation of VIP, MTV and SIR  - done!              \n');

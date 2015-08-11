@@ -1,14 +1,16 @@
 # mrQ manual (version 2) #
-mrQ is a software package designed to calculate MR parameters (T1 and PD) using spoiled gradient echo scans (SPGR, FLASH). mrQ enables the evaluation of macromolecular tissue volume (MTV) and the apparent volume of the interacting water protons (VIP) as well as the water-surface interaction rate (SIR). 
+mrQ is a software package designed to calculate MR parameters (T1 and PD) using spoiled gradient echo scans (SPGR, FLASH). Using T1 and PD maps mrQ enables the evaluation of macromolecular tissue volume (MTV) and the apparent volume of the interacting water protons (VIP) as well as the water-surface interaction rate (SIR). 
 
 The software and the tissue parameters are described in the following article:
 
 >Mezer A, Yeatman JD, Stikov N, Kay KN, Cho NJ, Dougherty RF, Perry LM, Parvizi J, Hua LH, Butts-Pauly K and Wandell BA. Quantifying the local tissue volume and composition in individual brains with magnetic resonance imaging. Nature Medicine **19**, 1667-1672 (2013).
 http://www.nature.com/nm/journal/v19/n12/full/nm.3390.html?WT.ec_id=NM-201312
 
-and the following patent application:
+and the following patent:
 
->Improved methods for detecting abnormalities in soft tissue using magnetic resonance imaging (MRI), USSN 61/437,587
+
+>Methods for detecting abnormalities and degenerative processes in soft tissue using magnetic resonance imaging (MRI)
+US 20120197105 A1
 
 For an application of mrQ, see:
 
@@ -16,7 +18,11 @@ For an application of mrQ, see:
 
 For more information, please contact: 
 
->Aviv Mezer, avivmezer@gmail.com
+>Aviv Mezer, aviv.mezer(AT)elsc.huji.ac.il
+
+>Shai Berman: shai.berman(AT)mail.huji.ac.il  
+
+>Jonathan Bain: jonathan.bain(AT)mail.huji.ac.il
 
 
 
@@ -50,7 +56,9 @@ Running mrQ with SciTran NIfTI files
 Version 1 (v.1) is the code that was used by Mezer et al. in their Nature Medicine (2013) article. It is available at: https://github.com/mezera/mrQ/tree/v1.0
 
 ##### Version 2 #####
-Version 2 (v.2) was released in autumn 2015 and was developed by the Mezer lab of the Hebrew University of Jerusalem, Israel. Some of the important changes are highlighted below: 
+Version 2 (v.2) was released in autumn 2015 and was developed by the Mezer lab of the Hebrew University of Jerusalem, Israel. 
+
+Some of the important changes are highlighted below: 
 - A cleaner and more streamlined code, whose modular structure makes it easier to run and whose extensive commenting makes it easier to read.
 - Only NIfTI files are accepted as input. DICOM files are no longer compatible with mrQ. We recommend the SciTran DICOM-to-NIfTI converter (see <a href=#optional-software>Optional Software</a>), which preserves key header information. If you use another converter, you will have to manually enter this information imto the mrQ structure (see <a href=#running-mrq-with-other-nifti-files>Running mrQ with other NIfTI files</a>).
 - The code runs without the need of parallel computing (though it will go much faster with parallel computing). The code is built to utilize SunGrid, though the default for SunGrid is “off”. See <a href=#parallel-computing>Parallel computing</a>.

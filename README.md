@@ -44,7 +44,7 @@ For more information, please contact:
   - <a href=#example-directories>Example directories</a>
   - <a href=#visualization>Visualization</a>
   - <a href=#alignment>Alignment</a>
-- <a href=#T1-fit-non-linear-vs-weighted-least-squares>T1 fit: non-linear vs. weighted least-squares</a>
+- <a href=#T1-fit-nonlinear-vs-weighted-linear-least-squares>T1 fit: nonlinear vs. weighted-linear least-squares</a>
 - <a href=#parallel-computing>Parallel computing</a>
 - <a href=#forum>Forum</a>
 
@@ -268,7 +268,7 @@ mrQ_run_Ver2(dataDir, outDir, [],[],[], {'check', 1})
 ##### Alignment #####
 If a reference image is provided, the alignment in the SPGR section will be performed using that image. If no image is provided, mrQ will perform the AC-PC alignment automatically (default, 'acpc'=1), unless the user decides to do so manually (change to 'acpc'=0). Though the default is automatic, we recommend manual alignment when possible.
 
-### T1 fit: non-linear vs. weighted least-squares ###
+### T1 fit: nonlinear vs. weighted-linear least-squares ###
 The most demanding computation in mrQ is the T1 fit. To avoid the long computing time of the nonlinear least squares method (which may take days on a single CPU for a whole brain with 1 mm<sup>3</sup> voxels), one can use the weighted-linear least-squares method as good alternative. The weighted linear method's accuracy and precision are comparable to those of the nonlinear method.
 
 See: [Linear least-squares method for unbiased estimation of T1 from SPGR signals. Chang LC, Koay CG, Basser PJ, Pierpaoli C. Magn Reson Med. 2008 Aug;60(2):496-501. doi: 10.1002/mrm.21669.](http://www.ncbi.nlm.nih.gov/pubmed/18666108)

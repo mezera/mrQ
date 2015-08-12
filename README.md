@@ -1,5 +1,5 @@
 # mrQ manual (version 2) #
-mrQ is a software package designed to calculate MR parameters (T1 and PD) using spoiled gradient echo scans (SPGR, FLASH). Using T1 and PD maps, mrQ performs the evaluation of macromolecular tissue volume (MTV) and the apparent volume of the interacting water protons (VIP) as well as the water-surface interaction rate (SIR). 
+**mrQ** is a software package designed to calculate MR parameters (T1 and PD) using spoiled gradient echo scans (SPGR, FLASH). Using T1 and PD maps, mrQ performs the evaluation of macromolecular tissue volume (MTV) and the apparent volume of the interacting water protons (VIP) as well as the water-surface interaction rate (SIR). This is **version 2** of the mrQ software package.
 
 The software and the tissue parameters are described in the following article:
 
@@ -39,11 +39,15 @@ For more information, please contact:
     - <a href=#epi-spin-echo-inversion-recovery-scans-b1-mapping>EPI spin-echo inversion recovery scans (B1 mapping)</a>
 - <a href=#running-mrq>Running mrQ</a>
   - <a href=#overview>Overview</a>
-  - <a href=#example-directories>Example Directories</a>
   - <a href=#running-mrq-with-scitran-nifti-files>Running mrQ with SciTran NIfTI files</a>
   - <a href=#running-mrq-with-other-nifti-files>Running mrQ with other NIfTI files</a>
+  - <a href=#example-directories>Example Directories</a>
+  - <a href=#visualization>Visualization</a>
+  - <a href=#alignment>Alignment</a>
 - <a href=#T1-fit-non-linear-vs-weighted-least-squares>T1 fit: non-linear vs. weighted least-squares</a>
 - <a href=#parallel-computing>Parallel computing</a>
+- <a href=#forum>Forum</a>
+
 
 
 
@@ -116,7 +120,7 @@ mrQ requires the following openly distributed code repositories:
    - GE scanners: Change the scanner default by editing the saveinter cv: saveinter=1.
    - Siemens scanners:
    - Philips scanners: *If you know how to implement these settings, please email us.* 
-5. Scan with the same prescan parameters for all SPGR scans. To do this, scan the highest SNR image first (flip angle = 10). For the next scan, choose manual pre-scan and perform the scan without changing the pre-scan parameters.
+5. Scan with the same prescan parameters for all SPGR scans. To do this, scan the highest SNR image first (flip angle = 10 degrees). For the next scan, choose manual pre-scan and perform the scan without changing the pre-scan parameters.
 
 ##### EPI spin-echo inversion recovery scans (B1 mapping) #####
 
@@ -140,13 +144,9 @@ In v.1, running mrQ necessitated that the mrQ structure be created, set and exec
 
 The mrQ_run_Ver2 code is modular, so it is easy to go step by step and see what is being computed when. 
 
+If you have a NIfTI B1 map in SPGR space, you can input it into mrQ_run_Ver2.
 
-##### Example directories #####
-The example directory and runscript for v.1 can be found at: http://purl.stanford.edu/qh816pc3429.
-
-The example directory and runscript for v.2 can be found at: _**[[[[INSERT LINK HERE]]]]**_.  
- - Note that the files in the v.2 directory are NIfTIs while those in the v.1 directory are DICOMs.
-
+In past versions, changing a default parameter would be done in mrQ_Set, before running mrQ_run. Now, such changes can be done directly as mrQ_run_Ver2 input. After the first five inputs, enter a cell array of pairs (the parameter and its value), separated by commas. See examples below.
 
 ##### Running mrQ with SciTran NIfTI files #####
 We recommend using SciTran to convert your DICOM files to NIfTI files (see <a href=#optional-software>Optional Software</a>), as it preserves the key header information for use in mrQ. 
@@ -157,23 +157,28 @@ If the SciTran-processed NIfTI files are located in the directory "dataDir" and 
 mrQ_run_Ver2(dataDir, outDir) 
 ```
 
-In past versions, changing a default parameter would be done in mrQ_Set, before running mrQ_run. Now, such changes can be done directly as mrQ_run_Ver2 input. In the following syntax, the parameter "autoacpc" is being changed to 0 (default was 1):
+If you have a B1 file (NIfTI) in SPGR space, you can input it into mrQ_run_Ver2. If the B1 map is located at "B1file":
+```matlab
+mrQ_run_Ver2(dataDir, outDir, [], [], B1file)
+```
+
+In the following syntax, the parameter "autoacpc" is being changed to 0 (default was 1):
 
 ```matlab
-mrQ_run_Ver2(dataDir, outDir, [],[],[], autoacpc, 0)
+mrQ_run_Ver2(dataDir, outDir, [],[], B1file, {'autoacpc', 0})
 ```
 
 Enter as many parameters as you want to change, listing the parameter name followed by its value, with everything separated by commas:
 ```matlab
-mrQ_run_Ver2(dataDir, outDir, [],[],[], autoacpc, 0, sungrid, 1, interp, 7, polydeg, 4)
+mrQ_run_Ver2(dataDir, outDir, [], [], B1file, {'autoacpc', 0, 'sungrid', 1, 'interp', 7, 'polydeg', 4})
 ```
 
 Alternatively, these can be performed in the mrQ_Set function, though they would have to be in separate commands:
 ```matlab
-mrQ = mrQ_Set(autoacpc, 0);
-mrQ = mrQ_Set(sungrid, 1);
-mrQ = mrQ_Set(interp, 7);
-mrQ = mrQ_Set(polydeg, 4);
+mrQ = mrQ_Set('autoacpc', 0);
+mrQ = mrQ_Set('sungrid', 1);
+mrQ = mrQ_Set('interp', 7);
+mrQ = mrQ_Set('polydeg', 4);
 ```
 
 ##### Running mrQ with other NIfTI files #####
@@ -232,19 +237,28 @@ Now we are ready to run mrQ:
 mrQ_run_Ver2(dataDir, outDir, inputData_spgr, inputdata_seir,[])
 ```
 
+If you have a B1 file (NIfTI) in SPGR space, you can input it into mrQ_run_Ver2. If the B1 map is located at "B1file":
+```matlab
+mrQ_run_Ver2(dataDir, outDir, inputData_spgr, inputdata_seir, B1file)
+```
+
 You can also change the parameters in this command:
 ```matlab
-mrQ_run_Ver2(dataDir, outDir, inputData_spgr, inputdata_seir, [], autoacpc, 0) 
+mrQ_run_Ver2(dataDir, outDir, inputData_spgr, inputdata_seir, B1file, {'autoacpc', 0}) 
 % or add as many parameters you want, as before, separated by commas
 ```
 
+##### Example directories #####
+The example directory and runscript for v.1 can be found at: http://purl.stanford.edu/qh816pc3429.
+
+The example directory and runscript for v.2 can be found at: _**[[[[INSERT LINK HERE]]]]**_.  
+ - Note that the files in the v.2 directory are NIfTIs while those in the v.1 directory are DICOMs.
+
 ##### Visualization #####
-To interactively watch the data after it's been aligned, define a *check* field and set it to 1. 
+To interactively watch the data after it's been aligned, define a "check" field and set it to 1. 
 (It will activate the interaction in mrQ_initSPGR_ver2.m)
 ```matlab
-mrQ_run_Ver2(dataDir, outDir, [],[],[], check, 1) 
-% or, using mrQ_Set (before mrQ_run_Ver2):
-mrQ = mrQ_Set(mrQ, check, 1); 
+mrQ_run_Ver2(dataDir, outDir, [],[],[], {'check', 1}) 
 ```
 
 ##### Alignment #####
@@ -258,14 +272,11 @@ See: [Linear least-squares method for unbiased estimation of T1 from SPGR signal
 
 The default is to run the weighted-linear least-squares (and not the nonlinear least-squares). To reverse these settings (i.e. weighted-linear is off and nonlinear is on), use the following example code:
 ```matlab
-mrQ_run_Ver2(dataDir, outDir, [],[],[], wl, 0, lsq, 1)
-% or, using mrQ_Set (before mrQ_run_Ver2):
-mrQ = mrQ_Set(mrQ, wl, 0);
-mrQ = mrQ_Set(mrQ, lsq ,1);
+mrQ_run_Ver2(dataDir, outDir, [],[],[], {'wl', 0, 'lsq', 1})
 ```
 
 ### Parallel computing ###
-Previous versions of the code relied on parallel computing for certain steps. However, mrQ does not require parallel computing in v.2 and later. If parallel computing such as the SunGrid engine is available, we recommend using it as a way of reducing the run time.
+Previous versions of the code relied on parallel computing for certain steps. However, v.2 of mrQ does not require parallel computing. If parallel computing such as the SunGrid engine is available, we recommend using it as a way of reducing the run time.
 
 mrQ takes advantage of parallel computing during three steps within the analysis:
 1. Calculating the transmit inhomogeneity for each voxel.
@@ -274,7 +285,8 @@ mrQ takes advantage of parallel computing during three steps within the analysis
 
 mrQ is written to take advantage of the SunGrid Engine for parallel computing, though its default is "off". Each user will need to change the specific calls to the grid, according to the parallel computing environment available. To turn SunGrid on, use the following example code:
 ```matlab
-mrQ_run_Ver2(dataDir, outDir, [],[],[], sungrid, 1) 
-% or, using mrQ_Set (before mrQ_run_Ver2):
-mrQ = mrQ_Set(mrQ,sungrid, 1); 
+mrQ_run_Ver2(dataDir, outDir, [],[],[], {'sungrid', 1}) 
 ```
+
+### Forum ###
+An interactive forum is available at _**[[[INSERT LINK HERE]]]**_. We hope that mrQ users will find it an informative site to discuss, share and troubleshoot for all topics relating to the mrQ software package.

@@ -32,7 +32,7 @@ For more information, please contact:
 - <a href=#mrq-analysis-overview>mrQ analysis overview</a>
 - <a href=#software-requirements>Software Requirements</a>
     - <a href=#required-third-party-software>Required third-party software</a>
-    - <a href=#optional-software>Optional Software</a>
+    - <a href=#optional-software>Optional software</a>
     - <a href=#matlab-code>Matlab code</a>
 - <a href=#mr-scanning->MR Scanning</a>
     - <a href=#spoiled-gradient-echo-scans-spgrflash>Spoiled gradient echo scans (SPGR, FLASH)</a>
@@ -41,7 +41,7 @@ For more information, please contact:
   - <a href=#overview>Overview</a>
   - <a href=#running-mrq-with-scitran-nifti-files>Running mrQ with SciTran NIfTI files</a>
   - <a href=#running-mrq-with-other-nifti-files>Running mrQ with other NIfTI files</a>
-  - <a href=#example-directories>Example Directories</a>
+  - <a href=#example-directories>Example directories</a>
   - <a href=#visualization>Visualization</a>
   - <a href=#alignment>Alignment</a>
 - <a href=#T1-fit-non-linear-vs-weighted-least-squares>T1 fit: non-linear vs. weighted least-squares</a>
@@ -115,12 +115,15 @@ mrQ requires the following openly distributed code repositories:
 
 1. 2-4 SPGR (not fast SPGR) scans with multiple flip angles recommended (e.g., 4, 10, 20 and 30 degrees).  
 2. All scans should have a single TR.
-3. Scans should have a minimal TE, about 2 msec. (Longer TE generates T2* in PD.)
+3. Scans should have a minimal TE, about 2 msec. (Longer TE generates T2* weighting)
 4. *Optional*: Save the multi-coil information. 
-   - GE scanners: Change the scanner default by editing the saveinter cv: saveinter=1.
-   - Siemens scanners:
-   - Philips scanners: *If you know how to implement these settings, please email us.* 
-5. Scan with the same prescan parameters for all SPGR scans. To do this, scan the highest SNR image first (flip angle = 10 degrees). For the next scan, choose manual pre-scan and perform the scan without changing the pre-scan parameters.
+   - *GE*: Change the scanner default by editing the saveinter cv: saveinter=1.
+   - *Siemens*: To save the individual coil information:  System &#10142; Miscellaneous &#10142; Save Uncombined.
+   - *Philips*: If you know how to implement these settings, please email us or post in the forum. 
+5. Scan with the same prescan parameters for all SPGR scans. 
+   - *GE*: Scan the highest SNR image first (flip angle = 10 degrees). For the next scan, choose manual pre-scan and perform the scan without changing the pre-scan parameters.
+   - *Siemens*: For the other flip angles: Right-click the sequence in the protocol &#10142; Properties and then select a Tab called Execution. There is an option called 'scan without further preparation' and you need to check that box.  That will cause that sequence to copy the prescan parameters from the previous one.
+   - *Philips*: If you know how to implement these settings, please email us or post in the forum. 
 
 ##### EPI spin-echo inversion recovery scans (B1 mapping) #####
 
@@ -128,13 +131,13 @@ Low-resolution T1 maps are used to correct for the B1 bias. We will acquire data
 
 1. Scan four SEIR-EPI readout scans with four different inversion times (50, 400, 1200 and 2400 msec).
 2. Each scan needs to be acquired with slab inversion. 
-   - GE scanners: Change the scanner default by editing the a_gzrf0 cv: a_gzrf0=0
-   - Siemens scanners:
-   - Philips scanners: *If you know how to implement these settings, please email us.* 
-3. Use fat suppression. Fat suppression is recommended to be spatial-spectral to avoid any slice-selective imperfections. Note: This is the default for GE scanners when slices are less than 4 mm thick.
-   - GE scanners: This is the default when slices are less than 4 mm thick.
-   - Siemens scanners:
-   - Philips scanners: *If you know how to implement these settings, please email us.* 
+   - *GE*: Change the scanner default by editing the a_gzrf0 cv: a_gzrf0=0
+   - *Siemens*: For slab selective: Routine &#10142; Concatenations and set that parameter to the number of slices.  That way the new slice will not be acquired before the old one is finished.
+   - *Philips*: If you know how to implement these settings, please email us or post in the forum. 
+3. Use fat suppression. Fat suppression is recommended to be spatial-spectral to avoid any slice-selective imperfections.
+   - *GE*: This is the default when slices are less than 4 mm thick.
+   - *Siemens*: There is a similar setting called "water excitation", but check with Siemens for technical specifics.
+   - *Philips*: If you know how to implement these settings, please email us or post in the forum. 
 
 Alternatively, you can provide your own B1 map (NIfTI) if it is in SPGR space.
 
@@ -168,17 +171,18 @@ In the following syntax, the parameter "autoacpc" is being changed to 0 (default
 mrQ_run_Ver2(dataDir, outDir, [],[], B1file, {'autoacpc', 0})
 ```
 
-Enter as many parameters as you want to change, listing the parameter name followed by its value, with everything separated by commas:
+Enter as many parameters as you want to change, all inside one cell array. Write them in pairs, listing the parameter name followed by its value, with everything separated by commas:
 ```matlab
-mrQ_run_Ver2(dataDir, outDir, [], [], B1file, {'autoacpc', 0, 'sungrid', 1, 'interp', 7, 'polydeg', 4})
+mrQ_run_Ver2(dataDir, outDir, [], [], B1file, {'autoacpc', 0, 'sungrid', 1, 'wl', 0, 'refim', RefImageFile})
+
 ```
 
-Alternatively, these can be performed in the mrQ_Set function, though they would have to be in separate commands:
+Alternatively, these can be performed in the mrQ_Set function, though they would have to be written as separate commands:
 ```matlab
 mrQ = mrQ_Set('autoacpc', 0);
 mrQ = mrQ_Set('sungrid', 1);
-mrQ = mrQ_Set('interp', 7);
-mrQ = mrQ_Set('polydeg', 4);
+mrQ = mrQ_Set('wl', 0);
+mrQ = mrQ_Set('refim', RefImageFile); 
 ```
 
 ##### Running mrQ with other NIfTI files #####
@@ -193,8 +197,8 @@ First, create a structure called "inputData_spgr". Set the required SPGR paramet
 ```matlab
 %        A. Define the SPGR header info:
 %
-% mrQ.RawDir is the location where the NIfTI are saved.
-inputData_spgr.rawDir = mrQ.RawDir;
+% dataDir is the location where the NIfTI are saved.
+inputData_spgr.rawDir = dataDir;
 %
 % A list of NIfTI names. (A unique string from the names is enough)
 inputData_spgr.name = {'0009' '0010' '0011' '0012'};
@@ -216,8 +220,8 @@ Next, create a structure called "inputData_seir". Set the required SEIR paramete
 ```matlab
 %        B. Define the SEIR header info:
 %
-% mrQ.RawDir is the location where the NIfTI are saved
-inputData_seir.rawDir = mrQ.RawDir;
+% dataDir is the location where the NIfTI are saved
+inputData_seir.rawDir = dataDir;
 %
 % A list of NIfTI names.  (A unique string from the names is enough)
 inputData_seir.name = {'0005'  '0006'  '0007'  '0008'};
@@ -245,7 +249,7 @@ mrQ_run_Ver2(dataDir, outDir, inputData_spgr, inputdata_seir, B1file)
 You can also change the parameters in this command:
 ```matlab
 mrQ_run_Ver2(dataDir, outDir, inputData_spgr, inputdata_seir, B1file, {'autoacpc', 0}) 
-% or add as many parameters you want, as before, separated by commas
+% or add as many parameters you want, as before, in one cell array and separated by commas
 ```
 
 ##### Example directories #####
@@ -262,8 +266,7 @@ mrQ_run_Ver2(dataDir, outDir, [],[],[], {'check', 1})
 ```
 
 ##### Alignment #####
-The default alignment of the images is an automatic AC-PC alignment. 
-It can be semi-manual or non-AC-PC. Settings can be changed when calling mrQ_run or by changing the settings later with mrQ_Set.
+If a reference image is provided, the alignment in the SPGR section will be performed using that image. If no image is provided, mrQ will perform the AC-PC alignment automatically (default, 'acpc'=1), unless the user decides to do so manually (change to 'acpc'=0). Though the default is automatic, we recommend manual alignment when possible.
 
 ### T1 fit: non-linear vs. weighted least-squares ###
 The most demanding computation in mrQ is the T1 fit. To avoid the long computing time of the nonlinear least squares method (which may take days on a single CPU for a whole brain with 1 mm<sup>3</sup> voxels), one can use the weighted-linear least-squares method as good alternative. The weighted linear method's accuracy and precision are comparable to those of the nonlinear method.

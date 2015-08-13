@@ -25,28 +25,27 @@ For more information, please contact:
 
 
 ## Contents ##
-
-- <a href=#versions>Versions</a>
-    - <a href=#version-1>Version 1</a>
-    - <a href=#version-2>Version 2</a> 
-- <a href=#mrq-analysis-overview>mrQ analysis overview</a>
-- <a href=#software-requirements>Software Requirements</a>
-    - <a href=#required-third-party-software>Required third-party software</a>
-    - <a href=#optional-software>Optional software</a>
-    - <a href=#matlab-code>Matlab code</a>
-- <a href=#mr-scanning->MR Scanning</a>
-    - <a href=#spoiled-gradient-echo-scans-spgrflash>Spoiled gradient echo scans (SPGR, FLASH)</a>
-    - <a href=#epi-spin-echo-inversion-recovery-scans-b1-mapping>EPI spin-echo inversion recovery scans (B1 mapping)</a>
-- <a href=#running-mrq>Running mrQ</a>
-  - <a href=#overview>Overview</a>
-  - <a href=#running-mrq-with-scitran-nifti-files>Running mrQ with SciTran NIfTI files</a>
-  - <a href=#running-mrq-with-other-nifti-files>Running mrQ with other NIfTI files</a>
-  - <a href=#example-directories>Example directories</a>
-  - <a href=#visualization>Visualization</a>
-  - <a href=#alignment>Alignment</a>
-- <a href=#T1-fit-nonlinear-vs-weighted-linear-least-squares>T1 fit: nonlinear vs. weighted-linear least-squares</a>
-- <a href=#parallel-computing>Parallel computing</a>
-- <a href=#forum>Forum</a>
+- [Versions](#)
+	- [Version 1](#)
+	- [Version 2](#)
+- [mrQ analysis overview](#)
+- [Software Requirements](#)
+  - [Required third-party software](#)
+  - [Optional software](#)
+  - [Matlab code](#)
+- [MR Scanning](#)
+	- [Spoiled gradient echo scans (SPGR, FLASH)](#)
+	- [EPI spin-echo inversion recovery scans (B1 mapping)](#)
+- [Running mrQ](#)
+	- [Overview](#)
+	- [Running mrQ with SciTran NIfTI files](#)
+	- [Running mrQ with other NIfTI files](#)
+	- [Example directories](#)
+	- [Visualization](#)
+	- [Alignment](#)
+- [T1 fit: nonlinear vs. weighted-linear least-squares](#)
+- [Parallel computing](#)
+- [Forum](#)
 
 
 

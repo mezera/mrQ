@@ -111,11 +111,9 @@ end
 if(exist('WFfile','var') &&  ~isempty(WFfile))
     disp(['Loading WF data from ' WFfile '...']);
 else
-    if isfield(mrQ,'maps')
-        WFfile=mrQ.maps.WFpath;
-    else
-        WFfile = mrQ.WFfile;
-    end
+    
+    WFfile = mrQ.WFfile;
+    
 end
 if(exist(WFfile,'file'))
     disp(['Loading WF data from ' WFfile '...']);
@@ -230,7 +228,7 @@ if Fullerton==1
     dtiWriteNiftiWrapper(single(VIP), xform, fullfile(outDir,'VIP_fitFullerton.nii.gz'));
     dtiWriteNiftiWrapper(single(TV), xform, fullfile(outDir,'TV_map.nii.gz'));
     
-    if exist(mrQ,'var');
+    if ~notDefined('mrQ')
         mrQ.maps.Fullerton.fh=fullfile(outDir,'T1wVIP_fitFullerton.nii.gz');
         mrQ.maps.Fullerton.VIPpath=fullfile(outDir,'VIP_fitFullerton.nii.gz');
         mrQ.maps.TVpath=fullfile(outDir,'TV_map.nii.gz');
@@ -243,7 +241,7 @@ else
     dtiWriteNiftiWrapper(single(TV), xform, fullfile(outDir,'TV_map.nii.gz'));
     dtiWriteNiftiWrapper(single(SIR), xform, fullfile(outDir,'SIR_map.nii.gz'));
     
-    if exist(mrQ,'var');
+    if ~notDefined('mrQ')
         mrQ.maps.fh=fullfile(outDir,'T1wVIP_fit.nii.gz');
         mrQ.maps.VIPpath=fullfile(outDir,'VIP_map.nii.gz');
         mrQ.maps.TVpath=fullfile(outDir,'TV_map.nii.gz');
@@ -252,7 +250,7 @@ else
     end
     
     
-    if ~exist(mrQ,'var');
+    if  notDefined('mrQ')
         mrQ=[];
     end
 end

@@ -1,5 +1,5 @@
-function mrQ_run_Ver2(dir,outDir,inputData_spgr,inputData_seir,B1file, varArgIn)
-mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_seir,B1file)
+function mrQ_run_Ver3(dir,outDir,inputData_spgr,inputData_seir,B1file, varArgIn)
+% mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_seir,B1file)
 %  mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_seir,B1file)
 %
 % This is an improved version of: mrQ_runNIMS(dir,Callproclus,refFile,outDir)
@@ -20,18 +20,20 @@ mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_seir,B1file)
 %                          alignment will be defined below inside the
 %                          function mrQ_initSPGR_ver2.m.
 %           varargin:   every parameter that you would like to be 
-%                       different from default can be given here. This
-%                       input will be expected to come as a cell array and in pairs, according
-%                       to the ption given in the mrQ_set function. for
-%                       example, if a reference file is given, the input
-%                       should be {'ref', refFile} where refFile is the
-%                       path to a reference image (nii.gz). another example
-%                       is the choice of using sungris, in which case the
-%                       input should be : {'sungrid',useSunGrid} where
-%                       useSunGrid is 1/0 dependding on whether ou would
-%                       like to use sungris (1) or not (0). the default is
-%                       0.
-%
+%                          different from default can be given here. This
+%                          input will be expected to come as a cell array
+%                          and in pairs, according to the options given in
+%                          the mrQ_set function. For example, if a
+%                          reference file is given, the input should be
+%                          {'ref', refFile} where refFile is the path to a
+%                          reference image (nii.gz). Another example is the
+%                          choice of using sungrid, in which case the input
+%                          should be : {'sungrid',useSunGrid} where
+%                          useSunGrid is 1/0 depending on whether or the
+%                          user would like to use sungris (1) or not (0).
+%                          the default is 0. One could also ask for both
+%                          option: {'ref', refFile,'sungrid',useSunGrid}
+%example= mrQ_run_Ver2(dir,outdir,[],[],[],{'lsq',1})
 %   OUTPUT:
 %
 %       This function creates and saves the mrQ strucure to the subject's
@@ -72,33 +74,14 @@ mrQ_createIDfile(mrQ);
 
 % Set other parameters, such as SUNGRID and fieldstrength
 
-%  mrQ = mrQ_Set(mrQ,'sub',num2str(ii));
-
-% if notDefined('useSUNGRID')
-%     mrQ = mrQ_Set(mrQ,'sungrid',false);
-% else
-%     mrQ = mrQ_Set(mrQ,'sungrid',useSUNGRID);
-% end
-
-% mrQ = mrQ_Set(mrQ,'sungrid',1);
-% mrQ = mrQ_Set(mrQ,'fieldstrength',3);
-
-% mrQ = mrQ_Set(mrQ, 'pdfit_method',1);
-
-% if ~notDefined('refFile')
-%     mrQ = mrQ_Set(mrQ,'ref',refFile);
-% else
-%     % New input to automatically perform ac-pc alignment
-%     mrQ = mrQ_Set(mrQ,'autoacpc',1);
-% end
-
-if ~isempty(varArgIn)
-    for ii = 1:2:numel(varArgIn)-1
-        % Check to make sure that the argument is formatted properly
-        mrQ = mrQ_Set(mrQ, varArgIn{ii}, varArgIn{ii+1});     
-    end 
+if ~notDefined('varArgIn')
+    if ~isempty(varArgIn)
+        for ii = 1:2:numel(varArgIn)-1
+            % Check to make sure that the argument is formatted properly
+            mrQ = mrQ_Set(mrQ, varArgIn{ii}, varArgIn{ii+1});
+        end
+    end
 end
-
 
 %% II. Arrange the data
 % A specific arrange function for nimsfs, nifti, or using input for user
@@ -129,7 +112,7 @@ if notDefined('B1file')
         
         % Keeps track of the variables we use.  
         % For details, see inside the function.
-        [~, ~, ~, mrQ.SEIRsaveData]=mrQ_initSEIR_ver2(mrQ,mrQ.SEIRepiDir,mrQ.alignFlag);
+        [~, ~, ~, mrQ.SEIRsaveData]=mrQ_initSEIR_ver3(mrQ,mrQ.SEIRepiDir,mrQ.alignFlag);
         
         [mrQ]=mrQ_fitSEIR_T1(mrQ.SEIRepiDir,[],0,mrQ);
         
@@ -334,21 +317,21 @@ else
     fprintf('\n Using previously calculated PD              \n');
 end
 
-return
 
 %% XII. Calculate VIP, TV,  SIR and synthetic T1w 
 
 if ~isfield(mrQ,'VIP_WF_done')
-    mrQ.SPGR_PDBuild_done=0;
+    mrQ.VIP_WF_done=0;
 end
 
 if (mrQ.VIP_WF_done==0)
     fprintf('\n Calculate VIP, TV and SIR form T1 and WF maps               \n');
     
-    [mrQ.AnalysisInfo] = mrQ_WF(mrQ);
+    [mrQ] = mrQ_WF(mrQ);
     
     
     [mrQ.AnalysisInfo, mrQ] = mrQ_VIP(mrQ);
+    
     save(mrQ.name,'mrQ');
     mrQ.VIP_WF_done=1;
     fprintf('\n Calculation of VIP, MTV and SIR  - done!              \n');
@@ -367,7 +350,7 @@ end
 
 %% XIV. Organize the OutPut directory
 mrQ=mrQ_arrangeOutPutDir(mrQ);
-mrQ_deleteIDfile;% delete the temporary ID file stored in mrQ/sge_subjects
+mrQ_deleteIDfile(mrQ);% delete the temporary ID file stored in mrQ/sge_subjects
 
 %done
 mrQ.AnalysisDone=1;

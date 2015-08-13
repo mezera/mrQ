@@ -74,14 +74,14 @@ mrQ_createIDfile(mrQ);
 
 % Set other parameters, such as SUNGRID and fieldstrength
 
-
-if ~isempty(varArgIn)
-    for ii = 1:2:numel(varArgIn)-1
-        % Check to make sure that the argument is formatted properly
-        mrQ = mrQ_Set(mrQ, varArgIn{ii}, varArgIn{ii+1});     
-    end 
+if ~notDefined('varArgIn')
+    if ~isempty(varArgIn)
+        for ii = 1:2:numel(varArgIn)-1
+            % Check to make sure that the argument is formatted properly
+            mrQ = mrQ_Set(mrQ, varArgIn{ii}, varArgIn{ii+1});
+        end
+    end
 end
-
 
 %% II. Arrange the data
 % A specific arrange function for nimsfs, nifti, or using input for user
@@ -317,18 +317,17 @@ else
     fprintf('\n Using previously calculated PD              \n');
 end
 
-return
 
 %% XII. Calculate VIP, TV,  SIR and synthetic T1w 
 
 if ~isfield(mrQ,'VIP_WF_done')
-    mrQ.SPGR_PDBuild_done=0;
+    mrQ.VIP_WF_done=0;
 end
 
 if (mrQ.VIP_WF_done==0)
     fprintf('\n Calculate VIP, TV and SIR form T1 and WF maps               \n');
     
-    [mrQ.AnalysisInfo] = mrQ_WF(mrQ);
+    [mrQ] = mrQ_WF(mrQ);
     
     
     [mrQ.AnalysisInfo, mrQ] = mrQ_VIP(mrQ);
@@ -351,7 +350,7 @@ end
 
 %% XIV. Organize the OutPut directory
 mrQ=mrQ_arrangeOutPutDir(mrQ);
-mrQ_deleteIDfile;% delete the temporary ID file stored in mrQ/sge_subjects
+mrQ_deleteIDfile(mrQ);% delete the temporary ID file stored in mrQ/sge_subjects
 
 %done
 mrQ.AnalysisDone=1;

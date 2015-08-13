@@ -105,12 +105,13 @@ eval(cmd);
 
 mrQ.mapsDir=mapDir;
 %Which T1 need a fix
-mrQ.maps.T1path=fullfile(mapDir,'T1_map_Wlin.nii.gz');
+mrQ.maps.T1path=fullfile(mapDir,[dd, ddd]);
 %% 
 
 mrQ.maps.WFpath=fullfile(mapDir,'WF_map.nii.gz');
 mrQ.maps.TVpath=fullfile(mapDir,'TV_map.nii.gz');
 mrQ.maps.SIRpath=fullfile(mapDir,'SIR_map.nii.gz');
+mrQ.maps.VIPpath=fullfile(mapDir,'VIP_map.nii.gz');
 
 %% II-a. Copy SEIR images to a subdirectory within 'Brain Maps'
 
@@ -157,7 +158,7 @@ eval(cmd);
 %% IV. Organize the T1 weighted images in a directory named 'T1w'
 
 T1wDir=fullfile(mrQ.OutPutNiiDir,'T1w');
-
+mrQ.T1w_file=T1wDir;
 % If we redo it and maps directory already exists,
 %   we will save the old one before we make a new one.
 if (exist(T1wDir,'dir'))

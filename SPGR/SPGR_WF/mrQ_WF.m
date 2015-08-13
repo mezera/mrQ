@@ -190,5 +190,5 @@ dtiWriteNiftiWrapper(WF,xform,WFfile);
 mrQ.WFfile=WFfile;
 mrQ.ScalePD_2_WF=CalibrationVal;
 
-    
+ save(mrQ.name,'mrQ'); 
 

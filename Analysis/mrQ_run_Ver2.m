@@ -174,27 +174,7 @@ else
     
 end
 
-%%  VI. Register high-resolution EPI image to low-resolution aligned T1 image
 
-%mrQ_NLANTS_warp_SPGR2EPI_RB(AnalysisInfo,SET1file,t1fileHM,flipAngles,outDir,AlignFile)
-
-if ~isfield(mrQ,'SPGR_EPI_align_done');
-    mrQ.SPGR_EPI_align_done=0;
-end
-
-if ( mrQ.SPGR_EPI_align_done==0)
-    
-    mrQ.spgr2epiAlignFile=fullfile(mrQ.spgr_initDir,'SEIRepiSPGRAlign_best_RB.mat');
-    [mrQ.Ants_Info]=mrQ_NLANTS_warp_SPGR2EPI_RB(mrQ.SEIR_epi_T1file, mrQ.T1_LFit_HM, mrQ.SPGR_niiFile_FA, mrQ.spgr_initDir, mrQ.spgr2epiAlignFile, mrQ.AligndSPGR);
-    
-    mrQ.SPGR_EPI_align_done=1;
-    
-    save(mrQ.name,'mrQ');
-    fprintf('\n Alignment of EPI to T1  - done!              \n');
-else
-    fprintf(['\n Using alignment of EPI to T1, calculated on '    mrQ.Ants_Info. spgr2epi_Align_date           '\n']);
-    
-end
 
 %% VII. Build B1
 
@@ -309,9 +289,8 @@ end
 if mrQ.PDdone==0
     
    mrQ=mrQ_M0_ToPD(mrQ);
-    
-    save(mrQ.name, 'mrQ')
     mrQ.PDdone=1;
+    save(mrQ.name, 'mrQ')
     fprintf('\n Calculation of PD from M0  - done!              \n');
 else
     fprintf('\n Using previously calculated PD              \n');

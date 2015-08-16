@@ -403,4 +403,4 @@ end
 opt.PDfile=PD_filename;
 opt.Gainfile=G_filename;
 
-%save(opt.logname,'opt')
+save(opt.logname,'opt')

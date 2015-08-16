@@ -90,18 +90,15 @@ eval(cmd);
 %     cmd =(['! cp ' mapDirOld '/T1_map_lsq.nii.gz ' mapDir '/.']);
 %     eval(cmd);
 % end
+%% need to add a check if the maps exist in the mrQ.spgr_initDir or in an outputfiles dir
 
-cmd =(['! mv ' mrQ.spgr_initDir '/WF_map.nii.gz ' mapDir '/.']) ;
-eval(cmd);
+cmd =(['! mv ' mrQ.spgr_initDir '/WF_map.nii.gz ' mapDir '/.']) ; eval(cmd);
 
-cmd =(['! mv ' mrQ.spgr_initDir '/VIP_map.nii.gz ' mapDir '/.']) ;
-eval(cmd);
+cmd =(['! mv ' mrQ.spgr_initDir '/VIP_map.nii.gz ' mapDir '/.']) ;eval(cmd);
 
-cmd =(['! mv ' mrQ.spgr_initDir '/TV_map.nii.gz ' mapDir '/.']) ;
-eval(cmd);
+cmd =(['! mv ' mrQ.spgr_initDir '/TV_map.nii.gz ' mapDir '/.']) ;eval(cmd);
 
-cmd =(['! mv ' mrQ.spgr_initDir '/SIR_map.nii.gz ' mapDir '/.']) ;
-eval(cmd);
+cmd =(['! mv ' mrQ.spgr_initDir '/SIR_map.nii.gz ' mapDir '/.']) ;eval(cmd);
 
 mrQ.mapsDir=mapDir;
 %Which T1 need a fix
@@ -158,7 +155,7 @@ eval(cmd);
 %% IV. Organize the T1 weighted images in a directory named 'T1w'
 
 T1wDir=fullfile(mrQ.OutPutNiiDir,'T1w');
-mrQ.T1w_file=T1wDir;
+
 % If we redo it and maps directory already exists,
 %   we will save the old one before we make a new one.
 if (exist(T1wDir,'dir'))
@@ -200,5 +197,8 @@ eval(cmd);
 
 cmd =(['! ln -s  '  T1wDir '/T1w1.nii.gz ' mrQ.spgr_initDir '/.']) ;
 eval(cmd);
+
+mrQ.T1w_files=T1wDir;
+
 %% V. Save
  save(mrQ.name,'mrQ');

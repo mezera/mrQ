@@ -80,6 +80,9 @@ T1 = double(T1.data);
 R1=1./T1;
 
 %% II. Perform k-means in a "while" loop
+
+    fprintf('\n Performing segmentation for CSF file ...              \n');
+
 seg=zeros(size(R1));
 
 notdone=0;

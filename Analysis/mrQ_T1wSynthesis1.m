@@ -140,6 +140,9 @@ t1w = PD.*( (1-exp(-symTR./t1)).*sin(fa)./(1-exp(-symTR./t1).*cos(fa)));
 %  
 %  t1w(isinf(t1w))=up;
  % clip what we define as notbrain
+ 
+ fprintf('\n Calculating T1w...              \n');
+
   t1w(~mask)=0;
   
 %% III. Now calculate the synthetic T1 images, without PD

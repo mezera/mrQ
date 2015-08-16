@@ -109,8 +109,6 @@ opt.outDir = [outDir '/tmpSGWL'];
 opt.name   = '/T1PDlsqVx';
 jumpindex=8000;
 
-mrQ.optLW=opt;
-save(mrQ.name,'mrQ');
 
 % Save a logfile with all the options used during processing:
 logname = [outDir '/fitT1LW.mat'];

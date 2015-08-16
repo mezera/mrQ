@@ -93,14 +93,18 @@ WFmask(:,szH(2)+YY:end,:,:)=0;
 WFmask(:,:,1:szH(3)-ZZ)=0;
 WFmask(:,:,szH(3)+ZZ:end)=0;
 
-% find areas within the ventricles area with high value of T1
-WFmask= WFmask & T1<=5 & T1>=4.2 ;
+% find areas within the ventricles area with high value of T1 (4.2-5)
+WFmask1=WFmask;
+WFmask= WFmask & T1<=4.7 & T1>=4.2;
+
+
 %% IV. data for WF:
 % % loop over raw (aligned and combined) data and find the flip angle(s) with
 % % the best SNR. it is hard to measure noise. so we will use the signal in WM
 % % as a reference because it's a place with good signal across flip angles)
 
 for ii=1:length(s)
+%     subplot(2,2,ii); hist(s(ii).imData(WFmask),100), title(num2str(s(ii).flipAngle))
     CSF_Sig(ii)=median(s(ii).imData(WFmask)); 
 end
 
@@ -177,7 +181,7 @@ PDcsf=datForPD./(Gain.* ( (1-exp(-TR./4300)).*sin(fa)./(1-exp(-TR./4300).*cos(fa
 %% VIII. scale this roi to have pd of 1. --> this is our global scale
 
 [csfValues, csfDensity]= ksdensity(PDcsf((WFmask)), [min(PDcsf((WFmask))):0.001:max(PDcsf((WFmask)))] ); % figure;plot(csfDensity,csfValues)
-CalibrationVal= csfDensity(csfValues==max(csfValues)); %median(PD(find(CSF)));
+CalibrationVal= csfDensity(csfValues==max(csfValues)); % CalibrationVal=median(PDcsf(WFmask));
 CalibrationVal=1./CalibrationVal;
 
 %% IX. apply to PD images to make WFfile --> save

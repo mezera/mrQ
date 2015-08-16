@@ -261,9 +261,11 @@ tmpfile=fullfile(opt.outDir,'Boxtmp');
 
 
 %% calculate WF by normalize PD to CSF==1
-if unique( ~csffile==0)
-    opt=mrQ_PD2WF_step5_ver2(opt,csffile,segfile);
-    % I think it will only go in here if there are NO zeros in 'csffile' because [...?]
-end
+% we are performing a different calibration now, carried out in mrQ_WF
+
+% if unique( ~csffile==0)
+%     opt=mrQ_PD2WF_step5_ver2(opt,csffile,segfile);
+%     % I think it will only go in here if there are NO zeros in 'csffile' because [...?]
+% end
 
 

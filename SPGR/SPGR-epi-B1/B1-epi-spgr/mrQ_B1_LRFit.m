@@ -33,7 +33,7 @@ j=0;
 st=1 +(jobindex-1)*jumpindex;
 ed=st+jumpindex-1;
 
-%chack that this box has brain data
+%check that this box has brain data
 if ed>opt.N_Vox2Fit, ed=opt.N_Vox2Fit;end;
 
 nIteration=ed-st+1;
@@ -41,7 +41,7 @@ nIteration=ed-st+1;
 
 %
 
-% initiate the saved parameters
+% initialize the saved parameters
 exitflag=zeros(nIteration,1);
 resnorm=zeros(nIteration,1);
 UseVoxN=zeros(nIteration,1);
@@ -69,6 +69,7 @@ ratios=nchoosek(1:N_Measure,2);
 
 
 loc=find(SigMask);
+
 
 
 %%  II. Go over box by box
@@ -111,6 +112,49 @@ toc
 % We can save some of the ratio and cross-validate the poly degree or box size.
 
 %
+    loc=find(SigMask);
+   
+    
+%%  II. Go over box by box
+   tic    ;
+   for ii= st:ed,
+       %run over the box you'd like to fit
+       
+       % clear parameters
+       Iter= Iter+1;
+       
+       if ~(ii>length(loc))
+           [S, t1, BM1,SZ, UseVoxN(Iter), skip(Iter), f ]=  mrQ_GetB1_LR_Data(opt,Res,BM,loc(ii));
+       else
+           skip(Iter)=1;
+       end
+       
+       
+       if  skip(Iter)==1
+           %         disp(['skipping box bad data'])
+       else
+           % loop over Poly degrees
+           S=reshape(S,prod(SZ(1:3)),SZ(4));
+           
+           f1=repmat(f(:),1,size(ratios,1));
+           
+           [B1(Iter) ,resnorm(Iter),~,exitflag(Iter)] = ...
+               lsqnonlin(@(par) errB1_LR(par, flipAngles,tr,double(S), ...
+               double(t1(:)), double(f1),  BM1(:), ratios), 1,[],[],options);
+           
+           % Something wrong with the flip angle, I believe.
+           % Check the ANat call and file orders!!!
+           
+       end
+       
+       
+   end;
+   toc
+ %% III. Cross-Validation Fit
+ % We can save some of the ratio and cross-validate the poly degree or box size.
+       
+        %
+
 
 name=[ opt.name '_' num2str(st) '_' num2str(ed)];
 
@@ -122,8 +166,13 @@ end
 
 function [tr, flipAngles,Res]=epiParams(opt)
 
+
 % load infoormation
 load (opt.AlignFile);
+
+  % load information
+    load (opt.AlignFile);
+
 flipAngles=opt.FlipAngle;
 tr=opt.TR;
 end

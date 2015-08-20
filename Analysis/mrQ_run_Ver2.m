@@ -311,8 +311,9 @@ if (mrQ.VIP_WF_done==0)
     
     [mrQ.AnalysisInfo, mrQ] = mrQ_VIP(mrQ);
     
-    save(mrQ.name,'mrQ');
     mrQ.VIP_WF_done=1;
+    save(mrQ.name,'mrQ');
+    
     fprintf('\n Calculation of VIP, MTV and SIR  - done!              \n');
     %
     % XIII. Create a series of synthetic T1w images

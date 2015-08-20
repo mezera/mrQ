@@ -44,7 +44,7 @@ end
 for i= st:ed,
     j=j+1;
     
-    if (find(isnan(opt.s(i,:))) | find(opt.s(i,:)==0) |   find(isinf(opt.s(i,:))))
+    if (~isempty(find(isnan(opt.s(i,:)))) | ~isempty(find(opt.s(i,:)==0)) |   ~isempty(find(isinf(opt.s(i,:)))))
         res(1:4,j)=nan;
         
     else

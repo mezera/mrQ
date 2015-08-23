@@ -198,7 +198,7 @@ end
 
 %% V. Weighted linear fit
 if LWfit==1
-    disp([' Linear fits of T1 and PD !!!'] );
+
     T1WLFfile= fullfile(outDir,['T1_map_Wlin.nii.gz']);
     T1LFfile= fullfile(outDir,['T1_map_lin.nii.gz']);
     M0LFfile= fullfile(outDir,['M0_map_Wlin.nii.gz']);
@@ -206,7 +206,7 @@ if LWfit==1
     
     if (exist( T1WLFfile,'file') && exist( M0WLFfile,'file')  && ~clobber),
         
-        disp(['Loading existing T1 and M0 linear fit'])
+        disp(['Loading existing T1 and M0 weighted linear fit'])
         T1=readFileNifti(T1WLFfile);
         M0=readFileNifti(M0WLFfile);
         T1=double(T1.data);

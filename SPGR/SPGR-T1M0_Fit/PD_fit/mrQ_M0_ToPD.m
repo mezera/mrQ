@@ -70,20 +70,23 @@ end
 if mrQ.PDfit_Method==1
   % Note that we fit each local M0 area (with T1 input). This is fast. 
   % We don't need the grid, but we can expedite it with parloop. 
-  
+      fprintf('\n fitting M0 ...              \n');
+
     mrQ_fitM0boxesCall_T1PD(mrQ.opt_logname);
     
 elseif mrQ.PDfit_Method==2 ||  mrQ.PDfit_Method==3
     % Multi-coil fit. 
     % This will be better with parallel computing like SunGrid. 
     % ** We need to test parloop here also. **
-    
+          fprintf('\n fitting multi coil M0 ...              \n');
+
             mrQ_fitM0boxesCall(mrQ.opt_logname,mrQ.SunGrid);
     
 end    
 
 %% IV. Build the local fits
 %Join the local overlap area to one PD image.
+          fprintf('\n Building the M0 map...              \n');
 
 mrQ.opt_logname=mrQ_buildPD_ver2(mrQ.opt_logname,[],[],[],[],0.01);
 %

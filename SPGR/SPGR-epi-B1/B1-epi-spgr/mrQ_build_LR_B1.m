@@ -18,16 +18,16 @@ function mrQ=mrQ_build_LR_B1(mrQ)
 %
 
 %% I. Load the fit parameters
-    load(mrQ.B1.logname)
-      
-%% II. Find where the fitted values are in 3D space
+        load(mrQ.B1.logname)
 
-    BM=readFileNifti(opt.tisuuemaskFile);
-    xform=BM.qto_xyz;
-    BM=logical(BM.data);
-    BM=logical(ones(size(BM)));
+    %% II. Find where the fitted values are in 3D space
 
- loc=find(BM);
+        BM=readFileNifti(opt.tisuuemaskFile);
+        xform=BM.qto_xyz;
+        BM=logical(BM.data);
+        BM=logical(ones(size(BM)));
+
+     loc=find(BM);
 %% III. Loop over voxels, and load the fitted values
 
 jumpindex=opt.jumpindex; % number of voxels in each file

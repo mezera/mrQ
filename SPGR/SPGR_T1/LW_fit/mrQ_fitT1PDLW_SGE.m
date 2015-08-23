@@ -20,7 +20,7 @@ function mrQ_fitT1PDLW_SGE(IDnum,jumpindex,jobindex)
 % See Also:
 %   mrQ_fitT1M0.m, mrQ_fitT1PD_LSQ.m
 %
-% Authors: Aviv Mezer and Nikola Stikov date 24.02.2014 
+% Authors: Aviv Mezer and Nikola Stikov date 24.02.2014
 
 
 
@@ -43,8 +43,8 @@ end
 % parfor can be used in here
 for i= st:ed,
     j=j+1;
-   
-    if (find(isnan(opt.s(i,:))) | find(opt.s(i,:)==0) |   find(isinf(opt.s(i,:))))
+    
+    if (~isempty(find(isnan(opt.s(i,:)))) | ~isempty(find(opt.s(i,:)==0)) |   ~isempty(find(isinf(opt.s(i,:)))))
         res(1:4,j)=nan;
         
     else
@@ -58,25 +58,25 @@ for i= st:ed,
         
         %slopeBiased=pi^(-TR/linearT1)
         %
-            t1Biased= result;
-       
-%% PD
-    %biased  
-    pdBias=opt.s(i,:)./((1-exp(-TR./t1Biased)).*sin(fa)./(1-exp(-TR./t1Biased).*cos(fa)));  
+        t1Biased= result;
+        
+        %% PD
+        %biased
+        pdBias=opt.s(i,:)./((1-exp(-TR./t1Biased)).*sin(fa)./(1-exp(-TR./t1Biased).*cos(fa)));
         pdBias=mean(pdBias)./opt.Gain(i);
-          
-    weights = (sin(fa)./(1 - slopeBiased.*cos(fa))).^2; 
+        
+        weights = (sin(fa)./(1 - slopeBiased.*cos(fa))).^2;
         weights(isinf(weights)) = 0; %remove points with infinite weight
         
         Vals2 = polyfitweighted(x, y, 1, weights);
         slopeUnbiased = Vals2(1);
         t1Unbiased = abs(-TR./log(slopeUnbiased));
-       
-     %unbiased
-     
-    pdUnBias=opt.s(i,:)./((1-exp(-TR./t1Unbiased)).*sin(fa)./(1-exp(-TR./t1Unbiased).*cos(fa)));
-        pdUnBias=mean(pdUnBias)./opt.Gain(i);
-       
+        
+        %unbiased
+        
+        pdUnBias=opt.s(i,:)./((1-exp(-TR./t1Unbiased)).*sin(fa)./(1-exp(-TR./t1Unbiased).*cos(fa)));
+%         pdUnBias1=mean(pdUnBias)./opt.Gain(i);
+        pdUnBias=(sum(weights.*pdUnBias))./(opt.Gain(i).*sum(weights));
         res(1,j)=t1Unbiased;
         res(2,j)=pdUnBias;
         res(3,j)=t1Biased;

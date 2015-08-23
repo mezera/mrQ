@@ -28,7 +28,30 @@ end
 
 if ( mrQ.B1fit_done==0)
     
-% We build a mask for the voxel we'd like to fit in EPI space.
+ %%   Register high-resolution EPI image to low-resolution aligned T1 image
+
+%mrQ_NLANTS_warp_SPGR2EPI_RB(AnalysisInfo,SET1file,t1fileHM,flipAngles,outDir,AlignFile)
+
+if ~isfield(mrQ,'SPGR_EPI_align_done');
+    mrQ.SPGR_EPI_align_done=0;
+end
+
+if ( mrQ.SPGR_EPI_align_done==0)
+    
+    mrQ.spgr2epiAlignFile=fullfile(mrQ.spgr_initDir,'SEIRepiSPGRAlign_best_RB.mat');
+    [mrQ.Ants_Info]=mrQ_NLANTS_warp_SPGR2EPI_RB(mrQ.SEIR_epi_T1file, mrQ.T1_LFit_HM, mrQ.SPGR_niiFile_FA, mrQ.spgr_initDir, mrQ.spgr2epiAlignFile, mrQ.AligndSPGR);
+    
+    mrQ.SPGR_EPI_align_done=1;
+    
+    save(mrQ.name,'mrQ');
+    fprintf('\n Alignment of EPI to T1  - done!              \n');
+else
+    fprintf(['\n Using alignment of EPI to T1, calculated on '    mrQ.Ants_Info. spgr2epi_Align_date           '\n']);
+    
+end   
+    
+
+%% We build a mask for the voxel we'd like to fit in EPI space.
 
 % [mrQ.maskepi_File] = mrQ_B1FitMask(mrQ.Ants_Info.dirAnts,mrQ.spgr2epiAlignFile,mrQ.SEIR_epi_fitFile,mrQ.spgr_initDir);
 
@@ -38,7 +61,9 @@ if ( mrQ.B1fit_done==0)
     mrQ.B1.logname=mrQ_PD_LRB1SPGR_GridParams(mrQ);
     % save mrQ so the sungrid can load it fully characterized
     save(mrQ.name,'mrQ');
-    % call to fit (with or without grid)
+    % call to fit (with or without grid)    
+    fprintf('\n fitting B1...              \n');
+
     mrQ_fitB1LR_Call(mrQ.B1.logname,mrQ.SunGrid);
     
     %check that the fit is done (for SGE)  before you move on (while loop)

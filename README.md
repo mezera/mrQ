@@ -46,6 +46,7 @@ For more information, please contact:
   - <a href=#alignment>Alignment</a>
 - <a href=#T1-fit-nonlinear-vs-weighted-linear-least-squares>T1 fit: nonlinear vs. weighted-linear least-squares</a>
 - <a href=#parallel-computing>Parallel computing</a>
+- <a href=#matlab-toolboxes>MATLAB Toolboxes</a>
 - <a href=#forum>Forum</a>
 
 
@@ -66,6 +67,7 @@ Some of the important changes are highlighted below:
 - Though it will decrease the run time, the use of parallel computing is no longer required. The code is built to utilize SunGrid, though the default for SunGrid is “off”. See <a href=#parallel-computing>Parallel computing</a>.
 - The default for the T1-M0 fit is now the weighted linear least squares method, replacing the nonlinear least squares method in past versions. This reduces the run time and is comparable to the nonlinear method in both precision and accuracy. See <a href=#T1-fit-non-linear-vs-weighted-least-squares>T1 fit: non-linear vs. weighted least-squares</a> for more information and citation.
 - The B1 fit, which is performed using a one-parameter local regression and whose calculation is faster and more robust.
+- Increased usage of parfor-loops, which decrease runtime through the use of parallel computation.
 - For the M0-PD fit, a a local T1 regularization is used.
 - Changes to the PD-CSF normalization yield more robust results.
 - A nice synthetic T1-weighted image, which is good for segmentation.
@@ -85,7 +87,8 @@ mrQ v.2 can be found at the link: _**[[[INSERT LINK HERE]]]**_. We recommend you
 
 ### Software Requirements ###
 ##### Required third-party software #####
-- MATLAB - http://www.mathworks.com/products/matlab/ 
+- MATLAB - http://www.mathworks.com/products/matlab/
+  - Select MATLAB toolboxes are required for running mrQ. See <a href=#matlab-toolboxes>MATLAB Toolboxes</a> below.
 - ANTs - http://stnava.github.io/ANTs/ 
 - FSL - http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/
 - SPM8 - http://www.fil.ion.ucl.ac.uk/spm/software/spm8/
@@ -290,6 +293,19 @@ mrQ is written to take advantage of the SunGrid Engine for parallel computing, t
 ```matlab
 mrQ_run_Ver2(dataDir, outDir, [],[],[], {'sungrid', 1}) 
 ```
+
+### MATLAB Toolboxes ###
+In addition to MATLAB, several MATLAB toolboxes are also required to run mrQ. The following nine toolboxes are required: (1) 'Bioinformatics Toolbox', (2) 'Image Processing Toolbox', (3) 'Optimization Toolbox', (4) 'Parallel Computing Toolbox', (5) 'Signal Processing Toolbox', (6) 'Simulink', (7) 'Statistical Parametric Mapping', (8) 'Statistics and Machine Learning Toolbox', (9) 'Symbolic Math Toolbox'.  
+
+Certain toolboxes may only be required for optional segments in the code, though at the moment we cannot list exactly where each toolbox is used. 
+
+Three notes on toolbox usage in mrQ v.2:
+  -  In the function mrQ_boxScaleGlobLinear.m, the command "graphconncomp" is called. This is part of the Bioinformatics Toolbox.
+  -  In the parallel computing (such as in mrQ_T1M0_LWFit.m), mrQ checks whether the Parallel Computing Toolbox is available. If so, it uses parfor-loops, as the "parfor" command is provided by this toolbox; if not, it uses for-loops. Though in these instances the Parallel Computing Toolbox is not required, it may be required at other junctions in the code.
+  - In the function mrQ_T1M0_Fit.m, the function constructpolynomialmatrix3d.m is called, and this function uses the command "sym", which is provided by the Symbolic Math Toolbox. In this case, one can comment the usage of "sym" in constructpolynomialmatrix3d.m (lines 56-58) and proceed. However, note that the Symbolic Math Toolbox may be required at other junctions in the code.
+
+Further updates about MATLAB toolbox usage will be announced on the forum or in future releases of mrQ.
+
 
 ### Forum ###
 An interactive forum is available at _**[[[INSERT LINK HERE]]]**_. We hope that mrQ users will find it an informative site to discuss, share and troubleshoot for all topics relating to the mrQ software package.

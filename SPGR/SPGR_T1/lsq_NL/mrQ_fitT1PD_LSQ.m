@@ -264,6 +264,13 @@ else  % NO SGE
     
     fprintf('\n Fitting the T1 map locally, may be slow. SunGrid use can be much faster             \n');
     
+  % Check for matlab version and for parallel computing toolbox (see below)
+    MyVer = ver; % check matlab version   
+    has_PCTbox = any(strcmp(cellstr(char(MyVer.Name)), 'Parallel Computing Toolbox')); % check for PCTbox
+    MyVer_ed=MyVer.Release; % identify release version
+    MyVer_year= sscanf(MyVer_ed,'%*[^0123456789]%d'); % identify release year
+    MyVer_AorB= sscanf(MyVer_ed,'%*[^ab]%c'); % identify version a or b
+    
     if (~exist([outDir '/tmpSG'],'dir')),
         mkdir([outDir '/tmpSG']);
         MissingFileNumber=1:ceil(length(opt.wh)/jumpindex);
@@ -283,13 +290,46 @@ else  % NO SGE
         %             end
         %         end
     end
-    
-    if ~isempty(MissingFileNumber)
-        for kk=1:length(MissingFileNumber)
-            jobindex=MissingFileNumber(kk);
-            mrQ_fitT1PD_SGE(id,jumpindex,jobindex);
+
+    % Parallel Processing
+    if has_PCTbox == 0 %no PCTbox, and thus no parfor
+        if ~isempty(MissingFileNumber)
+            for kk=1:length(MissingFileNumber)
+                jobindex=MissingFileNumber(kk);
+                mrQ_fitT1PD_SGE(id,jumpindex,jobindex);
+            end
+        end
+    else %PCTbox exists, and so does parfor
+        if MyVer_year<2013 || MyVer_year==2013 && MyVer_AorB=='a' % check if matlab is 2013a or earlier
+            if ~isempty(MissingFileNumber)
+                matlabpool open;
+                parfor kk=1:length(MissingFileNumber)
+                    jobindex=MissingFileNumber(kk);
+                    mrQ_fitT1PD_SGE(id,jumpindex,jobindex);
+                end
+                matlabpool close;
+            end
+        elseif MyVer_year>2013 || MyVer_year==2013 && MyVer_AorB=='b'% check if matlab is 2013b or later
+            if ~isempty(MissingFileNumber)
+                gcp();
+             %   tic
+                parfor kk=1:length(MissingFileNumber)
+                    jobindex=MissingFileNumber(kk);
+                    mrQ_fitT1PD_SGE(id,jumpindex,jobindex);
+                end
+            %    toc
+                delete(gcp);
+            end
         end
     end
+    
+    
+%     if ~isempty(MissingFileNumber)
+%         for kk=1:length(MissingFileNumber)
+%             jobindex=MissingFileNumber(kk);
+%             mrQ_fitT1PD_SGE(id,jumpindex,jobindex);
+%         end
+%     end
     %     if ~isempty(jobindex)
     %         for i=jobindex
     %             mrQ_fitT1PD_SGE(id,2000,i);

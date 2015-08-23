@@ -73,7 +73,7 @@ setenv('LD_LIBRARY_PATH', new_path)
 
 %name the saved parameter file
 AnalysisInfo.WARP_SPGR_EPI_RB= fullfile(outDir,'WARP_SPGR_EPI_RB');
- disp('ATNS  linear registration and Warp may take about 20 min ...')
+ disp('ANTs linear registration and Warp may take about 20 min ...')
  disp('...')
  
     % ANTS: make the Ants comand
@@ -134,7 +134,7 @@ AnalysisInfo.T1_spgr_epi_RB=fullfile(outDir,'Warp_T1_SPGRT2EPI_RB.nii.gz');
         %% save and document 
 
     
-%make a structuure to work with for B1 fit
+%make a structure to work with for B1 fit
 t1seir=readFileNifti(SET1file);
 Res{1}.im=t1seir.data;
 Res{1}.name='t1SEIRepi';
@@ -151,7 +151,7 @@ Res{i+2}.name=['align_rawFA' num2str(flipAngles(i))] ;
 end;
 
 
-%save the strucute
+%save the structure
 infofile=fullfile(outDir,'AnalysisInfo.mat');
 save(infofile,'AnalysisInfo');
     save(AlignFile,'Res');

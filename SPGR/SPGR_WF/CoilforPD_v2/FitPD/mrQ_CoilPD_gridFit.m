@@ -1,30 +1,33 @@
 function mrQ_CoilPD_gridFit(IDnum,jumpindex,jobindex)
+% mrQ_CoilPD_gridFit(IDnum,jumpindex,jobindex)
 %
-% mrQ_CoilPD_gridFit_ver3(opt,jumpindex,jobindex)---> now instead of opt
-% function gets id of mr Q fro which it load opt. 
-%  this function call by the sun grid it load the relavant data and fit the
-%  PD and coils bias of M0 mage rigion (voulume).
-% the imaging voulume region also call here "box". The box is a location (few voxel 100's to
-% 1000's).  the idea is to use the information in each coils. we tery to find
-% to PD that is similar to all the coils images and fit the coil bias that
-% is diferent for each coil.
-%  The fit is done in few steps.
-%  1. we get the box data.
-% 2. we fit subset of coils informatio nwith regularizartion (of T1) and crossvalidation to it's quallety
-% 4. the best cross validation regularization is used to fit all the data.
-%4. we save the resuts
+%  This function is called by the SunGrid. It loads the relevant data and
+%  fits the PD and coils bias of the M0 image region (volume, also called a
+%  "box"). The box is a location (hundreds to thousands of voxels).  The
+%  idea is to use the information from each coil. We try to find the PD
+%  that is similar to all the coils' images, and fit the coil bias
+%  that is different for each coil.
 %
-% INPUTS:
-%       opt - this is optmization structure that was passed from
-%       mrQ_fitPD_multicoil and it have all the needed information
-%       jumpindex - how many boxes this grid call we fit (book keeping)
-%       jobindex  - the number of box it will start whe ncalling the grid
-%       (book keeping)
+%  The fit is done in a few steps:
+%  1. Get the box data. 
+%  2. Fit a subset of the coils information with  regularizartion (of 
+%       T1), and use cross-validation for its quality.
+%  3. Use the best cross-validation regularization to fit all the data.
+%  4. Save the resuts.
 %
-% OUTPUTS:
-%  save an output file with fitted parameters in a tmp directorry
-%   this will be used lster by mrQfitPD_multiCoils_M0 to make the PD map
-
+%   ~INPUTS~
+%             opt:   This is the optimization structure which was passed 
+%                         from mrQ_fitPD_multicoil. It contains all the 
+%                         needed information.
+%       jumpindex:   How many boxes this grid call we fit (bookkeeping)
+%        jobindex:   The number of boxes it will start when calling the 
+%                         grid (bookkeeping)
+%
+%  ~OUTPUTS~
+%  This function will save an output file with fitted parameters in a tmp
+%  directory. This will be used later by mrQfitPD_multiCoils_M0 to make the 
+%  PD map
+%
 % SEE ALSO:
 % mrQ_PD_multicoil_RgXv_GridCall
 % AM (C) Stanford University, VISTA
@@ -32,7 +35,6 @@ function mrQ_CoilPD_gridFit(IDnum,jumpindex,jobindex)
 %
 
 %% I. Initialization
-
 
 mrQpath= mrQ_getPath(IDnum);
 load(mrQpath);
@@ -43,21 +45,21 @@ j=0;
 st=1 +(jobindex-1)*jumpindex;
 ed=st+jumpindex-1;
 
-%check that this box have brain data
+%check that this box contains brain data
 if ed>length(opt.wh), ed=length(opt.wh);end;
 
 nIteration=ed-st+1;
-%intilazie parameters and saved outputs
+%initialize parameters and saved outputs
 
 % Get the M0 and T1 information
 
-%multi coil M0
+%multi-coil M0
 M0=readFileNifti(opt.M0file);
 M0=M0.data;
+
 %T1
 T1=readFileNifti(opt.T1file);
 T1=T1.data;
-
 
 %Brain mask
 BM=readFileNifti(opt.BMfile);
@@ -67,11 +69,9 @@ BM=BM.data;
 seg=readFileNifti(opt.segfile);
 seg=seg.data;
 
-
 smoothkernel=opt.smoothkernel;
 
-
-% thepoly basis to fit the coil gains
+% the poly basis to fit the coil gains
 pBasis = mrQ_CreatePoly(opt.boxS,opt.degrees,3,opt.BasisFlag);
 maxCoil=opt.maxCoil;
 minCoil=opt.minCoil;
@@ -79,7 +79,7 @@ useCoil=opt.useCoil;
 nPolyCoef=size(pBasis,2);
 nVoxels=size(pBasis,1);
 
-% initite the saved parameters
+% initiate the saved parameters
 fb=zeros(nIteration,1,3);
 gEst=zeros(nPolyCoef,maxCoil,nIteration);
 resnorm=zeros(nIteration,1);
@@ -94,8 +94,7 @@ Clists2=zeros(maxCoil, nIteration);
 
 Iter=0;
 
-%%  II. go over the box the boxs
-
+%%  II. Go over it, box by box
 
 for ii= st:ed,
     %run over the box you like to fit
@@ -103,7 +102,7 @@ for ii= st:ed,
     Iter= Iter+1;
     tic
     %find the x,y,z location of the box (this is not x,y,z location in image space but
-    %grid of boxes we made by mashgrid in  mrQ_PD_multicoil_RgXv_GridCall.m
+    %grid of boxes we made by meshgrid in  mrQ_PD_multicoil_RgXv_GridCall.m
     [fb(Iter,1,1), fb(Iter,1,2), fb(Iter,1,3)]=ind2sub(size(opt.X),opt.wh(ii));
     
     % get all the relevant box data for the fit
@@ -115,13 +114,13 @@ for ii= st:ed,
     else
         
         M0_v = reshape(M01, prod(SZ(1:3)), SZ(4));
-        %make a R1 regularazation matrix
+        %make a R1 regularization matrix
         R1basis(1:nVoxels,1) = 1; R1=1./(t1(:)); R1basis(:,2) =R1;
         R1basis=double(R1basis);
-        PDinit=1./(R1*0.42+0.95); %this is the teortical T1 PD relationship see reference at Mezer et. al 2013
+        PDinit=1./(R1*0.42+0.95); %this is the theoretical T1-PD relationship; see reference at Mezer et. al (2013)
         
         
-        %% Select the coils to fit
+ %% III. Select the coils to fit
         %
                 if length(useCoil)>SZ(4); useCoil=useCoil(1:SZ(4));end
 
@@ -160,10 +159,8 @@ for ii= st:ed,
 %         Clist=[squeeze(Cloc(xx,yy,1:xx))']; % get the coil list
 %         nCoils=length(Clist);
 %         Clists(1:nCoils,Iter)=Clist;
-        %% intiate the search parameters
-        
-        
-        
+ %% IV. Initiate the search parameters
+ 
         G  = zeros(nVoxels,nCoils);
         g0 = zeros(nPolyCoef,nCoils);
         
@@ -175,7 +172,7 @@ for ii= st:ed,
         end
         
         
-        %%  X-Validation Fit of coil Gain with T1 regularization
+%% V. Cross-Validation Fit of coil Gain with T1 regularization
         
         [X_valdationErrF,  X_gEstF]=pdX_valdationLoop_2(opt.lambda,3,M0_v(BM1,Clist), pBasis(BM1,:),R1basis(BM1,:),g0,Segmask(BM1));
         
@@ -187,11 +184,14 @@ for ii= st:ed,
         %figure;  semilogy(opt.lambda,X_valdationErrF(2,:),'*-'); X_valdationErrF(2,:)./min(X_valdationErrF(2,:))
         %figure;  semilogy(opt.lambda,X_valdationErrF(1,:),'*-'); X_valdationErrF(1,:)./min(X_valdationErrF(1,:))
         BestReg(Iter,:)=[best1 best2];
-        % i cases we get no meaningfull Xvalidation with the
-        % regularization we should be worry!!!
-        % if there is not enght data we many X_valdation Err are
-        % almost similar we can cause to take the begest one. this
-        % need to be implamented
+        
+        % In cases we get no meaningful cross-validation with the
+        % regularization, we should be worried!!!
+        
+        % If there is not enough data, when many X_valdation Err are
+        % almost similar, we can take the biggest one. This
+        % need to be implemented
+        
         if min(X_valdationErrF(2,:))*2 > X_valdationErrF(2,end)
             X_valdationErrSN(Iter)=1;
             disp(['no clear  X-validation improvment with regularization'])
@@ -200,7 +200,7 @@ for ii= st:ed,
         %  [PDfit,RMSE1]=pdCoilSearch_T1reg( lambda1(best1),M0_v(:,Clist),pBasis,R1basis,X_gEstF(:,:,1,best),[],[],PDsim);
         [PDfit,~,G,gEst(:,:,Iter), resnorm(Iter),exitflag(Iter) ]=pdCoilSearch_T1reg( opt.lambda(best2),M0_v(BM1,Clist),pBasis(BM1,:),R1basis(BM1,:),X_gEstF(:,:,1,best2),Segmask(BM1));
         
-        % get ht ePD with a different set of coils
+        % get the  PD with a different set of coils
          [PDfit2 ]=pdCoilSearch_T1reg( opt.lambda(best2),M0_v(BM1,Clist2),pBasis(BM1,:),R1basis(BM1,:),[],Segmask(BM1));
          
          %%
@@ -221,6 +221,7 @@ for ii= st:ed,
     end
 end
 
+%% VI. Save
 name=[ opt.name '_' num2str(st) '_' num2str(ed)];
 
 save(name,'gEst','resnorm','exitflag','st','ed','skip','fb' ,'X_valdationErr','X_valdationErrSN','BestReg','Clists','Clists2','ResidErr')

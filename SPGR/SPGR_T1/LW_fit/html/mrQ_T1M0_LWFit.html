@@ -1,0 +1,834 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>mrQ_T1M0_LWFit</title><meta name="generator" content="MATLAB 8.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-16"><meta name="DC.source" content="mrQ_T1M0_LWFit.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">I. Check inputs</a></li><li><a href="#4">II. Set options for optimization procedure</a></li><li><a href="#5">III. Perform the optimization (optional: use the SunGrid)</a></li><li><a href="#6">III-a. USE THE SGE</a></li><li><a href="#8">III-b: NO SunGrid</a></li><li><a href="#10">IV. Save out results</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [T1_WL, T1_L,PD_WL, PD_L] = mrQ_T1M0_LWFit(s,brainMask,tr, <span class="keyword">...</span>
+    flipAngles,Gain,B1,outDir,xform,mrQ,GridOutputDir,savenow)
+</pre><pre class="codeinput"><span class="comment">%</span>
+<span class="comment">%[T1_WL, T1_L,PD_WL, PD_L] = mrQ_T1M0_LWFit(s,brainMask,tr, ...</span>
+<span class="comment">%                            flipAngles,Gain,B1,outDir,xform,mrQ,savenow)</span>
+<span class="comment">%</span>
+<span class="comment">%Performs weighted least square fitting of T1 and PD according to: Linear</span>
+<span class="comment">% least-squares method for unbiased estimation of T1 from SPGR signals.</span>
+<span class="comment">% Chang LC, Koay CG, Basser PJ, Pierpaoli C. Magn Reson Med. 2008</span>
+<span class="comment">% Aug;60(2):496-501.</span>
+<span class="comment">%</span>
+<span class="comment">%</span>
+<span class="comment">% INPUTS:</span>
+<span class="comment">%       s           - contains aligned data</span>
+<span class="comment">%       brainMask   - Tissue mask delineating the brain region</span>
+<span class="comment">%       tr          - TR taken from the S2 structure of aligned data</span>
+<span class="comment">%       flipAngles  - Array of flipAngles for each scan.</span>
+<span class="comment">%       M0          - M0 map</span>
+<span class="comment">%       t1          - T1 data</span>
+<span class="comment">%       Gain        -</span>
+<span class="comment">%       B1          -</span>
+<span class="comment">%       outDir      - Ouput directory where the resulting NIfTI files will</span>
+<span class="comment">%                     be saved.</span>
+<span class="comment">%       xform       - Transform</span>
+<span class="comment">%       SGE         - Option to run using SGE [default = 0]</span>
+<span class="comment">%       savenow     - Saves the outputs to disk [default = 0]</span>
+<span class="comment">%       sub         - Subject name for SGE call</span>
+<span class="comment">%</span>
+<span class="comment">%</span>
+<span class="comment">% OUTPUTS:</span>
+<span class="comment">%       B1</span>
+<span class="comment">%       resNorm</span>
+<span class="comment">%       PD</span>
+<span class="comment">%</span>
+<span class="comment">%</span>
+<span class="comment">% WEB RESOURCES</span>
+<span class="comment">%</span>
+<span class="comment">% See also: mrQfit_T1M0_ver2.m</span>
+<span class="comment">%</span>
+<span class="comment">% (c) Stanford University, VISTA Lab</span>
+<span class="comment">%</span>
+<span class="comment">% Authors: Aviv Mezer and Nikola Stikov, 24.02.2014</span>
+<span class="comment">% Copyright, Stanford University, 2014</span>
+<span class="comment">%</span>
+</pre><h2>I. Check inputs<a name="3"></a></h2><pre class="codeinput"><span class="comment">% if (~exist('sb','var')|| isempty(sb)),</span>
+<span class="comment">%     sb='UN';</span>
+<span class="comment">% end</span>
+<span class="comment">%</span>
+<span class="comment">% sgename=[sb '_3dT1PD'];</span>
+
+<span class="comment">% if (~exist('SGE','var')|| isempty(SGE)),</span>
+<span class="comment">%     SGE=0;</span>
+<span class="comment">% end</span>
+<span class="comment">% if (~exist('proclass','var')|| isempty(proclass))</span>
+<span class="comment">%     proclass=0;</span>
+<span class="comment">% end</span>
+<span class="keyword">if</span> (~exist(<span class="string">'savenow'</span>,<span class="string">'var'</span>)|| isempty(savenow)),
+    savenow=0;
+<span class="keyword">end</span>
+<span class="keyword">if</span> isfield(mrQ,<span class="string">'SunGrid'</span>)
+    SGE=mrQ.SunGrid;
+<span class="keyword">else</span>
+    SGE=0;
+<span class="keyword">end</span>
+
+<span class="keyword">if</span> isfield(mrQ,<span class="string">'sub'</span>)
+    sb=mrQ.sub;
+<span class="keyword">else</span>
+    sb=<span class="string">'UN'</span>;
+<span class="keyword">end</span>
+sgename=[sb <span class="string">'_3dT1PD'</span>];
+
+fullID=sb(isstrprop(sb, <span class="string">'digit'</span>));
+id=str2double(fullID(1:8));
+
+<span class="keyword">if</span> notDefined(<span class="string">'GridOutputDir'</span>)
+    GridOutputDir=pwd;
+<span class="keyword">end</span>
+</pre><pre class="codeoutput error">Error using mrQ_T1M0_LWFit (line 63)
+Not enough input arguments.
+</pre><h2>II. Set options for optimization procedure<a name="4"></a></h2><p>Adjust for different versions of matlab</p><pre class="codeinput">a=version(<span class="string">'-date'</span>);
+<span class="keyword">if</span> str2num(a(end-3:end))&gt;=2012
+    options = optimset(<span class="string">'Algorithm'</span>, <span class="string">'levenberg-marquardt'</span>,<span class="string">'Display'</span>, <span class="string">'off'</span>,<span class="string">'Tolx'</span>,1e-12);
+<span class="keyword">else</span>
+    options =  optimset(<span class="string">'LevenbergMarquardt'</span>,<span class="string">'on'</span>,<span class="string">'Display'</span>, <span class="string">'off'</span>,<span class="string">'Tolx'</span>,1e-12);<span class="comment">%'TolF',1e-12</span>
+<span class="keyword">end</span>
+<span class="comment">% We put all the relevant data in a structure called "opt".</span>
+<span class="comment">% This will make it easier to send it between the computers in the grid</span>
+
+sz=size(brainMask);
+
+<span class="keyword">for</span> i=1:length(s)
+
+    tmp=s(i).imData(brainMask);
+    opt.s(:,i)=double(tmp);
+<span class="keyword">end</span>
+
+opt.flipAngles = double(flipAngles);
+opt.tr = double(tr);
+
+opt.wh   = find(brainMask);
+opt.Gain = double(Gain(brainMask));
+opt.B1   = double(B1(brainMask));
+
+opt.outDir = [outDir <span class="string">'/tmpSGWL'</span>];
+opt.name   = <span class="string">'/T1PDlsqVx'</span>;
+jumpindex=8000;
+
+mrQ.optLW=opt;
+save(mrQ.name,<span class="string">'mrQ'</span>);
+
+<span class="comment">% Save a logfile with all the options used during processing:</span>
+logname = [outDir <span class="string">'/fitT1LW.mat'</span>];
+opt.logname=logname;
+
+<span class="comment">% Save an information file we can load afterwards, if needed.</span>
+save(opt.logname,<span class="string">'opt'</span>);
+<span class="comment">%added this save of mrQ</span>
+mrQ.LWoptname=logname;
+save(mrQ.name,<span class="string">'mrQ'</span>);
+</pre><h2>III. Perform the optimization (optional: use the SunGrid)<a name="5"></a></h2><h2>III-a. USE THE SGE<a name="6"></a></h2><pre class="codeinput">clear <span class="string">brainMask</span> <span class="string">tmp</span> <span class="string">Res</span> <span class="string">M0</span> <span class="string">options</span>
+<span class="keyword">if</span> SGE==1;
+</pre><pre class="codeinput">    <span class="keyword">if</span> (~exist([outDir <span class="string">'/tmpSGWL'</span>],<span class="string">'dir'</span>)), mkdir([outDir <span class="string">'/tmpSGWL'</span>]);
+        <span class="comment">% the result form the grid will be saved in a temporary directory</span>
+        <span class="keyword">for</span> jobindex=1:ceil(length(opt.wh)/jumpindex)
+            jobname=1000*str2double(fullID(1:3))+jobindex;
+            command=sprintf(<span class="string">'qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_fitT1PDLW_SGE(%f,%g,%g); exit'' &gt;log"'</span>, jobname, id,jumpindex,jobindex);
+            [stat,res]=system(command);
+            <span class="keyword">if</span> ~mod(jobindex,100)
+                fprintf(<span class="string">'%g jobs out of %g have been submitted         \n'</span>,jobindex,ceil(length(opt.wh)/jumpindex))
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+        <span class="comment">%         if proclass==1</span>
+        <span class="comment">%             sgerun2('mrQ_fitT1PDLW_SGE(opt,8000,jobindex);',sgename,1,1:ceil(length(opt.wh)/jumpindex));</span>
+        <span class="comment">%         else</span>
+        <span class="comment">%             sgerun('mrQ_fitT1PDLW_SGE(opt,8000,jobindex);',sgename,1,1:ceil(length(opt.wh)/jumpindex));</span>
+        <span class="comment">%         end</span>
+
+    <span class="keyword">else</span>   <span class="comment">% if there's an existing SGE job, ask user if to restart this job or start from scratch</span>
+        an1 = input( <span class="string">'Unfinished SGE run found: Would you like to try and finish the existing SGE run? Press 1 if yes. To start over, press 0 '</span>);
+
+        <span class="comment">% Continue existing SGE run from where we left it last time</span>
+        <span class="comment">% we find the fits that are missing</span>
+        <span class="keyword">if</span> an1==1
+            MissingFileNumber=mrQ_multiFit_WhoIsMissing(opt.outDir,length(opt.wh),jumpindex);
+            <span class="keyword">if</span> ~isempty(MissingFileNumber)
+
+                <span class="keyword">for</span> kk=1:length(MissingFileNumber)
+                    jobindex=MissingFileNumber(kk);
+                    jobname=num2str(100*str2double(fullID(1:3)));
+                    command=sprintf(<span class="string">'qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_fitT1PDLW_SGE(%f,%g,%g); exit'' &gt;log"'</span>, jobname, id,jumpindex,jobindex);
+                    [stat,res]= system(command);
+                    <span class="keyword">if</span> ~mod(kk,100)
+                        fprintf(<span class="string">'%g jobs out of %g have been submitted       \n'</span>,kk,length(MissingFileNumber));
+                    <span class="keyword">end</span>
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+
+
+        <span class="keyword">elseif</span> an1==0   <span class="comment">% Restart the SGE processing from the beginning</span>
+            t=pwd;
+            cd (outDir)
+            <span class="syscmd">!rm -rf tmpSGWL</span>
+            cd (t);
+
+            eval([<span class="string">'!rm -f ~/sgeoutput/*'</span> sgename <span class="string">'*'</span>])
+            mkdir([outDir <span class="string">'/tmpSGWL'</span>]);
+            <span class="keyword">for</span> jobindex=1:ceil(length(opt.wh)/jumpindex)
+                jobname=1000*str2double(fullID(1:3))+jobindex;
+                command=sprintf(<span class="string">'qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_fitT1PDLW_SGE(%f,%g,%g); exit'' &gt;log"'</span>, jobname, id,jumpindex,jobindex);
+                [stat,res]= system(command);
+                <span class="keyword">if</span> ~mod(jobindex,100)
+                    fprintf(<span class="string">'%g jobs out of %g have been submitted           \n'</span>,jobindex,ceil(length(opt.wh)/jumpindex));
+                <span class="keyword">end</span>
+
+            <span class="keyword">end</span>
+            <span class="comment">%             if proclass==1</span>
+            <span class="comment">%                 sgerun2('mrQ_fitT1PDLW_SGE(opt,8000,jobindex);',sgename,1,1:ceil(length(opt.wh)/jumpindex));</span>
+            <span class="comment">%             else</span>
+            <span class="comment">%                 sgerun('mrQ_fitT1PDLW_SGE(opt,8000,jobindex);',sgename,1,1:ceil(length(opt.wh)/jumpindex));</span>
+            <span class="comment">%             end</span>
+        <span class="keyword">else</span>
+            error(<span class="string">'user cancelled'</span>);
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    <span class="comment">% Build the data that was fit by the SGE to a T1 and M0 maps</span>
+
+    <span class="comment">% This loop checks if all the outputs have been saved and waits until</span>
+    <span class="comment">% they are all done</span>
+    StopAndSave=0;
+    fNum=ceil(length(opt.wh)/jumpindex);
+    tic
+    <span class="keyword">while</span> StopAndSave==0
+        <span class="comment">% List all the files that have been created from the call to the</span>
+        <span class="comment">% grid</span>
+
+        list=ls(opt.outDir);
+        <span class="comment">% Check if all the files have been made.  If they are, then collect</span>
+        <span class="comment">% all the nodes and move on.</span>
+        <span class="keyword">if</span> length(regexp(list, <span class="string">'.mat'</span>))==fNum,
+            StopAndSave=1;
+
+            <span class="comment">% Loop over the nodes and collect the output</span>
+            <span class="keyword">for</span> i=1:fNum
+                st=1 +(i-1)*jumpindex;
+                ed=st+jumpindex-1;
+
+                <span class="keyword">if</span> ed&gt;length(opt.wh), ed=length(opt.wh);<span class="keyword">end</span>
+
+                name=[opt.outDir <span class="string">'/'</span> opt.name <span class="string">'_'</span> num2str(st) <span class="string">'_'</span> num2str(ed) <span class="string">'.mat'</span>];
+                load (name);
+                t11(st:ed)=res(1,:);
+                pd1(st:ed)=res(2,:);
+                t12(st:ed)=res(3,:);
+                pd2(st:ed)=res(4,:);
+
+            <span class="keyword">end</span>
+            <span class="comment">% Once we have collected all the nodes we delete the temporary</span>
+            t=pwd;
+            cd (outDir)
+            <span class="syscmd">!rm -r tmpSGWL</span>
+            cd (t);
+            eval([<span class="string">'!rm -f ~/sgeoutput/*'</span> sgename <span class="string">'*'</span>])
+
+        <span class="keyword">else</span>
+            qStatCommand    = [<span class="string">' qstat | grep -i  job_'</span> fullID(1:3)];
+            [status result] = system(qStatCommand);
+            tt=toc;
+            <span class="keyword">if</span> (isempty(result) &amp;&amp; tt&gt;60)
+                <span class="comment">% then there are no jobs running we will need to re run it.</span>
+                MissingFileNumber=mrQ_multiFit_WhoIsMissing(opt.outDir,length(opt.wh),jumpindex);
+                <span class="keyword">if</span> length(find(MissingFileNumber))&gt;0
+                    <span class="comment">% clean the sge output dir and run the missing fit</span>
+                    eval([<span class="string">'!rm -f ~/sgeoutput/*'</span> sgename <span class="string">'*'</span>])
+                    <span class="keyword">for</span> kk=1:length(MissingFileNumber)
+                        jobindex=MissingFileNumber(kk);
+                        jobname=num2str(100*str2double(fullID(1:3)));
+                        command=sprintf(<span class="string">'qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_fitT1PDLW_SGE(%f,%g,%g); exit'' &gt;log"'</span>, jobname, id,jumpindex,jobindex);
+                        [stat,res]= system(command);
+                        <span class="keyword">if</span> ~mod(kk,100)
+                            fprintf(<span class="string">'%g jobs out of %g have been submitted       \n'</span>,kk,length(MissingFileNumber));
+                        <span class="keyword">end</span>
+                    <span class="keyword">end</span>
+                <span class="keyword">end</span>
+
+            <span class="keyword">else</span>
+                <span class="comment">%  keep waiting</span>
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+
+    <span class="keyword">end</span>
+</pre><h2>III-b: NO SunGrid<a name="8"></a></h2><p>using the local computer to fit T1 and PD</p><pre class="codeinput"><span class="keyword">else</span>
+
+    fprintf(<span class="string">'\n Fitting the T1 map locally, may be slow. SunGrid use can be much faster             \n'</span>);
+
+    <span class="comment">% Check for matlab version and for parallel computing toolbox</span>
+    MyVer = ver; <span class="comment">% check matlab version</span>
+    has_PCTbox = any(strcmp(cellstr(char(MyVer.Name)), <span class="string">'Parallel Computing Toolbox'</span>)); <span class="comment">% check for PCTbox</span>
+    MyVer_ed=MyVer.Release; <span class="comment">% identify release version</span>
+    MyVer_year= sscanf(MyVer_ed,<span class="string">'%*[^0123456789]%d'</span>); <span class="comment">% identify release year</span>
+    MyVer_AorB= sscanf(MyVer_ed,<span class="string">'%*[^ab]%c'</span>); <span class="comment">% identify version a or b</span>
+
+
+    <span class="keyword">if</span> (~exist([outDir <span class="string">'/tmpSGWL'</span>],<span class="string">'dir'</span>)),
+        mkdir([outDir <span class="string">'/tmpSGWL'</span>]);
+        MissingFileNumber=1:ceil(length(opt.wh)/jumpindex); <span class="comment">% all of the files are 'missing'</span>
+    <span class="keyword">else</span>
+        MissingFileNumber= mrQ_multiFit_WhoIsMissing( opt.outDir,length(opt.wh),jumpindex);
+        <span class="comment">%         jobindex=[];</span>
+        <span class="comment">%         list=ls(opt.outDir);</span>
+        <span class="comment">%         ch= 1:jumpindex:length(opt.wh) ;</span>
+        <span class="comment">%         k=0;</span>
+        <span class="comment">%         for ii=1:length(ch),</span>
+        <span class="comment">%</span>
+        <span class="comment">%             ex=['_' num2str(ch(ii)) '_'];</span>
+        <span class="comment">%             if length(regexp(list, ex))==0,</span>
+        <span class="comment">%                 k=k+1;</span>
+        <span class="comment">%                 jobindex(k)=(ii);</span>
+        <span class="comment">%             end</span>
+        <span class="comment">%         end</span>
+    <span class="keyword">end</span>
+
+  <span class="comment">% Parallel Processing</span>
+  <span class="comment">% Using parallel processing can reduce the runtime of the LW fit,</span>
+  <span class="comment">% from ~60 minutes to ~20 minutes</span>
+
+    <span class="keyword">if</span> has_PCTbox == 0 <span class="comment">%no PCTbox, and thus no parfor</span>
+        <span class="keyword">if</span> ~isempty(MissingFileNumber)
+            <span class="keyword">for</span> kk=1:length(MissingFileNumber) <span class="comment">%regular for-loop</span>
+                jobindex=MissingFileNumber(kk);
+                mrQ_fitT1PDLW_SGE(id,jumpindex,jobindex);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">else</span> <span class="comment">%PCTbox exists, and so does parfor</span>
+        <span class="keyword">if</span> MyVer_year&lt;2013 || MyVer_year==2013 &amp;&amp; MyVer_AorB==<span class="string">'a'</span> <span class="comment">% check if matlab is 2013a or earlier</span>
+            <span class="keyword">if</span> ~isempty(MissingFileNumber)
+                matlabpool <span class="string">open</span>; <span class="comment">%opens available pools (matlab 2013a and earlier)</span>
+                <span class="keyword">parfor</span> kk=1:length(MissingFileNumber) <span class="comment">%parallel for-loop</span>
+                    jobindex=MissingFileNumber(kk);
+                    mrQ_fitT1PDLW_SGE(id,jumpindex,jobindex);
+                <span class="keyword">end</span>
+                matlabpool <span class="string">close</span>; <span class="comment">%close pools</span>
+            <span class="keyword">end</span>
+        <span class="keyword">elseif</span> MyVer_year&gt;2013 || MyVer_year==2013 &amp;&amp; MyVer_AorB==<span class="string">'b'</span><span class="comment">% check if matlab is 2013b or later</span>
+            <span class="keyword">if</span> ~isempty(MissingFileNumber)
+                gcp(); <span class="comment">%opens available pools (matlab 2013b and later)</span>
+               <span class="comment">% tic;</span>
+                <span class="keyword">parfor</span> kk=1:length(MissingFileNumber) <span class="comment">%parallel for-loop</span>
+                    jobindex=MissingFileNumber(kk);
+                    mrQ_fitT1PDLW_SGE(id,jumpindex,jobindex);
+                <span class="keyword">end</span>
+               <span class="comment">% toc;</span>
+                delete(gcp); <span class="comment">%close pools</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+
+
+<span class="comment">%     if ~isempty(MissingFileNumber)</span>
+<span class="comment">%         for kk=1:length(MissingFileNumber)</span>
+<span class="comment">%             jobindex=MissingFileNumber(kk);</span>
+<span class="comment">%             mrQ_fitT1PDLW_SGE(id,jumpindex,jobindex);</span>
+<span class="comment">%         end</span>
+<span class="comment">%     end</span>
+
+    <span class="comment">%Build the  T1 and M0 maps</span>
+    fNum=ceil(length(opt.wh)/jumpindex);
+
+    <span class="comment">% Loop over the nodes and collect the output</span>
+    <span class="keyword">for</span> i=1:fNum
+        st=1 +(i-1)*jumpindex;
+        ed=st+jumpindex-1;
+
+        <span class="keyword">if</span> ed&gt;length(opt.wh), ed=length(opt.wh);<span class="keyword">end</span>
+
+        name=[opt.outDir <span class="string">'/'</span> opt.name <span class="string">'_'</span> num2str(st) <span class="string">'_'</span> num2str(ed) <span class="string">'.mat'</span>];
+        load (name);
+        t11(st:ed)=res(1,:);
+        pd1(st:ed)=res(2,:);
+        t12(st:ed)=res(3,:);
+        pd2(st:ed)=res(4,:);
+    <span class="keyword">end</span>
+    <span class="comment">% Once we have collected all the nodes we delete the temporary</span>
+    t=pwd;
+    cd (outDir)
+    <span class="syscmd">!rm -r tmpSGWL</span>
+    cd (t);
+    eval([<span class="string">'!rm -f ~/sgeoutput/*'</span> sgename <span class="string">'*'</span>])
+
+<span class="keyword">end</span>
+
+T1_WL = zeros(sz);
+PD_WL = T1_WL; T1_L=T1_WL;PD_L = T1_WL;
+T1_WL(opt.wh) = t11(:)./1000;
+PD_WL(opt.wh) = pd1(:);
+T1_L(opt.wh) = t12(:)./1000;
+PD_L(opt.wh) = pd2(:);
+</pre><h2>IV. Save out results<a name="10"></a></h2><pre class="codeinput"><span class="keyword">if</span> savenow==1
+    dtiWriteNiftiWrapper(single(T1_WL), xform, fullfile(outDir,[<span class="string">'T1_WL_last.nii.gz'</span>]));
+    dtiWriteNiftiWrapper(single(PD_WL), xform, fullfile(outDir,[<span class="string">'PD_WL_last.nii.gz'</span>]));
+    dtiWriteNiftiWrapper(single(T1_L), xform, fullfile(outDir,[<span class="string">'T1_L_last.nii.gz'</span>]));
+    dtiWriteNiftiWrapper(single(PD_L), xform, fullfile(outDir,[<span class="string">'PD_L_last.nii.gz'</span>]));
+<span class="keyword">end</span>
+
+<span class="keyword">if</span> SGE
+        jobname=fullID(1:3);
+    filesPath=[GridOutputDir,<span class="string">'/job_'</span>,num2str(jobname),<span class="string">'*'</span>];
+    delCommand=sprintf(<span class="string">'rm %s'</span>, filesPath);
+    [status, result]=system(delCommand);
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function [T1_WL, T1_L,PD_WL, PD_L] = mrQ_T1M0_LWFit(s,brainMask,tr, ...
+    flipAngles,Gain,B1,outDir,xform,mrQ,GridOutputDir,savenow)
+%
+%[T1_WL, T1_L,PD_WL, PD_L] = mrQ_T1M0_LWFit(s,brainMask,tr, ...
+%                            flipAngles,Gain,B1,outDir,xform,mrQ,savenow)
+%
+%Performs weighted least square fitting of T1 and PD according to: Linear
+% least-squares method for unbiased estimation of T1 from SPGR signals.
+% Chang LC, Koay CG, Basser PJ, Pierpaoli C. Magn Reson Med. 2008
+% Aug;60(2):496-501.
+%
+%
+% INPUTS:
+%       s           - contains aligned data
+%       brainMask   - Tissue mask delineating the brain region
+%       tr          - TR taken from the S2 structure of aligned data
+%       flipAngles  - Array of flipAngles for each scan.
+%       M0          - M0 map
+%       t1          - T1 data
+%       Gain        -
+%       B1          -
+%       outDir      - Ouput directory where the resulting NIfTI files will
+%                     be saved.
+%       xform       - Transform
+%       SGE         - Option to run using SGE [default = 0]
+%       savenow     - Saves the outputs to disk [default = 0]
+%       sub         - Subject name for SGE call
+%
+%
+% OUTPUTS:
+%       B1
+%       resNorm
+%       PD
+%
+%
+% WEB RESOURCES
+%
+% See also: mrQfit_T1M0_ver2.m
+%
+% (c) Stanford University, VISTA Lab
+%
+% Authors: Aviv Mezer and Nikola Stikov, 24.02.2014
+% Copyright, Stanford University, 2014
+%
+
+%% I. Check inputs
+
+% if (~exist('sb','var')|| isempty(sb)),
+%     sb='UN';
+% end
+%
+% sgename=[sb '_3dT1PD'];
+
+% if (~exist('SGE','var')|| isempty(SGE)),
+%     SGE=0;
+% end
+% if (~exist('proclass','var')|| isempty(proclass))
+%     proclass=0;
+% end
+if (~exist('savenow','var')|| isempty(savenow)),
+    savenow=0;
+end
+if isfield(mrQ,'SunGrid')
+    SGE=mrQ.SunGrid;
+else
+    SGE=0;
+end
+
+if isfield(mrQ,'sub')
+    sb=mrQ.sub;
+else
+    sb='UN';
+end
+sgename=[sb '_3dT1PD'];
+
+fullID=sb(isstrprop(sb, 'digit'));
+id=str2double(fullID(1:8));
+
+if notDefined('GridOutputDir')
+    GridOutputDir=pwd;
+end
+%% II. Set options for optimization procedure
+% Adjust for different versions of matlab
+a=version('-date');
+if str2num(a(end-3:end))>=2012
+    options = optimset('Algorithm', 'levenberg-marquardt','Display', 'off','Tolx',1e-12);
+else
+    options =  optimset('LevenbergMarquardt','on','Display', 'off','Tolx',1e-12);%'TolF',1e-12
+end
+% We put all the relevant data in a structure called "opt".
+% This will make it easier to send it between the computers in the grid
+
+sz=size(brainMask);
+
+for i=1:length(s)
+    
+    tmp=s(i).imData(brainMask);
+    opt.s(:,i)=double(tmp);
+end
+
+opt.flipAngles = double(flipAngles);
+opt.tr = double(tr);
+
+opt.wh   = find(brainMask);
+opt.Gain = double(Gain(brainMask));
+opt.B1   = double(B1(brainMask));
+
+opt.outDir = [outDir '/tmpSGWL'];
+opt.name   = '/T1PDlsqVx';
+jumpindex=8000;
+
+mrQ.optLW=opt;
+save(mrQ.name,'mrQ');
+
+% Save a logfile with all the options used during processing:
+logname = [outDir '/fitT1LW.mat'];
+opt.logname=logname;
+
+% Save an information file we can load afterwards, if needed.
+save(opt.logname,'opt');
+%added this save of mrQ
+mrQ.LWoptname=logname;
+save(mrQ.name,'mrQ');
+
+%% III. Perform the optimization (optional: use the SunGrid)
+%% III-a. USE THE SGE
+
+clear brainMask tmp Res M0 options
+if SGE==1;
+    
+    if (~exist([outDir '/tmpSGWL'],'dir')), mkdir([outDir '/tmpSGWL']);
+        % the result form the grid will be saved in a temporary directory
+        for jobindex=1:ceil(length(opt.wh)/jumpindex)
+            jobname=1000*str2double(fullID(1:3))+jobindex;
+            command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_fitT1PDLW_SGE(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
+            [stat,res]=system(command);
+            if ~mod(jobindex,100)
+                fprintf('%g jobs out of %g have been submitted         \n',jobindex,ceil(length(opt.wh)/jumpindex))
+            end
+            
+        end
+        %         if proclass==1
+        %             sgerun2('mrQ_fitT1PDLW_SGE(opt,8000,jobindex);',sgename,1,1:ceil(length(opt.wh)/jumpindex));
+        %         else
+        %             sgerun('mrQ_fitT1PDLW_SGE(opt,8000,jobindex);',sgename,1,1:ceil(length(opt.wh)/jumpindex));
+        %         end
+        
+    else   % if there's an existing SGE job, ask user if to restart this job or start from scratch
+        an1 = input( 'Unfinished SGE run found: Would you like to try and finish the existing SGE run? Press 1 if yes. To start over, press 0 ');
+        
+        % Continue existing SGE run from where we left it last time
+        % we find the fits that are missing
+        if an1==1
+            MissingFileNumber=mrQ_multiFit_WhoIsMissing(opt.outDir,length(opt.wh),jumpindex);
+            if ~isempty(MissingFileNumber)
+                
+                for kk=1:length(MissingFileNumber)
+                    jobindex=MissingFileNumber(kk);
+                    jobname=num2str(100*str2double(fullID(1:3)));
+                    command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_fitT1PDLW_SGE(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
+                    [stat,res]= system(command);
+                    if ~mod(kk,100)
+                        fprintf('%g jobs out of %g have been submitted       \n',kk,length(MissingFileNumber));
+                    end
+                end
+            end
+            
+            
+        elseif an1==0   % Restart the SGE processing from the beginning
+            t=pwd;
+            cd (outDir)
+            !rm -rf tmpSGWL
+            cd (t);
+            
+            eval(['!rm -f ~/sgeoutput/*' sgename '*'])
+            mkdir([outDir '/tmpSGWL']);
+            for jobindex=1:ceil(length(opt.wh)/jumpindex)
+                jobname=1000*str2double(fullID(1:3))+jobindex;
+                command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_fitT1PDLW_SGE(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
+                [stat,res]= system(command);
+                if ~mod(jobindex,100)
+                    fprintf('%g jobs out of %g have been submitted           \n',jobindex,ceil(length(opt.wh)/jumpindex));
+                end
+                
+            end
+            %             if proclass==1
+            %                 sgerun2('mrQ_fitT1PDLW_SGE(opt,8000,jobindex);',sgename,1,1:ceil(length(opt.wh)/jumpindex));
+            %             else
+            %                 sgerun('mrQ_fitT1PDLW_SGE(opt,8000,jobindex);',sgename,1,1:ceil(length(opt.wh)/jumpindex));
+            %             end
+        else
+            error('user cancelled');
+        end
+    end
+    
+    % Build the data that was fit by the SGE to a T1 and M0 maps
+    
+    % This loop checks if all the outputs have been saved and waits until
+    % they are all done
+    StopAndSave=0;
+    fNum=ceil(length(opt.wh)/jumpindex);
+    tic
+    while StopAndSave==0
+        % List all the files that have been created from the call to the
+        % grid
+        
+        list=ls(opt.outDir);
+        % Check if all the files have been made.  If they are, then collect
+        % all the nodes and move on.
+        if length(regexp(list, '.mat'))==fNum,
+            StopAndSave=1;
+            
+            % Loop over the nodes and collect the output
+            for i=1:fNum
+                st=1 +(i-1)*jumpindex;
+                ed=st+jumpindex-1;
+                
+                if ed>length(opt.wh), ed=length(opt.wh);end
+                
+                name=[opt.outDir '/' opt.name '_' num2str(st) '_' num2str(ed) '.mat'];
+                load (name);
+                t11(st:ed)=res(1,:);
+                pd1(st:ed)=res(2,:);
+                t12(st:ed)=res(3,:);
+                pd2(st:ed)=res(4,:);
+                
+            end
+            % Once we have collected all the nodes we delete the temporary
+            t=pwd;
+            cd (outDir)
+            !rm -r tmpSGWL
+            cd (t);
+            eval(['!rm -f ~/sgeoutput/*' sgename '*'])
+            
+        else
+            qStatCommand    = [' qstat | grep -i  job_' fullID(1:3)];
+            [status result] = system(qStatCommand);
+            tt=toc;
+            if (isempty(result) && tt>60)
+                % then there are no jobs running we will need to re run it.
+                MissingFileNumber=mrQ_multiFit_WhoIsMissing(opt.outDir,length(opt.wh),jumpindex);
+                if length(find(MissingFileNumber))>0
+                    % clean the sge output dir and run the missing fit
+                    eval(['!rm -f ~/sgeoutput/*' sgename '*'])
+                    for kk=1:length(MissingFileNumber)
+                        jobindex=MissingFileNumber(kk);
+                        jobname=num2str(100*str2double(fullID(1:3)));
+                        command=sprintf('qsub -cwd -j y -b y -N job_%g "matlab -nodisplay -r ''mrQ_fitT1PDLW_SGE(%f,%g,%g); exit'' >log"', jobname, id,jumpindex,jobindex);
+                        [stat,res]= system(command);
+                        if ~mod(kk,100)
+                            fprintf('%g jobs out of %g have been submitted       \n',kk,length(MissingFileNumber));
+                        end
+                    end
+                end
+                
+            else
+                %  keep waiting
+            end
+            
+        end
+        
+    end
+    
+    %% III-b: NO SunGrid
+    % using the local computer to fit T1 and PD
+else
+    
+    fprintf('\n Fitting the T1 map locally, may be slow. SunGrid use can be much faster             \n');
+    
+    % Check for matlab version and for parallel computing toolbox
+    MyVer = ver; % check matlab version   
+    has_PCTbox = any(strcmp(cellstr(char(MyVer.Name)), 'Parallel Computing Toolbox')); % check for PCTbox
+    MyVer_ed=MyVer.Release; % identify release version
+    MyVer_year= sscanf(MyVer_ed,'%*[^0123456789]%d'); % identify release year
+    MyVer_AorB= sscanf(MyVer_ed,'%*[^ab]%c'); % identify version a or b
+
+    
+    if (~exist([outDir '/tmpSGWL'],'dir')),
+        mkdir([outDir '/tmpSGWL']);
+        MissingFileNumber=1:ceil(length(opt.wh)/jumpindex); % all of the files are 'missing'
+    else
+        MissingFileNumber= mrQ_multiFit_WhoIsMissing( opt.outDir,length(opt.wh),jumpindex);
+        %         jobindex=[];
+        %         list=ls(opt.outDir);
+        %         ch= 1:jumpindex:length(opt.wh) ;
+        %         k=0;
+        %         for ii=1:length(ch),
+        %
+        %             ex=['_' num2str(ch(ii)) '_'];
+        %             if length(regexp(list, ex))==0,
+        %                 k=k+1;
+        %                 jobindex(k)=(ii);
+        %             end
+        %         end
+    end
+ 
+  % Parallel Processing
+  % Using parallel processing can reduce the runtime of the LW fit,
+  % from ~60 minutes to ~20 minutes
+  
+    if has_PCTbox == 0 %no PCTbox, and thus no parfor
+        if ~isempty(MissingFileNumber)
+            for kk=1:length(MissingFileNumber) %regular for-loop
+                jobindex=MissingFileNumber(kk);
+                mrQ_fitT1PDLW_SGE(id,jumpindex,jobindex);
+            end
+        end
+    else %PCTbox exists, and so does parfor
+        if MyVer_year<2013 || MyVer_year==2013 && MyVer_AorB=='a' % check if matlab is 2013a or earlier
+            if ~isempty(MissingFileNumber)
+                matlabpool open; %opens available pools (matlab 2013a and earlier)
+                parfor kk=1:length(MissingFileNumber) %parallel for-loop
+                    jobindex=MissingFileNumber(kk);
+                    mrQ_fitT1PDLW_SGE(id,jumpindex,jobindex);
+                end
+                matlabpool close; %close pools
+            end
+        elseif MyVer_year>2013 || MyVer_year==2013 && MyVer_AorB=='b'% check if matlab is 2013b or later
+            if ~isempty(MissingFileNumber)
+                gcp(); %opens available pools (matlab 2013b and later)
+               % tic;
+                parfor kk=1:length(MissingFileNumber) %parallel for-loop
+                    jobindex=MissingFileNumber(kk);
+                    mrQ_fitT1PDLW_SGE(id,jumpindex,jobindex);
+                end
+               % toc;
+                delete(gcp); %close pools
+            end
+        end
+    end
+    
+    
+    
+%     if ~isempty(MissingFileNumber)
+%         for kk=1:length(MissingFileNumber)
+%             jobindex=MissingFileNumber(kk);
+%             mrQ_fitT1PDLW_SGE(id,jumpindex,jobindex);
+%         end
+%     end
+    
+    %Build the  T1 and M0 maps
+    fNum=ceil(length(opt.wh)/jumpindex);
+    
+    % Loop over the nodes and collect the output
+    for i=1:fNum
+        st=1 +(i-1)*jumpindex;
+        ed=st+jumpindex-1;
+        
+        if ed>length(opt.wh), ed=length(opt.wh);end
+        
+        name=[opt.outDir '/' opt.name '_' num2str(st) '_' num2str(ed) '.mat'];
+        load (name);
+        t11(st:ed)=res(1,:);
+        pd1(st:ed)=res(2,:);
+        t12(st:ed)=res(3,:);
+        pd2(st:ed)=res(4,:);
+    end
+    % Once we have collected all the nodes we delete the temporary
+    t=pwd;
+    cd (outDir)
+    !rm -r tmpSGWL
+    cd (t);
+    eval(['!rm -f ~/sgeoutput/*' sgename '*'])
+    
+end
+
+T1_WL = zeros(sz);
+PD_WL = T1_WL; T1_L=T1_WL;PD_L = T1_WL;
+T1_WL(opt.wh) = t11(:)./1000;
+PD_WL(opt.wh) = pd1(:);
+T1_L(opt.wh) = t12(:)./1000;
+PD_L(opt.wh) = pd2(:);
+
+%% IV. Save out results
+
+if savenow==1
+    dtiWriteNiftiWrapper(single(T1_WL), xform, fullfile(outDir,['T1_WL_last.nii.gz']));
+    dtiWriteNiftiWrapper(single(PD_WL), xform, fullfile(outDir,['PD_WL_last.nii.gz']));
+    dtiWriteNiftiWrapper(single(T1_L), xform, fullfile(outDir,['T1_L_last.nii.gz']));
+    dtiWriteNiftiWrapper(single(PD_L), xform, fullfile(outDir,['PD_L_last.nii.gz']));
+end
+
+if SGE
+        jobname=fullID(1:3);
+    filesPath=[GridOutputDir,'/job_',num2str(jobname),'*'];
+    delCommand=sprintf('rm %s', filesPath);
+    [status, result]=system(delCommand);
+end
+##### SOURCE END #####
+--></body></html>

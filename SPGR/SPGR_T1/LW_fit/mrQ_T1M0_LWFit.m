@@ -267,6 +267,14 @@ else
     
     fprintf('\n Fitting the T1 map locally, may be slow. SunGrid use can be much faster             \n');
     
+    % Check for matlab version and for parallel computing toolbox
+    MyVer = ver; % check matlab version   
+    has_PCTbox = any(strcmp(cellstr(char(MyVer.Name)), 'Parallel Computing Toolbox')); % check for PCTbox
+    MyVer_ed=MyVer.Release; % identify release version
+    MyVer_year= sscanf(MyVer_ed,'%*[^0123456789]%d'); % identify release year
+    MyVer_AorB= sscanf(MyVer_ed,'%*[^ab]%c'); % identify version a or b
+
+    
     if (~exist([outDir '/tmpSGWL'],'dir')),
         mkdir([outDir '/tmpSGWL']);
         MissingFileNumber=1:ceil(length(opt.wh)/jumpindex); % all of the files are 'missing'
@@ -285,13 +293,55 @@ else
         %             end
         %         end
     end
+ 
+  % Parallel Processing
+  % Using parallel processing can reduce the runtime of the LW fit,
+  % from ~60 minutes to ~20 minutes
+  
+  if has_PCTbox == 0 %no PCTbox, and thus no parfor
+      if ~isempty(MissingFileNumber)
+          for kk=1:length(MissingFileNumber) %regular for-loop
+              jobindex=MissingFileNumber(kk);
+              mrQ_fitT1PDLW_SGE(id,jumpindex,jobindex);
+          end
+      end
+  else %PCTbox exists, and so does parfor
+      if MyVer_year<2013 || MyVer_year==2013 && MyVer_AorB=='a' % check if matlab is 2013a or earlier
+          if ~isempty(MissingFileNumber)
+              % Find number of available workers
+              myworkers=findResource;
+              myworkers=myworkers.ClusterSize;
+              
+              matlabpool('open', myworkers); %opens available pools (matlab 2013a and earlier)
+              parfor kk=1:length(MissingFileNumber) %parallel for-loop
+                  
+                  jobindex=MissingFileNumber(kk);
+                  mrQ_fitT1PDLW_SGE(id,jumpindex,jobindex);
+              end
+              matlabpool close; %close pools
+          end
+      elseif MyVer_year>2013 || MyVer_year==2013 && MyVer_AorB=='b'% check if matlab is 2013b or later
+          if ~isempty(MissingFileNumber)
+              tic
+              gcp(); %opens available pools (matlab 2013b and later)
+              parfor kk=1:length(MissingFileNumber) %parallel for-loop
+                  jobindex=MissingFileNumber(kk);
+                  mrQ_fitT1PDLW_SGE(id,jumpindex,jobindex);
+              end
+              delete(gcp); %close pools
+              toc
+          end
+      end
+  end
     
-    if ~isempty(MissingFileNumber)
-        for kk=1:length(MissingFileNumber)
-            jobindex=MissingFileNumber(kk);
-            mrQ_fitT1PDLW_SGE(id,jumpindex,jobindex);
-        end
-    end
+    
+    
+%     if ~isempty(MissingFileNumber)
+%         for kk=1:length(MissingFileNumber)
+%             jobindex=MissingFileNumber(kk);
+%             mrQ_fitT1PDLW_SGE(id,jumpindex,jobindex);
+%         end
+%     end
     
     %Build the  T1 and M0 maps
     fNum=ceil(length(opt.wh)/jumpindex);

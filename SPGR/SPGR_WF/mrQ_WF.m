@@ -1,31 +1,41 @@
 function [mrQ,WFfile,CalibrationVal] = mrQ_WF(mrQ,dataDir,T1file,PDfile,Gainfile,B1file)
 % [mrQ,WFfile,CalibrationVal] = mrQ_WF(mrQ,dataDir,T1file,PDfile,Gainfile,B1file);
 % 
-% 
 % This function calculates the constant deviation of the PD. Since some
-% flipangles have higher noise than others, it finds the flipangles with
-% the highest signal of the rawaligned data within the CSF, (as the highest
-% signal should reflect the highest SNR). Than it creates an ROI which is
-% the CSF only within a limited ara around the ventricles, while excluding
-% voxel with outliers in PD or in the raw data.
-% Next PD is calculated in the ROI, annd assuming the value of it should
-% be 1,  the correction constant of the PD, and apply that constant to the
-% PD image to create a WF map.
+% flip angles have higher noise than others, the function finds the flip
+% angles with the highest signal of the raw aligned data within the CSF (as
+% the highest signal should reflect the highest SNR). Then, it creates an
+% ROI which is the CSF only within a limited area around the ventricles,
+% while excluding voxels with outliers in PD or in the raw data. Next, PD
+% is calculated in the ROI, and assuming its value to be 1, the correction
+% constant of the PD, and applies that constant to the PD image to create a
+% WF map.
 % 
 
-% Input:
-%         mrQ 
-%         dataDir -   where the structure with the raw data is located.
-%                     default is mrQ.spgr_initDir 
-%         T1file -    the path to the T1 map. This is used to create the 
-%                     CSF ROI. default is using mrQ_get_T1M0_files 
-%         PDfile -    the path to the PD map.  default is: opt.PDfile 
-%         Gainfile -  the path to a Gain map. This is used for the PD
-%                     calculation. the gain is defined differently,
-%                     depending on the M0 calculation (if it's a multiCoil
-%                     fit than we take a different map) 
-%         B1file -    the path to a B1 map, this will be used to correct
-%                     the FA value. default is mrQ.B1FileName
+%  ~INPUT~
+%            mrQ:     The mrQ structure
+%        dataDir:     Where the structure with the raw data is located.
+%                            (Default is mrQ.spgr_initDir) 
+%         T1file:     The path to the T1 map. This is used to create the 
+%                            CSF ROI. (Default is using mrQ_get_T1M0_files) 
+%         PDfile:     The path to the PD map.  (Default is opt.PDfile) 
+%       Gainfile:     The path to a Gain map. This is used for the PD
+%                           calculation. The gain is defined differently,
+%                           depending on the M0 calculation (if it's a 
+%                           multi-coil fit, then we take a different map) 
+%         B1file:     The path to a B1 map. This will be used to correct
+%                     the FA value. (Default is mrQ.B1FileName)
+%
+%
+%  ~OUTPUT~
+%            mrQ:
+%         WFfile:
+% CalibrationVal:
+%
+%
+% (C) Mezer lab, the Hebrew University of Jerusalem, Israel
+%   2015
+
 %% I : check input
 if notDefined('dataDir');
     dataDir = mrQ.spgr_initDir;

@@ -1,10 +1,25 @@
 function mrQ_fitM0boxesCall(opt_logname,SunGrid,RunSelectedJob,GridOutputDir)
-% this function load the opt straction that have all the fit information
-% and send it in to the computer grid if one is defined (SunGrid).  If not
-% it will send it to local compoter solver
+% mrQ_fitM0boxesCall(opt_logname,SunGrid,RunSelectedJob,GridOutputDir)
 %
+% This function will load the "opt" structure which contains all the fit
+% information and will send it in to the computer grid, if one is defined
+% (e.g. SunGrid).  If not, the function will send it to the local computer
+% solver.
+%
+%  ~INPUTS~ 
+%       opt_logname: Where the "opt" structure can be located
+%           SunGrid: Whether to use SunGrid (1), or not use it (0, default)
+%    RunSelectedJob:
+%     GridOutputDir:
+%
+%
+% (C) Mezer lab, the Hebrew University of Jerusalem, Israel
+%    2015
 
 
+%% I. Load "opt" structure and define parameters
+
+ 
 load (opt_logname);
 dirname=opt.dirname;
 sgename=opt.SGE;
@@ -15,12 +30,13 @@ id=str2double(fullID(1:8));
 if notDefined('GridOutputDir')
     GridOutputDir=pwd;
 end
-%%   Perform the gain fits
-% Perform the fits for each box using the Sun Grid Engine
+%% II.  Perform the gain fits
+%% II-a: WITH SunGrid
+         % Perform the fits for each box using the SunGrid Engine
 if SunGrid==1;
     
     % Check to see if there is an existing SGE job that can be
-    % restarted. If not start the job, if yes prompt the user.
+    % restarted. If no, start the job; if yes, prompt the user.
     
     if (~exist(dirname,'dir'))
         %     if notDefined('RunSelectedJob')
@@ -49,10 +65,10 @@ if SunGrid==1;
         %         that can be finished
         an1 = input( 'Unfinished SGE run found: Would you like to try and finish the existing SGE run? Press 1 if yes. To start over, press 0 ');
         if an1==1
-            % Continue existing SGE run from where we left it last time
-            % we find the fits that are missing
+            % Continue existing SGE run from where we left it last time.
+            % We find the fits that are missing
             
-            % User opted to try to finish the started SGE run
+            % User opted to try to finish the started SGE run:
             MissingFileNumber=mrQ_multiFit_WhoIsMissing(dirname,length(opt.wh),jumpindex);
             if ~isempty(MissingFileNumber)
                 
@@ -107,7 +123,7 @@ if SunGrid==1;
     fNum=ceil(length(opt.wh)/jumpindex);
     tic
     while StopAndSave==0
-        % List all the files that have been created from the gris call
+        % List all the files that have been created from the grid call
         list=ls(opt.outDir);
         
         % Check if all the files have been made.  If they have, move on.
@@ -124,8 +140,8 @@ if SunGrid==1;
                 [status result] = system(qStatCommand);
                 if (isempty(result))
                     
-                    % then the are no jobs running or on queue but not all jobs
-                    % are there so we will need to run the missing jobs.
+                    % then there are no jobs running or on queue, but not all jobs
+                    % are there, so we will need to run the missing jobs.
                     MissingFileNumber=mrQ_multiFit_WhoIsMissing(dirname,length(opt.wh),jumpindex);
                     if ~isempty(MissingFileNumber)
                         % clean the sge output dir and run the missing fit
@@ -145,28 +161,80 @@ if SunGrid==1;
                 end
                 
             else
-                % if there are jobs running or on queue, we should wait untill
-                % the're finished -->   keep waiting
+                % if there are jobs running or on queue, we should wait until
+                % they're finished -->   keep waiting
             end
             
         end
     end
     
     
-    
+%% II-b: WITHOUT SunGrid
 else
-    % with out grid call that will take a very long
-    disp(  'No parallel computation grid is used to fit PD. Using the local machine instead , this may take a very long time !!!');
+    % without grid call, this will take a very long time
+    disp('No parallel computation grid is used to fit PD. Using the local machine instead, this may take a very long time!!!');
     if (~exist(dirname,'dir')),
         mkdir(dirname);
     end
-    jumpindex=   length(opt.wh);
-    opt.jumpindex=jumpindex;
     
-    mrQ_CoilPD_gridFit(id,jumpindex,1);
+    
+    % Check for matlab version and for parallel computing toolbox (see below)
+    MyVer = ver; % check matlab version
+    has_PCTbox = any(strcmp(cellstr(char(MyVer.Name)), 'Parallel Computing Toolbox')); % check for PCTbox
+    MyVer_ed=MyVer.Release; % identify release version
+    MyVer_year= sscanf(MyVer_ed,'%*[^0123456789]%d'); % identify release year
+    MyVer_AorB= sscanf(MyVer_ed,'%*[^ab]%c'); % identify version a or b
+    
+    
+    % Parallel Processing
+    if has_PCTbox == 0 %no PCTbox, and thus no parfor
+        jumpindex=   length(opt.wh);
+        opt.jumpindex=jumpindex;
+        
+        mrQ_CoilPD_gridFit(id,jumpindex,1);
+        
+    else %PCTbox exists, and so does parfor
+        if MyVer_year<2013 || MyVer_year==2013 && MyVer_AorB=='a' % check if matlab is 2013a or earlier
+            
+            % Find number of available workers
+            myworkers=findResource;
+            myworkers=myworkers.ClusterSize;
+            
+            jumpindex= ceil(length(opt.wh)/myworkers);
+            opt.jumpindex=jumpindex;
+            
+            matlabpool('open', myworkers)
+            parfor kk=1:myworkers
+                mrQ_CoilPD_gridFit(id,jumpindex,kk);
+            end
+            matlabpool close;
+            
+        elseif MyVer_year>2013 || MyVer_year==2013 && MyVer_AorB=='b'% check if matlab is 2013b or later
+            % Find number of available workers
+            myworkers=parcluster;
+            myworkers=myworkers.NumWorkers;
+            
+            jumpindex= ceil(length(opt.wh)/myworkers);
+            opt.jumpindex=jumpindex;
+            
+            mypool=parpool(myworkers);
+            parfor kk=1:myworkers
+                mrQ_CoilPD_gridFit(id,jumpindex,kk);
+            end
+            delete(mypool);
+
+        end
+    end
+
+%     jumpindex=   length(opt.wh);
+%     opt.jumpindex=jumpindex;
+%     
+%     mrQ_CoilPD_gridFit(id,jumpindex,1);
+
     save(opt.logname,'opt');
 end
 
+%% III. SAVE 
 
 if SunGrid
     jobname=fullID(1:3);
@@ -174,7 +242,6 @@ if SunGrid
     delCommand=sprintf('rm %s', filesPath);
     [status, result]=system(delCommand);
 end
-
 
 
 %% the runselected job was used a tad differently

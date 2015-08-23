@@ -25,7 +25,7 @@ mrQpath= mrQ_getPath(IDnum);
 load(mrQpath);
 load(mrQ.LSQoptname);
 
-%% II. Set the maximum number of computational threads avaiable to Matlab
+%% II. Set the maximum number of computational threads available to Matlab
 %maxnumcompthreads(1)
 
 j  = 0;

@@ -48,6 +48,8 @@ end
 if notDefined('GridOutputDir')
     GridOutputDir=pwd;
 end
+
+
 %% II.  Perform the gain fits
 % II-a: With SunGrid
 
@@ -110,26 +112,92 @@ if SunGrid==1; %if there is a grid
     end
     
     
-    % II-b: Without SunGrid
-    
+% %% II-b: Without SunGrid <--- OLD VERSION (without parfor)
+%     
+% else %if there is no grid
+%     
+%     % Without a grid, this will take very long.
+%     disp('No parallel computation grid is used to fit PD. Using the local machine instead.');
+%     disp('      This may take a long time!!!');
+%     
+%     
+%     % In this case, the jumpindex is the number of voxels to fit (no jumps, only one job)
+%     jumpindex=   opt.N_Vox2Fit;
+%     opt.jumpindex=jumpindex;
+%     save(opt.logname,'opt');
+%     %     mrQ_B1_LRFit(opt_logname,jumpindex,1);
+%     mrQ_B1_LRFit(id,jumpindex,1);
+%     
+%     
+% end
+
+%% II-b(i): Without SGE (jsb)
+% test with parfor
+
 else %if there is no grid
     
     % Without a grid, this will take very long.
     disp('No parallel computation grid is used to fit PD. Using the local machine instead.');
     disp('      This may take a long time!!!');
     
-    % In this case, the jumpindex is the number of voxels to fit (no jumps, only one job)
-    jumpindex=   opt.N_Vox2Fit;
-    opt.jumpindex=jumpindex;
-    save(opt.logname,'opt');
-    %     mrQ_B1_LRFit(opt_logname,jumpindex,1);
-    mrQ_B1_LRFit(id,jumpindex,1);
     
+    % Check for matlab version and for parallel computing toolbox
+    MyVer = ver; % check matlab version   
+    has_PCTbox = any(strcmp(cellstr(char(MyVer.Name)), 'Parallel Computing Toolbox')); % check for PCTbox
+    MyVer_ed=MyVer.Release; % identify release version
+    MyVer_year= sscanf(MyVer_ed,'%*[^0123456789]%d'); % identify release year
+    MyVer_AorB= sscanf(MyVer_ed,'%*[^ab]%c'); % identify version a or b
+        
+        jumpindex=   opt.N_Vox2Fit;
+
     
-end
-
-
-
+    % Parallel Processing
+    if has_PCTbox == 0 %no PCTbox, and thus no parfor
+        opt.jumpindex=jumpindex;
+        save(opt.logname,'opt');
+        
+        mrQ_B1_LRFit(id,jumpindex,1);
+        
+    else %PCTbox exists, and so does parfor
+        if MyVer_year<2013 || MyVer_year==2013 && MyVer_AorB=='a' % check if matlab is 2013a or earlier
+            
+            % Find number of available workers
+            myworkers=findResource;
+            myworkers=myworkers.ClusterSize;
+            
+            myjump=ceil(jumpindex/myworkers);
+            
+            opt.jumpindex=myjump;
+            save(opt.logname,'opt');   
+            
+            matlabpool('open', myworkers)
+            parfor kk=1:myworkers;
+                mrQ_B1_LRFit(id,myjump,kk);
+            end
+            matlabpool close;
+            
+        elseif MyVer_year>2013 || MyVer_year==2013 && MyVer_AorB=='b'% check if matlab is 2013b or later
+            
+            % Find number of available workers
+            myworkers=parcluster;
+            myworkers=myworkers.NumWorkers;
+            
+            myjump=ceil(jumpindex/myworkers);
+            
+            opt.jumpindex=myjump;
+            save(opt.logname,'opt');
+            
+            %tic
+            mypool=parpool(myworkers);
+            parfor kk=1:myworkers;
+                mrQ_B1_LRFit(id,myjump,kk);
+            end
+            delete(mypool);
+           %toc
+        end
+    end
+    
+end  
 
 %%
 

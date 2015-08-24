@@ -54,7 +54,7 @@ for i=1:length(input.name)
     if exist(input.name{i},'file')
         tmp=input.name{i};
     else
-        cmd=fullfile(input.rawDir,[input.name{i} '*']); % BF input.dir = input.rawDir
+        cmd=fullfile(input.rawDir,['*' input.name{i} '*']); % BF input.dir = input.rawDir
         tmp=ls(cmd);
         tmp=tmp(1:end-1);
     end

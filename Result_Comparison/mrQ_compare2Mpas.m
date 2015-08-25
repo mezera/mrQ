@@ -1,26 +1,26 @@
 function mrQ_compare2Mpas(T1wfile1_LR,T1wfile2_HR,outPutDir,morefiles2_HR,InsavefileN)
 %
 %function mrQ_compare2Mpas(file1,file2,otherFiles1,otherFile2)
-% this function will register two T1 wighter file (or any other two) of the
-% same subjects comming form different scan or scanner) and aligh them
-% using semi automatic tools (devloped by Kendric Kay). we use only rigid
+% This function will register two T1 weighted files (or any other two) of the
+% same subjects (coming from different scan or scanner) and aligns them
+% using semi-automatic tools (devloped by Kendrick Kay). We use only rigid
 % or affine registration parameters.
 
 
 keyboard
 
-% load the two voulume
+% load the two volume
 im1=readFileNifti(T1wfile1_LR);
 im2=readFileNifti(T1wfile2_HR);
 
-% define the region to align on. manualy
+% define the region to align on. manually
 [f,mn,sd] = defineellipse3d(double(im1.data));
 
 
 % look and start the alinment manualy
 alignvolumedata(im2.data,im2.pixdim,im1.data,im1.pixdim);
 
-% to re define:
+% to re-define:
 %   [f,mn,sd] = defineellipse3d(double(im1.data),[],[],mn,sd);
 %   alignvolumedata(im2.data,im2.pixdim,im1.data,im1.pixdim,ttr);
 

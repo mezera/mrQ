@@ -134,7 +134,7 @@ end
 % Get a structure that has the paths to each of the SPGR NIfTI files.
 
 if isfield(mrQ,'inputdata_spgr') %input of list of nifti files and the relevant scan parameters
-    [s, niiFiles]=mrQ_input2Stuck(mrQ.inputdata_spgr,0);
+    [s, niiFiles]=mrQ_input2struct(mrQ.inputdata_spgr,0);
     for ii=1:4; s(ii).imData=s(ii).imData(:,:,:,1);end;
     t1Inds(1:length(s))=1;
     t1Inds=logical(t1Inds);

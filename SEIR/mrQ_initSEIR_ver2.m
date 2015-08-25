@@ -84,7 +84,7 @@ saveName = fullfile(loadPath, 'SEIR_Dat');
 
 %% II. Load raw data into a single structure, called "d".
 
-d=mrQ_input2Stuck(mrQ.inputdata_seir);
+d=mrQ_input2struct(mrQ.inputdata_seir);
 
 %% III. Align series in "d" and deal with complex data
 

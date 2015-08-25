@@ -1,6 +1,6 @@
-function [s, niifiles] = mrQ_input2Stuck(input,includeIm)
+function [s, niifiles] = mrQ_input2struct(input,includeIm)
 %
-% [s, niifiles] = mrQ_input2Stuck(input,includeIm)
+% [s, niifiles] = mrQ_input2struct(input,includeIm)
 % 
 %   This function takes the NIfTI files and the scan parameters, and puts
 % them into a .mat structure which is used by the mrQ code. This is an
@@ -11,6 +11,7 @@ function [s, niifiles] = mrQ_input2Stuck(input,includeIm)
 %    Note that the user should be careful when inputting the scan
 % parameters (TR, TE, flip angle, inversion time, field strength, and NIfTI
 % name and directory).
+%   Note: This function used to be named mrQ_input2Stuck.
 % 
 % INPUTS:
 %   input      - A structure with the scanning parameters as provided
@@ -33,7 +34,7 @@ function [s, niifiles] = mrQ_input2Stuck(input,includeIm)
 %   inputData_seir.TE   = [38 38 38 38]; 
 %   inputData_seir.IT   = [2400 1200 400 50];
 %   mrQ = mrQ_Set(mrQ,'inputdata_seir',inputData_seir)
-%   s = mrQ_input2Stuck(mrQ.inputdata_seir);
+%   s = mrQ_input2struct(mrQ.inputdata_seir);
 % 
 %
 % (C) Mezer lab, the Hebrew University of Jerusalem, Israel

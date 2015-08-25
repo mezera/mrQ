@@ -2,12 +2,12 @@ function WarpFiles=mrQ_ANTS_warp_SPGR2SPGR(T1wfile1_LR,T1wfile2_HR,outPutDir,mor
 %
  %mrQ_ANTS_warp_SPGR2SPGR(T1wfile1_LR,T1wfile2_HR,outPutDir,morefiles2_HR)
 %inputs:
-% T1wfile1_LR          The first T1 wighted image (should be the low resultion of the two)
- %T1wfile2_HR        T1 The secound T1 wighted image  (the high resultion of the two)
+% T1wfile1_LR          The first T1 weighted image (should be the lower resolution of the two)
+ %T1wfile2_HR         The second T1 weighted image  (should be the higher resolution of the two)
 % outPutDir             Where to save the registration files and warp parameters
-%morefiles2_HR      Other files to be warp 
-%% we first need make matlab work with the bachrc we have this is
-% unforchanate complexisty
+%morefiles2_HR      Other files to be warped 
+%% we first need tp make matlab work with the bachrc we have this is
+% unfortunate complexity
 
 orig_path = getenv('LD_LIBRARY_PATH');
 

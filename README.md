@@ -7,9 +7,9 @@ The software and the tissue parameters are described in the following article:
 http://www.nature.com/nm/journal/v19/n12/full/nm.3390.html?WT.ec_id=NM-201312
 
 and in:
-> Mezer A, Rokem A, Hastie T and Wandell B. "Proton density mapping: Removing receive-inhomogeneity using multi-coil information and T1 regularization". ISMRM 23rd Annual Meeting & Exhibition. Toronto, Ontario, Canada. 2 June 2015.   
+> Mezer A, Rokem A, Hastie T and Wandell B. "Proton density mapping: Removing receive-inhomogeneity using multi-coil information and T1 regularization". ISMRM 23rd Annual Meeting & Exhibition. Toronto, Ontario, Canada. 2 June 2015. http://ismrm.org/15/program_files/TueTP03.htm  
 
-For the patent:
+For the patent, see:
 
 >Mezer, Aviv A., Robert F. Dougherty, and Brian A. Wandell. Methods for Detecting Abnormalities and Degenerative Processes in Soft Tissue Using Magnetic Resonance Imaging (MRI). The Board Of Trustees Of The Leland Stanford Junior University, assignee. Patent US9002428 B2. 7 Apr. 2015.
 
@@ -71,7 +71,7 @@ Some of the important changes are highlighted below:
 - The default for the T1-M0 fit is now the weighted linear least squares method, replacing the nonlinear least squares method in past versions. This reduces the run time and is comparable to the nonlinear method in both precision and accuracy. See <a href=#T1-fit-non-linear-vs-weighted-least-squares>T1 fit: non-linear vs. weighted least-squares</a> for more information and citation.
 - The B1 fit, which is performed using a one-parameter local regression and whose calculation is faster and more robust.
 - Increased usage of parfor-loops, which decrease runtime through the use of parallel computation.
-- For the M0-PD fit, a a local T1 regularization is used.
+- For the M0-PD fit, a a local T1 regularization is used. The new algorithm follows that in [Volz et al. Neuroimage (2012)](http://www.ncbi.nlm.nih.gov/pubmed/22796988) and the refinements of [Mezer et al. ISMRM 23 (2015)](http://ismrm.org/15/program_files/TueTP03.htm).
 - Changes to the PD-CSF normalization yield more robust results.
 - A nice synthetic T1-weighted image, which is good for segmentation.
 - Multi-coil information can be advantageous, but is no longer required.

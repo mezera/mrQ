@@ -133,6 +133,8 @@ else
     [T1L,M0L] = relaxFitT1(cat(4,s(:).imData),flipAngles,tr,B1);
     
     % Let's calculate a new mask 
+    
+    
     [HeadMask, mrQ]=CalculateFullMask(mrQ,T1L,M0L,outDir); %see below for function
     % Zero-out the values that fall outside of the brain mask
     T1L(~HeadMask) = 0;

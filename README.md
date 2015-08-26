@@ -303,13 +303,12 @@ In addition to MATLAB, several MATLAB toolboxes are also required to run mrQ. Th
 
 Certain toolboxes may only be required for optional segments in the code, though at the moment we cannot list exactly where each toolbox is used. 
 
-Three notes on toolbox usage in mrQ v.2:
+Two notes on toolbox usage in mrQ v.2:
   -  In the function mrQ_boxScaleGlobLinear.m, the command "graphconncomp" is called. This is part of the Bioinformatics Toolbox.
   -  In the parallel computing (such as in mrQ_T1M0_LWFit.m), mrQ checks whether the Parallel Computing Toolbox is available. If so, it uses parfor-loops, as the "parfor" command is provided by this toolbox; if not, it uses for-loops. Though in these instances the Parallel Computing Toolbox is not required, it may be required at other junctions in the code.
-  - In the function mrQ_T1M0_Fit.m, the function constructpolynomialmatrix3d.m is called, and this function uses the command "sym", which is provided by the Symbolic Math Toolbox. In this case, one can comment the usage of "sym" in constructpolynomialmatrix3d.m (lines 56-58) and proceed. However, note that the Symbolic Math Toolbox may be required at other junctions in the code.
 
 Further updates about MATLAB toolbox usage will be announced on the forum or in future releases of mrQ.
 
 
 ### Forum ###
-An interactive forum is available at _**[[[INSERT LINK HERE]]]**_. We hope that mrQ users will find it an informative site to discuss, share and troubleshoot for all topics relating to the mrQ software package.
+We have created an [interactive forum](https://groups.google.com/forum/#!forum/mrq-forum) through google groups. We hope that mrQ users will find it an informative site to discuss, share and troubleshoot for all topics relating to the mrQ software package.

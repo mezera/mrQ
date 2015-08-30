@@ -1,22 +1,6 @@
 # mrQ manual (version 2) #
 **mrQ** is a software package designed to calculate MR parameters (T1 and PD) using spoiled gradient echo scans (SPGR, FLASH). Using T1 and PD maps, mrQ performs the evaluation of macromolecular tissue volume (MTV) and the apparent volume of the interacting water protons (VIP) as well as the water-surface interaction rate (SIR). This is **version 2** of the mrQ software package.
 
-The software and the tissue parameters are described in the following article:
-
->Mezer A, Yeatman JD, Stikov N, Kay KN, Cho NJ, Dougherty RF, Perry LM, Parvizi J, Hua LH, Butts-Pauly K and Wandell BA. Quantifying the local tissue volume and composition in individual brains with magnetic resonance imaging. Nature Medicine **19**, 1667-1672 (2013).
-http://www.nature.com/nm/journal/v19/n12/full/nm.3390.html?WT.ec_id=NM-201312
-
-and in:
-> Mezer A, Rokem A, Hastie T and Wandell B. "Proton density mapping: Removing receive-inhomogeneity using multi-coil information and T1 regularization". ISMRM 23rd Annual Meeting & Exhibition. Toronto, Ontario, Canada. 2 June 2015. http://ismrm.org/15/program_files/TueTP03.htm  
-
-For the patent, see:
-
->Mezer, Aviv A., Robert F. Dougherty, and Brian A. Wandell. Methods for Detecting Abnormalities and Degenerative Processes in Soft Tissue Using Magnetic Resonance Imaging (MRI). The Board Of Trustees Of The Leland Stanford Junior University, assignee. Patent US9002428 B2. 7 Apr. 2015.
-
-For an application of mrQ, see:
-
->Yeatman JD, Wandell BA and Mezer A. Lifespan maturation and degeneration of human brain white matter. Nature Communications **5** (2014).  http://www.nature.com/ncomms/2014/140917/ncomms5932/abs/ncomms5932.html
-
 For more information, please contact: 
 
 >Aviv Mezer: aviv.mezer(AT)elsc.huji.ac.il
@@ -25,10 +9,14 @@ For more information, please contact:
 >
 >Jonathan Bain: jonathan.bain(AT)mail.huji.ac.il
 
+For updates, discussions, troubleshooting and more, visit our interactive forum at: 
+> https://groups.google.com/forum/#!forum/mrq-forum
+
 
 
 ## Contents ##
 
+- <a href=#versions>References</a>
 - <a href=#versions>Versions</a>
     - <a href=#version-1>Version 1</a>
     - <a href=#version-2>Version 2</a> 
@@ -50,11 +38,28 @@ For more information, please contact:
 - <a href=#T1-fit-nonlinear-vs-weighted-linear-least-squares>T1 fit: nonlinear vs. weighted-linear least-squares</a>
 - <a href=#parallel-computing>Parallel computing</a>
 - <a href=#matlab-toolboxes>MATLAB Toolboxes</a>
-- <a href=#forum>Forum</a>
-
 
 
 
+
+
+### References ###
+The software and the tissue parameters are described in the following article:
+
+> Mezer A, Yeatman JD, Stikov N, Kay KN, Cho NJ, Dougherty RF, Perry LM, Parvizi J, Hua LH, Butts-Pauly K and Wandell BA. Quantifying the local tissue volume and composition in individual brains with magnetic resonance imaging. Nature Medicine **19**, 1667-1672 (2013).
+http://www.nature.com/nm/journal/v19/n12/full/nm.3390.html?WT.ec_id=NM-201312
+
+and in the following conference presentation:
+> Mezer A, Rokem A, Hastie T and Wandell B. "Proton density mapping: Removing receive-inhomogeneity using multi-coil information and T1 regularization". ISMRM 23rd Annual Meeting & Exhibition. Toronto, Ontario, Canada. 2 June 2015. http://ismrm.org/15/program_files/TueTP03.htm  
+
+For the patent, see:
+
+> Mezer, Aviv A., Robert F. Dougherty, and Brian A. Wandell. Methods for Detecting Abnormalities and Degenerative Processes in Soft Tissue Using Magnetic Resonance Imaging (MRI). The Board Of Trustees Of The Leland Stanford Junior University, assignee. Patent US9002428 B2. 7 Apr. 2015.
+
+For an application of mrQ, see:
+
+>Yeatman JD, Wandell BA and Mezer A. Lifespan maturation and degeneration of human brain white matter. Nature Communications **5** (2014).  http://www.nature.com/ncomms/2014/140917/ncomms5932/abs/ncomms5932.html
+
 
 ### Versions ###
 ##### Version 1 #####
@@ -308,7 +313,3 @@ Two notes on toolbox usage in mrQ v.2:
   -  In the parallel computing (such as in mrQ_T1M0_LWFit.m), mrQ checks whether the Parallel Computing Toolbox is available. If so, it uses parfor-loops, as the "parfor" command is provided by this toolbox; if not, it uses for-loops. Though in these instances the Parallel Computing Toolbox is not required, it may be required at other junctions in the code.
 
 Further updates about MATLAB toolbox usage will be announced on the forum or in future releases of mrQ.
-
-
-### Forum ###
-We have created an [interactive forum](https://groups.google.com/forum/#!forum/mrq-forum) through google groups. We hope that mrQ users will find it an informative site to discuss, share and troubleshoot for all topics relating to the mrQ software package.

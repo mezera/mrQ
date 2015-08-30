@@ -1,4 +1,4 @@
-function opt=mrQ_PD2WF_step5_ver2(opt,csffile,segfile)
+function opt=mrQ_PD2WF_step5(opt,csffile,segfile)
 
 % opt=mrQ_PD2WF_step5(opt,csffile,segfile)
 %

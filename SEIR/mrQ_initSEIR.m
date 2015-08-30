@@ -1,4 +1,4 @@
-function [data, extra, xform, saveName] = mrQ_initSEIR_ver2(mrQ,SEIRdir,alignFlag)
+function [data, extra, xform, saveName] = mrQ_initSEIR(mrQ,SEIRdir,alignFlag)
 %
 % [data, extra, xform, saveName] = mrQ_initSEIR_ver2(mrQ,SEIRdir,alignFlag)
 %

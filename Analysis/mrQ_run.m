@@ -1,4 +1,4 @@
-function mrQ_run_Ver2(dir,outDir,inputData_spgr,inputData_seir,B1file, varArgIn)
+function mrQ_run(dir,outDir,inputData_spgr,inputData_seir,B1file, varArgIn)
 % mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_seir,B1file)
 %  mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_seir,B1file)
 %
@@ -112,7 +112,7 @@ if notDefined('B1file')
         
         % Keeps track of the variables we use.  
         % For details, see inside the function.
-        [~, ~, ~, mrQ.SEIRsaveData]=mrQ_initSEIR_ver2(mrQ,mrQ.SEIRepiDir,mrQ.alignFlag);
+        [~, ~, ~, mrQ.SEIRsaveData]=mrQ_initSEIR(mrQ,mrQ.SEIRepiDir,mrQ.alignFlag);
         
         [mrQ]=mrQ_fitSEIR_T1(mrQ.SEIRepiDir,[],0,mrQ);
         
@@ -142,7 +142,7 @@ if     mrQ.SPGR_init_done==0
     
     % Keeps track of the variables we use.
     % For details, look inside the function.
-    [~, ~, ~,~,~, mrQ]=mrQ_initSPGR_ver2(mrQ.SPGR,mrQ.refIm,mrQ.mmPerVox,mrQ.interp,mrQ.skip,[],mrQ);
+    [~, ~, ~,~,~, mrQ]=mrQ_initSPGR(mrQ.SPGR,mrQ.refIm,mrQ.mmPerVox,mrQ.interp,mrQ.skip,[],mrQ);
     mrQ.SPGR_init_done=1;
     
     save(mrQ.name,'mrQ');

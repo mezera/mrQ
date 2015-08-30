@@ -88,7 +88,7 @@ end
 %Join the local overlap area to one PD image.
           fprintf('\n Building the M0 map...              \n');
 
-mrQ.opt_logname=mrQ_buildPD_ver2(mrQ.opt_logname,[],[],[],[],0.01);
+mrQ.opt_logname=mrQ_buildPD(mrQ.opt_logname,[],[],[],[],0.01);
 %
 
 %4 build

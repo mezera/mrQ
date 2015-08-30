@@ -271,7 +271,7 @@ The example directory and runscript for v.2 can be found at: http://purl.stanfor
 
 ##### Visualization #####
 To interactively watch the data after it's been aligned, define a "check" field and set it to 1. 
-(It will activate the interaction in mrQ_initSPGR_ver2.m)
+(It will activate the interaction in mrQ_initSPGR.m)
 ```matlab
 mrQ_run(dataDir, outDir, [],[],[], {'check', 1}) 
 ```

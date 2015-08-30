@@ -114,8 +114,9 @@ mrQ.maps.VIPpath=fullfile(mapDir,'VIP_map.nii.gz');
 
 SEIRT1Dir=fullfile(mapDir,'SEIR');
 mkdir(SEIRT1Dir)
+T1SEIRfile=mrQ.SEIR_epi_T1file;
 % cmd =(['! cp ' mrQ.T1file ' '  SEIRT1Dir '/.']) ;
-cmd =(['! cp ' T1file ' '  SEIRT1Dir '/.']) ;
+cmd =(['! cp ' T1SEIRfile ' '  SEIRT1Dir '/.']) ;
 eval(cmd);
 
 %% III. Organize the bias maps in a directory named 'BiasMaps'

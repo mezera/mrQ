@@ -173,7 +173,8 @@ if notDefined('Gainfile')
     elseif mrQ.PDfit_Method==2 || mrQ.PDfit_Method==3
         
         % multicoil M0 was computed
-        % Gain is defined as the sum of multicoils.        
+        % Gain is defined as the sum of multicoils.
+        gainField=['Align',num2str(fa),'deg'];
         Gainfile=mrQ.MultiCoilSummedFiles.(gainField);
         
     end

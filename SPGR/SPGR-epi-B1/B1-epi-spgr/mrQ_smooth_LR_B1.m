@@ -114,6 +114,13 @@ for  jj=1:size(B1Fit,3)
     %check that there is data in the slice
     wh=find(tmp>0);
     if (length(find(tmp>0))/length(tmp(:))>0.2 && length(find(tmp>0))>1000);
+            %          This if makes aure we only extrapolate on data
+            %          that's large enough within the scan. but it's not
+            %          done beautifully, and maybe a better way would be to
+            %          check the ratio of B1 voxels in alice and the number of
+            %          voxels in a brainmmask in that same slice (ant not
+            %          the number of voxel in that slice regardless of
+            %          bain, as it is done now).
         %find location of data
         [x,y] = ind2sub(size(tmp),wh);
         z=double(tmp(wh));

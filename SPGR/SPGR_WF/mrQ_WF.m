@@ -66,11 +66,14 @@ if notDefined('saveoutput')
 end
  B1=readFileNifti(B1file);B1=double(B1.data);
  
- % Gain file will be loaded andchecked later. When M0 was calculated using
- % the multicoil information we'd like to only load the Gain file matching
- % to our flip angle of choice. 
+ if notDefined('Gainfile')
+        load(mrQ.opt_logname);
+        Gainfile=opt.Gainfile;
+end
+Gain=readFileNifti(Gainfile); Gain=Gain.data;
 
-% currently, flipangle is chosen based on signal witin CSF. 
+
+% currently, flipangle is chosen based on signal within CSF. 
 %  if instead it would be decided based on signal with WM, that we would
 %  need a brainmask: 
 
@@ -159,6 +162,14 @@ end
 datForPD=s(SelectedFA).imData;
 TR=s(SelectedFA).TR;
 fa=s(SelectedFA).flipAngle;
+  if mrQ.PDfit_Method==2 || mrQ.PDfit_Method==3
+
+        gainField=['Align',num2str(fa),'deg'];
+        datafile=mrQ.MultiCoilSummedFiles.(gainField);
+        datForPD=readFileNifti(datafile);datForPD=double(datForPD.data);
+        % another way to do this is to make sure the M0file saved in the
+        % opt is the aligned combined file in the right 2_2_2 resolution.
+  end
 
 %% VI : exclude M0 outliers in the ROI
 
@@ -173,22 +184,6 @@ WFmask=WFmask & PD<prctile(PD(WFmask),99) & PD>prctile(PD(WFmask),1) & datForPD<
 % [note gain for multi coil is define for the sum of multi coils, and for
 % the combine as arrived from the scanner])
 
-if notDefined('Gainfile')
-    if mrQ.PDfit_Method==1
-        %Gain is the default ??
-        load(mrQ.opt_logname);
-        Gainfile=opt.Gainfile;
-        
-    elseif mrQ.PDfit_Method==2 || mrQ.PDfit_Method==3
-        
-        % multicoil M0 was computed
-        % Gain is defined as the sum of multicoils.
-        gainField=['Align',num2str(fa),'deg'];
-        Gainfile=mrQ.MultiCoilSummedFiles.(gainField);
-        
-    end
-end
-Gain=readFileNifti(Gainfile); Gain=Gain.data;
 
 % calculate PD for the FA with the best Signal
 

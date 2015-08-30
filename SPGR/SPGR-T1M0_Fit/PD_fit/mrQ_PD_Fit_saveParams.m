@@ -155,7 +155,7 @@ if (exist(BMfile,'file'))
     % different resolution may need some changes in the regularization
     % protocol.
     
-    if outMm(1)~=0 % Unless we don't want to change the fitting resulotion
+    if outMm(1)~=0 % Unless we don't want to change the fitting resolution
        if (outMm(1)~=mmPerVox(1) || outMm(2)~=mmPerVox(2) || outMm(3)~=mmPerVox(3) )
           [opt]=mrQ_resamp4G_fit(opt,outMm);
            brainMask = readFileNifti(opt.BMfile);

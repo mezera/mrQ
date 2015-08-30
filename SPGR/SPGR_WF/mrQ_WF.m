@@ -1,4 +1,4 @@
-function [mrQ,WFfile,CalibrationVal] = mrQ_WF(mrQ,dataDir,T1file,PDfile,Gainfile,B1file)
+function [mrQ,WFfile,CalibrationVal] = mrQ_WF(mrQ,dataDir,T1file,PDfile,Gainfile,B1file,saveoutput)
 % [mrQ,WFfile,CalibrationVal] = mrQ_WF(mrQ,dataDir,T1file,PDfile,Gainfile,B1file);
 % 
 % This function calculates the constant deviation of the PD. Since some
@@ -25,6 +25,7 @@ function [mrQ,WFfile,CalibrationVal] = mrQ_WF(mrQ,dataDir,T1file,PDfile,Gainfile
 %                           multi-coil fit, then we take a different map) 
 %         B1file:     The path to a B1 map. This will be used to correct
 %                     the FA value. (Default is mrQ.B1FileName)
+%        saveoutput   true(defult) to save output
 %
 %
 %  ~OUTPUT~
@@ -37,6 +38,10 @@ function [mrQ,WFfile,CalibrationVal] = mrQ_WF(mrQ,dataDir,T1file,PDfile,Gainfile
 %   2015
 
 %% I : check input
+if notDefined('mrQ');
+    mrQ = [];
+end
+
 if notDefined('dataDir');
     dataDir = mrQ.spgr_initDir;
 end
@@ -54,6 +59,10 @@ PD=readFileNifti(PDfile);PD=PD.data;
 
 if notDefined('B1file')
     B1file=mrQ.B1FileName;
+end
+
+if notDefined('saveoutput')
+    saveoutput=true;
 end
  B1=readFileNifti(B1file);B1=double(B1.data);
  
@@ -103,8 +112,8 @@ WFmask(:,szH(2)+YY:end,:,:)=0;
 WFmask(:,:,1:szH(3)-ZZ)=0;
 WFmask(:,:,szH(3)+ZZ:end)=0;
 
-% find areas within the ventricles area with high value of T1 (4.2-5)
-WFmask1=WFmask;
+% find areas within the ventricles area with high value of T1 (4.2-4.7)
+%WFmask1=WFmask;
 WFmask= WFmask & T1<=4.7 & T1>=4.2;
 
 
@@ -196,7 +205,7 @@ CalibrationVal= csfDensity(csfValues==max(csfValues)); % CalibrationVal=median(P
 CalibrationVal=1./CalibrationVal;
 
 %% IX. apply to PD images to make WFfile --> save
-
+if saveoutput
 WF=PD.*CalibrationVal(1);
 
 WFfile=fullfile(dataDir,'WF_map.nii.gz');
@@ -206,4 +215,6 @@ mrQ.WFfile=WFfile;
 mrQ.ScalePD_2_WF=CalibrationVal;
 
  save(mrQ.name,'mrQ'); 
-
+else
+    WFfile=[];
+end

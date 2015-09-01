@@ -81,7 +81,7 @@ Some of the important changes are highlighted below:
 - A nice synthetic T1-weighted image, which is good for segmentation.
 - Multi-coil information can be advantageous, but is no longer required.
 
-mrQ v.2 can be found at the link: _**[[[INSERT LINK HERE]]]**_. We recommend you use the most recent, up-to-date version of mrQ.
+mrQ v.2 can be found at the link: https://github.com/mezera/mrQ/releases/tag/v.2. We recommend you use the most recent, up-to-date version of mrQ.
 
 ### mrQ analysis overview ###
 - mrQ will use the mrQ structure you create and save it to the subject’s directory.

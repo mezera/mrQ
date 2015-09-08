@@ -238,14 +238,14 @@ PDfit=PDfit./PDvox;
 confX=abs((1-PDfit./PDx)); confX(isnan(confX))=0; confX(isinf(confX))=0;
 confY=abs((1-PDfit./PDy)); confY(isnan(confY))=0; confY(isinf(confY))=0;
 confZ=abs((1-PDfit./PDz)); confZ(isnan(confZ))=0; confZ(isinf(confZ))=0;
-conf=(confX+confY+confZ)./PDvox;
+conf=(confX+confY+confZ;)./PDvox
 
 
 G=M0./PDfit;
 
 G(isinf(G))=nan;
 G(G<0)=nan;
-mask=PDfit>0 & BM & PDfit>median(PD(mask))/1.5 & PDfit<median(PD(mask))*1.5 & conf<.1;
+mask=PDfit>0 & BM & PDfit>median(PD(mask))/1.5 & PDfit<median(PD(mask))*1.5 & conf<0.02  & M0>prctile(M0(mask),5) & T1>0.5 & T1<2.5; %& PD<median(PD(mask))/2
 G(~mask)=nan;
 
 Gfit=zeros(size(M0));

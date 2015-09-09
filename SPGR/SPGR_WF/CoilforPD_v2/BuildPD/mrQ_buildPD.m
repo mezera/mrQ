@@ -256,11 +256,12 @@ tmpfile=fullfile(opt.outDir,'Boxtmp');
 % Get a smooth coil sensitivity in all locations, bring back to original image space, and calculate PD
 [opt]=mrQ_smoothGain_step4b(opt,PD_fit); 
 
-%% VII. Step 5
+%% VII. Step 5 --> now done separately, in the next function in mrQ_run
 %Calculate WF by normalizing PD to CSF=1
 
 
 %% calculate WF by normalize PD to CSF==1
+
 % we are performing a different calibration now, carried out in mrQ_WF
 
 % if unique( ~csffile==0)

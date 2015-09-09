@@ -137,7 +137,7 @@ elseif mrQ.PDfit_Method==3 % Use both multi coils and T1 (The code bellow)
             
             % find an alternative coil list
             Mtmp=M0_v(BM1,:);
-            Mtmp(BM1,Clist)=1;
+            Mtmp(:,Clist)=1;
             Clist2=mrQ_select_coils(maxCoil,max(useCoil),Mtmp);
             Clists2(1:nCoils,Iter)=Clist2;
             
@@ -183,7 +183,7 @@ elseif mrQ.PDfit_Method==3 % Use both multi coils and T1 (The code bellow)
             
             [X_valdationErrF,  X_gEstF]=pdX_valdationLoop_2(opt.lambda,3,M0_v(BM1,Clist), pBasis(BM1,:),R1basis(BM1,:),g0,Segmask(BM1));
             
-            %       [X_valdationErrF,  X_gEstF]=pdX_valdationLoop_2(opt.lambda,opt.Kfold,M0_v(BM1,opt.Clist), pBasis(BM1,:),R1basis(BM1,:),g0,Segmask(BM1));
+            %       [X_valdationErrF,  X_gEstF]= pdX_valdationLoop_2(opt.lambda,opt.Kfold,M0_v(BM1,opt.Clist), pBasis(BM1,:),R1basis(BM1,:),g0,Segmask(BM1));
             X_valdationErr(:,:,Iter)=X_valdationErrF;
             % minimum X_valdation error
             best1 = find(X_valdationErrF(1,:)==min(X_valdationErrF(1,:))); % sum of abs err

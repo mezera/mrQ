@@ -24,6 +24,8 @@ load (opt_logname);
 dirname=opt.dirname;
 sgename=opt.SGE;
 jumpindex=opt.jumpindex ;
+% temporarty, for our Grid's comstraints:
+jumpindex=400;
 
 fullID=sgename(isstrprop(sgename, 'digit'));
 id=str2double(fullID(1:8));
@@ -124,7 +126,7 @@ if SunGrid==1;
     tic
     while StopAndSave==0
         % List all the files that have been created from the grid call
-        list=ls(opt.outDir);
+        list=ls(opt.dirname);
         
         % Check if all the files have been made.  If they have, move on.
         if length(regexp(list, '.mat'))==fNum,
@@ -134,7 +136,7 @@ if SunGrid==1;
             qStatCommand    = [' qstat | grep -i  job_' jobname];
             [status result] = system(qStatCommand);
             tt=toc;
-            if (isempty(result) && tt>60)
+            if (isempty(result) && tt>300)
                 pause(5);
                 qStatCommand    = [' qstat | grep -i  job_' jobname];
                 [status result] = system(qStatCommand);

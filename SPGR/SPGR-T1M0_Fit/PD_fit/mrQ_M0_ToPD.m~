@@ -27,10 +27,6 @@ if ~isfield(mrQ,'PDfit_Method');
     % 3. Use both T1 single-coil data *and* multi-coils to fit
 end
 
-if mrQ.PDfit_Method==2
-    warning('This fit method was tested primarily with 32 coil channels. Consider using other methods or visit mrQ v1');
-end
-
 if mrQ.PDfit_Method~=1
     
     if isfield(mrQ,'calM0_done');

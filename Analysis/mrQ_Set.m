@@ -224,7 +224,15 @@ switch(param)
         mrQ.SPGR_PDBuild_done=varargin;  
     case{ 'segmentation','seg'}
         mrQ.segmentation=varargin;   
-      
+        
+        % are there thresholding parameters for the PD build?
+     case{'RepErrThreshold'}
+          mrQ.RepErrThreshold=varargin;
+     case{'PrcCutOff'}
+         mrQ.PrcCutOff=varagin;
+     case{'ErrorThresh'}
+         mrQ.ErrorThresh=varargin;
+         
     otherwise
         error('Unknown mrQ parameter!');
 end

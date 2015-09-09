@@ -96,9 +96,17 @@ end
 %Join the local overlap area to one PD image.
 fprintf('\n Building the M0 map...              \n');
 
-RepErrThreshold,PrcCutOff,ErrorThresh
-mrQ.Err3=[];
-mrQ.opt_logname=mrQ_buildPD(mrQ.opt_logname,[],[],[],[],mrQ.Err3);
+if ~isfield(mrQ,'RepErrThreshold')
+   mrQ.RepErrThreshold=[];
+end
+if ~isfield(mrQ,'PrcCutOff')
+   mrQ.PrcCutOff=[];
+end
+if ~isfield(mrQ,'ErrorThresh')
+   mrQ.RepErrThreshold=[];
+end
+
+                              
+mrQ.opt_logname=mrQ_buildPD(mrQ.opt_logname,[],[],[],[],RepErrThreshold,PrcCutOff,ErrorThresh);
 %
 
-%4 build

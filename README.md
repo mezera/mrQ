@@ -119,6 +119,7 @@ mrQ requires the following openly distributed code repositories:
 [Barral JK, Gudmundson E, Stikov N, Etezadi-Amoli M, Stoica P, and Nishimura DG (2010). A robust methodology for in vivo T1 mapping. Magnetic Resonance in Medicine, Oct. 60(4), 1057-1067. doi:10.1002/mrm.22497](http://onlinelibrary.wiley.com/doi/10.1002/mrm.22497/abstract)
 - Vistasoft  - https://github.com/vistalab/vistasoft
 - KNKUtils (from Kendrick Kay) - https://github.com/kendrickkay/knkutils
+- In case you are using a Siemens magnet and sciTran conversion, the vista niftii reader could encounter an error when trying to read the TR. In which case download a different reader:  http://www.mathworks.com/matlabcentral/fileexchange/42997-dicom-to-nifti-converter--nifti-tool-and-viewer
 
 
 ### MR Scanning ###

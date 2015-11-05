@@ -88,7 +88,7 @@ nifti = {};
 % Read the parameters for each of the nifti files
 disp('Reading parameters from nifti files');
 for jj = 1:numel(niFiles)
-    nifti{end+1} = niftiGetParamsFromDescrip(niFiles{jj});
+    nifti{end+1} = mrQ_FromVista_NiiDescripParams(niFiles{jj});
 end
 
 % Remove empty entries 

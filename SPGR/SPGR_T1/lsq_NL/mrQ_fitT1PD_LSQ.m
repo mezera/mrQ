@@ -373,6 +373,10 @@ end
 
 T1 = zeros(sz);
 PD = T1; resNorm=PD;
+
+t11(isnan(t11)|t11<100) = 100;
+t11(t11>10000) = 10000;
+
 T1(opt.wh) = t11(:)./1000;
 PD(opt.wh) = pd1(:);
 resNorm(opt.wh) = resnorm1(:);

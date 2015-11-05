@@ -256,6 +256,9 @@ sgename    = [subName '_MultiCoilM0'];
 dirname    = [outDir '/tmpSGM0' ];
 dirDatname = [outDir '/tmpSGM0dat'];
 jumpindex  = 400; %number of boxes for each SGE run
+if PDfit_Method==1
+    jumpindex  = length(opt.wh);
+end
 % jumpindex  = 5; %number of boxes for each SGE run
 
 opt.dirDatname = dirDatname;

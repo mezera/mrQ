@@ -366,6 +366,11 @@ else
     eval(['!rm -f ~/sgeoutput/*' sgename '*'])
     
 end
+% clip T1
+t11(isnan(t11)|t11<100) = 100;
+t11(t11>10000) = 10000;
+t12(isnan(t12)|t12<100) = 100;
+t12(t12>10000) = 10000;
 
 T1_WL = zeros(sz);
 PD_WL = T1_WL; T1_L=T1_WL;PD_L = T1_WL;

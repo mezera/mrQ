@@ -305,12 +305,12 @@ mrQ_run(dataDir, outDir, [],[],[], {'sungrid', 1})
 ```
 
 ### MATLAB Toolboxes ###
-In addition to MATLAB, several MATLAB toolboxes are also required to run mrQ. The following nine toolboxes are required: (1) 'Bioinformatics Toolbox', (2) 'Image Processing Toolbox', (3) 'Optimization Toolbox', (4) 'Parallel Computing Toolbox', (5) 'Signal Processing Toolbox', (6) 'Simulink', (7) 'Statistical Parametric Mapping', (8) 'Statistics and Machine Learning Toolbox', (9) 'Symbolic Math Toolbox'.  
+In addition to MATLAB, several MATLAB toolboxes are also required to run mrQ. The following eight toolboxes are required: (1) 'Image Processing Toolbox', (2) 'Optimization Toolbox', (3) 'Parallel Computing Toolbox', (4) 'Signal Processing Toolbox', (5) 'Simulink', (6) 'Statistical Parametric Mapping', (7) 'Statistics and Machine Learning Toolbox', (8) 'Symbolic Math Toolbox'.  
 
 Certain toolboxes may only be required for optional segments in the code, though at the moment we cannot list exactly where each toolbox is used. 
 
 Two notes on toolbox usage in mrQ v.2:
-  -  In the function mrQ_boxScaleGlobLinear.m, the command "graphconncomp" is called. This is part of the Bioinformatics Toolbox.
+  -  Within mrQ_run's Section XI ("Fitting PD from M0"), in mrQ_boxScaleGlobLinear, the function "graphconncomp" was called. This was the only usage of the Bioinformatics toolbox. We have replaced it with the function "conncomp", from Alec Jacobson's [gptoolbox](https://github.com/alecjacobson/gptoolbox). Thanks to his code, the Bioinformatics toolbox is no longer required in mrQ.
   -  In the parallel computing (such as in mrQ_T1M0_LWFit.m), mrQ checks whether the Parallel Computing Toolbox is available. If so, it uses parfor-loops, as the "parfor" command is provided by this toolbox; if not, it uses for-loops. Though in these instances the Parallel Computing Toolbox is not required, it may be required at other junctions in the code.
 
 Further updates about MATLAB toolbox usage will be announced on the forum or in future releases of mrQ.

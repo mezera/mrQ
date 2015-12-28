@@ -9,30 +9,30 @@ function WarpFiles=mrQ_ANTS_warp_SPGR2SPGR(T1wfile1_LR,T1wfile2_HR,outPutDir,mor
 %% we first need tp make matlab work with the bachrc we have this is
 % unfortunate complexity
 
-orig_path = getenv('LD_LIBRARY_PATH');
-
-colon_idx = strfind(orig_path, ':');
-
-matlab_path = [];
-other_path = [];
-
-for i=1:(length(colon_idx)-1)
-
-   this_path = orig_path(colon_idx(i):colon_idx(i+1));
-   % This is part of the matlab path:
-   if strfind(this_path, 'matlab')
-       matlab_path = [matlab_path, ':', this_path];
-
-   % Should go before the matlab bit of the path (all the rest):
-   else
-       other_path = [other_path, ':', this_path];
-
-   end
-end
-
-new_path = [other_path, ':', matlab_path];
-
-setenv('LD_LIBRARY_PATH', new_path)
+% orig_path = getenv('LD_LIBRARY_PATH');
+% 
+% colon_idx = strfind(orig_path, ':');
+% 
+% matlab_path = [];
+% other_path = [];
+% 
+% for i=1:(length(colon_idx)-1)
+% 
+%    this_path = orig_path(colon_idx(i):colon_idx(i+1));
+%    % This is part of the matlab path:
+%    if strfind(this_path, 'matlab')
+%        matlab_path = [matlab_path, ':', this_path];
+% 
+%    % Should go before the matlab bit of the path (all the rest):
+%    else
+%        other_path = [other_path, ':', this_path];
+% 
+%    end
+% end
+% 
+% new_path = [other_path, ':', matlab_path];
+% 
+% setenv('LD_LIBRARY_PATH', new_path)
 
  %% run ANTS non linear parameter to register T1w1 to T1w2 
 
@@ -88,5 +88,6 @@ savefileN=fullfile(outPutDir,['Warp' file.name]);
            WarpFiles{1+d}=savefileN;
             
            end
-        
-  
+%            
+%          setenv('LD_LIBRARY_PATH', orig_path)
+%   

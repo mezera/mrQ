@@ -11,14 +11,14 @@ function [mrQ]=mrQfit_T1M0_Lin(mrQ,B1File,MaskFile,outDir,dataDir,clobber)
 %       B1File:     NIfTI file of a B1 map. Default is a ones matrix.
 %       MaskFile:   NIfTI file of brain mask. If not defined, it will be
 %                   created using mrAnatExtractBrain.m, and followed by some
-%                   corrections. 
+%                   corrections.
 %       outDir:     Directory to which the data will be saved.
 %       dataDir:    Directory of the data.
 %       clobber:    Overwrite existing data and reprocess. [Default = false]
-% 
+%
 % OUTPUT:
-%       mrQ:        The mrQ structure, updated.  
-% 
+%       mrQ:        The mrQ structure, updated.
+%
 % WEB RESOURCES
 %       http://white.stanford.edu/newlm/index.php/Quantitative_Imaging
 %
@@ -30,7 +30,7 @@ function [mrQ]=mrQfit_T1M0_Lin(mrQ,B1File,MaskFile,outDir,dataDir,clobber)
 %
 % Author: Aviv Mezer, 01.18.2011
 % rewrite by AM. June 16 2011
-% rewrite by AM. July 29 2011 
+% rewrite by AM. July 29 2011
 %     %fit for the B1 fitting to be based on local regression
 
 
@@ -96,6 +96,7 @@ else
 end
 
 
+
 %% V. Linear fit to estimate T1 and M0 no B1 (this will be used to fit B1)
 
 t1file   = fullfile(outDir,['T1_LFit.nii.gz']);
@@ -103,13 +104,13 @@ M0file   = fullfile(outDir,['M0_LFit.nii.gz']);
 
 % Read in existing T1, M0 and the brain mask (if they exist)
 if~( exist(t1file,'file') &&  exist(M0file,'file')  && ~clobber),
-   % disp([' Loding existing  T1  M0 and brain mask' ]);
-        
+    % disp([' Loding existing  T1  M0 and brain mask' ]);
+    
     
     % Now we fit T1 and M0:
     disp('1. Performing linear fit of T1 and M0');
     
-    % Specify the flip angle and TR: 
+    % Specify the flip angle and TR:
     % s2 is loaded when the dat_aligned.mat file is loaded above.
     flipAngles = [s(:).flipAngle];
     tr         = [s(:).TR];
@@ -129,8 +130,12 @@ if~( exist(t1file,'file') &&  exist(M0file,'file')  && ~clobber),
         HMfile   = fullfile(outDir,'HeadMask.nii.gz');  % brain mask
         BMfile   = fullfile(outDir,'brainMask.nii.gz'); %head mask
         % Create the brain mask
+       
         [brainMask,checkSlices] = mrAnatExtractBrain(M0, mmPerVox, 0.5,outDir);
-      %  eval(['! rm ' outDir '/bet* '])
+         out = fullfile(tempdir,'bet_tmp');
+        delete([out,'.img'])
+        delete([out,'.hdr'])
+        %  eval(['! rm ' outDir '/bet* '])
         
         % Replace all nan values in the brain mask with zeros.
         for dd=1:length(s)
@@ -140,8 +145,8 @@ if~( exist(t1file,'file') &&  exist(M0file,'file')  && ~clobber),
         %find the first and the last slice of the brain
         [~, ~, z]=ind2sub(size(brainMask),find(brainMask));
         
-%% VI. Create the head mask.
-        % The head mask makes the registration with the SEIR images better 
+        %% VI. Create the head mask.
+        % The head mask makes the registration with the SEIR images better
         % using ANTs software
         
         % Find the voxels that are more than 2 stdev below the
@@ -164,7 +169,7 @@ if~( exist(t1file,'file') &&  exist(M0file,'file')  && ~clobber),
         end;
         HM=logical(HM);
         
-%%  VII. SAVE head mask and brain mask as niftis
+        %%  VII. SAVE head mask and brain mask as niftis
         dtiWriteNiftiWrapper(single(HM), xform, HMfile);
         dtiWriteNiftiWrapper(single(brainMask), xform, BMfile);
         mrQ.HeadMask=HMfile;
@@ -175,21 +180,21 @@ if~( exist(t1file,'file') &&  exist(M0file,'file')  && ~clobber),
         brainMask=logical(brainMask.data);
         
     end
-     
+    
     t1(~brainMask) = 0;
     M0(~brainMask) = 0;
     
-%% VIII. SAVE the T1 and PD data
+    %% VIII. SAVE the T1 and PD data
     dtiWriteNiftiWrapper(single(t1), xform, t1file);
     dtiWriteNiftiWrapper(single(M0), xform, M0file);
     
     mrQ.T1_LFit=t1file;
     mrQ.M0_LFit=M0file;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+    
     if ~notDefined('HMfile')
         t1=t1_copy; M0=M0_copy;
-        t1(~HM) = 0; 
+        t1(~HM) = 0;
         M0(~HM) = 0;
         
         t1fileHM = fullfile(outDir,['T1_LFit_HM.nii.gz']);
@@ -200,7 +205,7 @@ if~( exist(t1file,'file') &&  exist(M0file,'file')  && ~clobber),
         dtiWriteNiftiWrapper(single(M0), xform, M0fileHM);
         mrQ.T1_LFit_HM=t1fileHM;
         mrQ.M0_LFit_HM=M0fileHM;
-    
+        
     end
     
 end;

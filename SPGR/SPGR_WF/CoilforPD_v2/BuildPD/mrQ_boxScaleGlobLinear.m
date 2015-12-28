@@ -1,62 +1,64 @@
 function [Cbox,SHub] =mrQ_boxScaleGlobLinear(ScaleMat)
-%[Cbox,SHub] =mrQ_boxScaleGlobLinear(ScaleMat)
-%we will find the scale of each box so it will agreee with the values in the
-%overlap boxes ( a scalar term). We assume that the boxPD  are free from gain and the only different is a scaler that need to be fit.
-% all the diffent scalr or each two box are input ScaleMat.
-% boxII= boxJJ*Ratio
- %               scaleFactor(ii,jj)=1./Ratio;
-  %              scaleFactor(jj,ii)=Ratio;
-                
-%we will right a minimization eqation so all the scalares thogther will be adjasted.
-%the idea is  box(i) -box(j)*scaler equal 0. we will build such set of eqations for all
-%the overlap boxes and solve them thogther in the end.
-% one box will be a refernce box.
-%in the case of the reference we deside that scaler is 1;
+%[Cbox,SHub] =mrQ_boxScaleGlobLinear(ScaleMat) 
 %
-% simulation of the problem we solve is at SimLinBoxJoin.m 
+% We will find the scale of each box so it will agree with the values in
+% the overlap boxes (a scalar term). We assume that the boxPD  are free
+% from gain and the only difference is a scalar that needs to be fit. All
+% the different scalars or each two boxes are the input ScaleMat. 
+%                boxII= boxJJ*Ratio
+%                scaleFactor(ii,jj)=1./Ratio;
+%                scaleFactor(jj,ii)=Ratio;
+%                
+% We will write a minimization equation so all the scalars together will be
+% adjusted. The idea is that box(i)-box(j)*scalar equals 0. We will build
+% such a set of equations for all the overlap boxes and solve them together
+% in the end.
+%
+% One box will be a reference box. In the case of the reference, we decide
+% that scalar is 1.
+%
+% A simulation of the problem we solve can be found at SimLinBoxJoin.m
 %
 %
 % AM (C) Stanford University, VISTA
 
-%% find the bigest network of connected boxes
+%% Find the biggest network of connected boxes
 
-% what is the tipical ratio between two box?
+% what is the typical ratio between two boxes?
 MScale=median(ScaleMat(ScaleMat>0));
-% if a ratio is more then 2 fold the usual it might be wrong. it might be
-% better to get ride of those box. tipically this is only a small fraction
-% then the box >>1%. this operation is usful for the solving the linear
-% system without outlayers.
+% If a ratio is more than twice the usual, it might be wrong. It might be
+% better to get rid of those boxes. Typically this is only a small fraction
+% then the box >>1%. This operation is useful for solving the linear
+% system without outliers.
 ScaleMat(ScaleMat>MScale*2)=0;
 ScaleMat(ScaleMat<MScale*0.5)=0;
 
+%  [S, C]= graphconncomp(double(sparse(logical(ScaleMat))));
+ [S, C]= conncomp(double(sparse(logical(ScaleMat))));
 
-
- [S, C]= graphconncomp(double(sparse(logical(ScaleMat))));
  for ii=1:S
  NudeN(ii)= length(find(C==ii));
  end
   [N,ind]=sort(NudeN);
   
-% all the box that are conectet in the bigest network
+% All the boxes that are connected in the biggest network:
 boxT0Use=(C==ind(end)) ;
-% let's save the clean Scale  matrix that have only  get only the boxes we like to
-% work with.
+
+% Let's save the clean Scale matrix that contains only the boxes we would
+% like to work with.
 ScaleMatNew=zeros(size(ScaleMat));
 ScaleMatNew(boxT0Use,boxT0Use)=ScaleMat(boxT0Use,boxT0Use);
-% build the  matrix for the scale linear calculation
+
+% Build the matrix for the scale linear calculation
 LinScaleMat=zeros(size(ScaleMatNew));
-
-
 
 %
 
-
-
-% calcualte how many conction each box got
+% Calculate how many connections each box got
 NConect=sum(logical(ScaleMatNew),1);
  Hub= (NConect==max(NConect)) & boxT0Use;
 
- %find the nude that highly conected and select one
+% Find the node that is highly connected and select one
  
  SHub=find(Hub);SHub=SHub(1,1);
 
@@ -65,10 +67,10 @@ NConect=sum(logical(ScaleMatNew),1);
 %% Build the linear equations to solve for the XXX with respect to one box.
 
 % We have removed the coil sensitivity from each of the boxes before
-% getting here.  The only difference between the boxes is the unknown scale
+% getting here. The only difference between the boxes is the unknown scale
 % factor, which we created above and stored in ScaleMat.
 
-% Therfore, the relationship between the data in the boxes is, say,
+% Therefore, the relationship between the data in the boxes is, say,
 %
 %   box1 = s12*box2, and perhaps box1 = s1J*boxJ
 %
@@ -100,6 +102,7 @@ end
 LinScaleMat(end+1,SHub)=1;
 
 
+
 %% Solve for y = [SIJ] * [BoxMean]
 %
 % 0 = [K, -s1J .... (Matrix)] * [boxMean1 .... boxMeanN]
@@ -111,22 +114,53 @@ y=zeros(size(LinScaleMat,1),1);
 
 y=y(BoxLocation);
 Mat=LinScaleMat(BoxLocation,BoxLocation);
-% let's add one more eqation that will make the Hub box to have a scale
-% coefisent of one.
+% Let's add one more equation that will make the Hub box to have a scale
+% coefficient of one.
 % 
 Mat(end+1,:)=0;
 Mat(:,end+1)=0;
 Mat(end,find(BoxLocation==SHub))=1;
 y(end+1)=1;
 
-%solve it as multi linear eqation
+% Solve it as multi-linear equation
 C=pinv(Mat'*Mat)*Mat'*y;
-% the C we need is one over the one we fit
+% The C we need is one over the one we fit
 
 
 Cbox=zeros(length(BoxLocation),1);
 
 Cbox(BoxLocation)=C(1:end-1);
+end
+
+%-----------------------------------------------------------------------%
+% Originally, in line 34, the function "graphconncomp" was called. This
+% function is part of the Bioinformatics Toolbox. Since this is the only
+% call of the Bioinformatics Toolbox in all of mrQ, we wanted to rewrite
+% the function so that users wouldn't need an additional toolbox just for
+% one function.
+% Fortunately, such a rewrite already exists. We use "conncomp" from Alec
+% Jacobson's gptoolbox (https://github.com/alecjacobson/gptoolbox).
+% 
+% The following code is Copyright Alec Jacobson 2015.
+%
+% Edited 02-Dec-2015
 
 
+function [S,C] = conncomp(G)
+  % CONNCOMP Drop in replacement for graphconncomp.m from the bioinformatics
+  % toobox. G is an n by n adjacency matrix, then this identifies the S
+  % connected components C. This is also an order of magnitude faster.
+  %
+  % [S,C] = conncomp(G)
+  %
+  % Inputs:
+  %   G  n by n adjacency matrix
+  % Outputs:
+  %   S  scalar number of connected components
+  %   C  
+  [p,q,r] = dmperm(G+speye(size(G)));
+  S = numel(r)-1;
+  C = cumsum(full(sparse(1,r(1:end-1),1,1,size(G,1))));
+  C(p) = C;
+end
 

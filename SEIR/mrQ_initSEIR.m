@@ -113,7 +113,8 @@ if (alignFlag == 1)
 %     niilist=mrQ.inputdata_seir.name;
 %     [d, xform]=mrQ_fslAlignCall(Dpath,d,niilist);
 %     
-    
+else
+  xform=  d(1).imToScanXform;
 end
 %% IV. Initialize data matrix
 % Determine the number of rows (nRows), number of Columns (nCol), number of

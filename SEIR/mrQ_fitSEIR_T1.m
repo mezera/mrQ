@@ -106,5 +106,28 @@ mrQ.SEIR_epi_T1file=T1file;
 mrQ.SEIR_epi_resnormfile=resnormfile;
 mrQ.SEIR_epi_fitFile=saveStr;
 
+%% Make a brain mask for SEIR on the M0 image
+T1=ll_T1(:,:,:,1);
+mask=T1>0.1 & T1<5000 & ~isnan(T1) & ~isinf(T1) ;  % where we have signal
+M0= ll_T1(:,:,:,3); % this is a M0 waighted image of the fit.
+
+M0(M0<0)=0;M0(isnan(M0))=0;M0(isinf(M0))=0; M0(M0>3*median(M0(mask)))=3*median(M0(mask));% let's clip outlier values
+M0file=[saveStr '_M0.nii.gz']; %save M0 SEIR
+dtiWriteNiftiWrapper(single(M0), xform, M0file); 
+
+mmPerVox=[abs(xform(1,1)) abs(xform(2,2)) abs(xform(3,3))];
+[brainMask,checkSlices] = mrAnatExtractBrain(M0, mmPerVox, 0.5); %scale strip FSL BET
+
+
+out = fullfile(tempdir,'bet_tmp');
+delete([out,'.img']) % remove tmp BET file
+delete([out,'.hdr']) % remove tmp BET file
+
+brainMask= brainMask & mask;
+brainMask(:,:,1)=0;brainMask(:,:,end)=0;
+BrainMaskfile=[saveStr '_BrainMask.nii.gz']; %save Brain mask SEIR
+dtiWriteNiftiWrapper(single(brainMask), xform, BrainMaskfile); 
+mrQ.SEIR_epi_M0file=M0file;
+mrQ.SEIR_epi_Maskfile=BrainMaskfile;
 
 return

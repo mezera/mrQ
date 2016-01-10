@@ -1,4 +1,4 @@
-function [data, extra, xform, saveName] = mrQ_initSEIR(mrQ,SEIRdir,alignFlag)
+function [data, extra, xform, saveName] = mrQ_initSEIR(mrQ,SEIRdir,alignFlag,ReOrder)
 %
 % [data, extra, xform, saveName] = mrQ_initSEIR_ver2(mrQ,SEIRdir,alignFlag)
 %
@@ -86,6 +86,16 @@ saveName = fullfile(loadPath, 'SEIR_Dat');
 
 d=mrQ_input2struct(mrQ.inputdata_seir);
 
+if ~notDefined ('ReOrder') 
+    % ReOrder needs to be a value smaller than length(d);
+    % we noticed that since the images are reistered to the first image,
+    % the quality of registration may vary depending on the alignment order.
+    
+    dtmp=d;
+    d(1)=d(ReOrder);
+    d(ReOrder)=dtmp(1);
+end
+
 %% III. Align series in "d" and deal with complex data
 
 % Align & ~Complex
@@ -103,7 +113,7 @@ if (alignFlag == 1)
     %likely the TR. Then align and reslice with spm:
     
             mm = d.mmPerVox; mm = mm(1:3);
-            [d xform] = relaxAlignAll(d, [], mm, false, 1);
+            [d, xform] = relaxAlignAll(d, [], mm, false, 1);
             
 %     % FSL
 %       This is another option to get alignment. It probably doesn't work
@@ -126,7 +136,9 @@ nSeries = length(d);
 
 data       = zeros(nRow,nCol,nSlice,nSeries);
 extra.tVec = zeros(1,nSeries); % One series corresponds to one TI (SEIR)
-
+if alignFlag==0
+    xform=d(1).imToScanXform;
+end
 % Populate 'data' with image data in 'd(k)'
 for k = 1:nSeries
     dataTmp = d(k).imData;

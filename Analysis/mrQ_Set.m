@@ -232,7 +232,10 @@ switch(param)
          mrQ.PrcCutOff=varagin;
      case{'ErrorThresh'}
          mrQ.ErrorThresh=varargin;
-         
+    
+    % threshold for spgr epi registration
+    case{'AntsThresh', 'antsthresh'}
+         mrQ.AntSQantTresh=varargin;    
     otherwise
         error('Unknown mrQ parameter!');
 end

@@ -97,35 +97,6 @@ if ~isfield(mrQ,'Arrange_Date');
 else
     fprintf('Data was already arranged on %s \n',mrQ.Arrange_Date)
 end
-%% III. Perform SEIR fit
-
-if notDefined('B1file')
-    % Checks if B1 was defined by the user.
-    % If not, we will use the SEIR data to map it.
-    
-    if isfield(mrQ,'SEIR_done');
-    else
-        mrQ.SEIR_done=0;
-    end
-    
-    if (mrQ.SEIR_done==0);
-        
-        % Keeps track of the variables we use.  
-        % For details, see inside the function.
-        [~, ~, ~, mrQ.SEIRsaveData]=mrQ_initSEIR(mrQ,mrQ.SEIRepiDir,mrQ.alignFlag);
-        
-        [mrQ]=mrQ_fitSEIR_T1(mrQ.SEIRepiDir,[],0,mrQ);
-        
-        mrQ.SEIR_done=1;
-        save(mrQ.name,'mrQ');
-        fprintf('Fit SEIR  - done! \n');
-        
-    else
-        fprintf('\n Loading previously fitted SEIR data \n');
-        
-    end
-    
-end
 
 
 %% IV. Initiate and align SPGR
@@ -174,8 +145,24 @@ else
     
 end
 
+%% III. Perform SEIR fit
 
-
+if notDefined('B1file')
+    % Checks if B1 was defined by the user.
+    % If not, we will use the SEIR data to map it.
+    
+    if isfield(mrQ,'SEIR_done');
+    else
+        mrQ.SEIR_done=0;
+    end
+    
+    if (mrQ.SEIR_done==0);
+        mrQ=mrQ_SEIR(mrQ);
+        
+    else
+        fprintf('\n Loading previously fitted SEIR data \n');        
+    end
+end
 %% VII. Build B1
 
 if notDefined('B1file')

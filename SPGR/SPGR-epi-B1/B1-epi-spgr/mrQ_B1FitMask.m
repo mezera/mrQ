@@ -1,4 +1,4 @@
-function [maskepi_File] = mrQ_B1FitMask(dirAnts,AlignFile,SET1Fitfile,outDir)
+function [maskepi_File] = mrQ_B1FitMask(dirAnts,AlignFile,SET1Fitfile,outDir,WarpAnts)
 %       [maskepi_File] = mrQ_B1FitMask(dirAnts,AlignFile,SET1Fitfile,outDir)
 %
 % In this function, a brain mask is constructed in preparation for the
@@ -61,20 +61,19 @@ brainMask=brainMask & SEIRResid<prctile(SEIRResid(brainMask),95) ;
 
 %  Maybe we shouldn't need to look for the files, but instead have them as
 %  inputs.
-
-WarpAnts=fullfile(dirAnts,'WARP_SPGR_EPI_RBWarp.nii.gz');
-
-if exist( WarpAnts,'file')
-WarpAnts=readFileNifti(WarpAnts);WarpAnts=WarpAnts.data;
+WarpAntsfile=[WarpAnts,'Warp.nii.gz'];
+if exist(WarpAntsfile,'file')
+WarpAnts=readFileNifti(WarpAntsfile);WarpAnts=WarpAnts.data;
 WarpX=squeeze(WarpAnts(:,:,:,1,1));
 WarpY=squeeze(WarpAnts(:,:,:,1,2));
 WarpZ=squeeze(WarpAnts(:,:,:,1,3));
 
 
 else  % it seems there is a difference in ANTs version outputs?
-  WarpX=fullfile(dirAnts,'WARP_SPGR_EPI_RBWarpxvec.nii.gz');WarpX=readFileNifti(WarpX);WarpX=WarpX.data;
-  WarpY=fullfile(dirAnts,'WARP_SPGR_EPI_RBWarpyvec.nii.gz');WarpY=readFileNifti(WarpY);WarpY=WarpY.data;
-  WarpZ=fullfile(dirAnts,'WARP_SPGR_EPI_RBWarpzvec.nii.gz');WarpZ=readFileNifti(WarpZ);WarpZ=WarpZ.data;
+     [a,b]=fileparts(WarpAnts);[~,b]=fileparts(b);
+  WarpX=fullfile(a,[b 'xvec.nii.gz']);WarpX=readFileNifti(WarpX);WarpX=WarpX.data;
+  WarpY=fullfile(a,[b 'yvec.nii.gz']);WarpY=readFileNifti(WarpY);WarpY=WarpY.data;
+  WarpZ=fullfile(a,[b 'zvec.nii.gz']);WarpZ=readFileNifti(WarpZ);WarpZ=WarpZ.data;
 
 end
     

@@ -38,9 +38,9 @@ end
 
 if ( mrQ.SPGR_EPI_align_done==0)
     
-    mrQ.spgr2epiAlignFile=fullfile(mrQ.spgr_initDir,'SEIRepiSPGRAlign_best_RB.mat');
-    [mrQ.Ants_Info]=mrQ_NLANTS_warp_SPGR2EPI_RB(mrQ.SEIR_epi_T1file, mrQ.T1_LFit_HM, mrQ.SPGR_niiFile_FA, mrQ.spgr_initDir, mrQ.spgr2epiAlignFile, mrQ.AligndSPGR);
-    
+    mrQ.spgr2epiAlignFile=fullfile(mrQ.spgr_initDir,'SEIRepiSPGRAlign_Struct.mat');
+    %[mrQ.Ants_Info]=mrQ_NLANTS_warp_SPGR2EPI_RB(mrQ.SEIR_epi_T1file, mrQ.T1_LFit_HM, mrQ.SPGR_niiFile_FA, mrQ.spgr_initDir, mrQ.spgr2epiAlignFile, mrQ.AligndSPGR);
+     [mrQ.Ants_Info]=mrQ_ANTS_warp_SPGR2EPI(mrQ.SEIR_epi_T1file,mrQ.SPGR_niiFile_FA,mrQ.spgr_initDir,mrQ.spgr2epiAlignFile,mrQ.AligndSPGR,mrQ.Ants_Info);
     mrQ.SPGR_EPI_align_done=1;
     
     save(mrQ.name,'mrQ');
@@ -55,7 +55,7 @@ end
 
 % [mrQ.maskepi_File] = mrQ_B1FitMask(mrQ.Ants_Info.dirAnts,mrQ.spgr2epiAlignFile,mrQ.SEIR_epi_fitFile,mrQ.spgr_initDir);
 
-[mrQ.maskepi_File] = mrQ_B1FitMask(mrQ.spgr_initDir,mrQ.spgr2epiAlignFile,mrQ.SEIR_epi_fitFile,mrQ.spgr_initDir);
+[mrQ.maskepi_File] = mrQ_B1FitMask(mrQ.spgr_initDir,mrQ.spgr2epiAlignFile,mrQ.SEIR_epi_fitFile,mrQ.spgr_initDir,mrQ.Ants_Info.WARP_SPGR_EPI);
     
     %define the fit parameters
     mrQ.B1.logname=mrQ_PD_LRB1SPGR_GridParams(mrQ);

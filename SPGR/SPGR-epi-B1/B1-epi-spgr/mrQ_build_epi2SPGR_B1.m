@@ -26,12 +26,12 @@ function mrQ=mrQ_build_epi2SPGR_B1(mrQ,B1FileName,smoothnessVal)
 
 %% I. Load files and set parameters
 
-if ~isfield(mrQ.Ants_Info,'RB_B1_epi_spgr')
-     mrQ.Ants_Info=mrQ_RB_ANTS_warp_EPI2SPGR(mrQ.Ants_Info,mrQ.T1_LFit_HM,mrQ.spgr_initDir,mrQ.B1.epiFileName);
+if ~isfield(mrQ.Ants_Info,'B1_epi_spgr')
+     mrQ.Ants_Info=mrQ_ANTS_warp_EPI2SPGR(mrQ.Ants_Info,mrQ.T1_LFit_HM,mrQ.spgr_initDir,mrQ.B1.epiFileName);
 end
 
-T1=readFileNifti(mrQ.Ants_Info.RB_T1_epi_spgr);
-B1=readFileNifti(mrQ.Ants_Info.RB_B1_epi_spgr);
+T1=readFileNifti(mrQ.Ants_Info.T1_epi_spgr);
+B1=readFileNifti(mrQ.Ants_Info.B1_epi_spgr);
 
 xform=T1.qto_xyz;
 mask=logical(T1.data);

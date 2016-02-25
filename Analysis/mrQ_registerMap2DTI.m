@@ -28,6 +28,16 @@ if notDefined('resampleFlag')
     resampleFlag = 0;
 end
 
+% In case of no resampling, the transformed maps will have the same
+% resolution as the T1File. Otherwise, they will have same resolution as
+% the B0File.
+if resampleFlag == 0
+    refFile = T1file;
+else
+    refFile = B0file;
+end
+
+
 %% Configure ENV paths
 % %
 % for i=1:(length(colon_idx)-1)
@@ -81,11 +91,7 @@ else
 end
 
 
-if resampleFlag == 0
-    cmWarp=['xterm -e WarpImageMultiTransform  3 ' T1file  ' ' out1 ' -R '  T1file ' ' out 'Warp.nii.gz ' out 'Affine.txt ' interpMethod];
-else
-    cmWarp=['xterm -e WarpImageMultiTransform  3 ' T1file  ' ' out1 ' -R '  B0file ' ' out 'Warp.nii.gz ' out 'Affine.txt ' interpMethod];
-end
+cmWarp=['xterm -e WarpImageMultiTransform  3 ' T1file  ' ' out1 ' -R ' refFile ' ' out 'Warp.nii.gz ' out 'Affine.txt ' interpMethod];
 % Run the command in unix and get back status and results:
 [~, ~] = system(cmWarp);
 
@@ -99,27 +105,20 @@ if ~notDefined('otherMaps')
     for i=1:length(otherMaps)
         [~, name]=fileparts(otherMaps{i});
         [~, name]=fileparts(name);
+        
         if resampleFlag == 0
             out1=fullfile(outDir,[name '_2DTI.nii.gz']);
         else
             out1=fullfile(outDir,[name '_2DTI_resamp.nii.gz']);
         end
-        if resampleFlag == 0
-            cmWarp=['xterm -e WarpImageMultiTransform  3 ' otherMaps{i}  ' ' out1 ' -R '  T1file ' ' out 'Warp.nii.gz ' out 'Affine.txt ' interpMethod];
-        else
-            cmWarp=['xterm -e WarpImageMultiTransform  3 ' otherMaps{i}  ' ' out1 ' -R '  B0file ' ' out 'Warp.nii.gz ' out 'Affine.txt ' interpMethod];
-            
-        end
+        
+        cmWarp=['xterm -e WarpImageMultiTransform  3 ' otherMaps{i}  ' ' out1 ' -R ' refFile ' ' out 'Warp.nii.gz ' out 'Affine.txt ' interpMethod];
         
         % Run the command in unix and get back status and results:
         [status, ~] = system(cmWarp);
         
         if status ~= 0
-            if resampleFlag == 0
-                cmWarp=['WarpImageMultiTransform  3 ' otherMaps{i}  ' ' out1 ' -R '  T1file ' ' out 'Warp.nii.gz ' out 'Affine.txt ' interpMethod];
-            else
-                cmWarp=['WarpImageMultiTransform  3 ' otherMaps{i}  ' ' out1 ' -R '  B0file ' ' out 'Warp.nii.gz ' out 'Affine.txt ' interpMethod];
-            end
+            cmWarp=['WarpImageMultiTransform  3 ' otherMaps{i}  ' ' out1 ' -R ' refFile ' ' out 'Warp.nii.gz ' out 'Affine.txt ' interpMethod];
             % Run the command in unix and get back status and results:
             [~, ~] = system(cmWarp,'-echo');
         end

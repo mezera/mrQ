@@ -72,22 +72,25 @@ if strfind(ni.descrip,'=')
 end
 
 % Get the TR from the 4th dimension of nifti pixdim field
+if notDefined('tr')
 s = size(ni.pixdim);
-if ( s(2) >= 4 )
+    if ( s(2) >= 4 )
     tr = ni.pixdim(4);
-else
-%    WE will try to bypass the vista nifti read error by using a different one. 
-%   Please download code from here:
-%    http://www.mathworks.com/matlabcentral/fileexchange/42997-dicom-to-nifti-converter--nifti-tool-and-viewer
-    
-    fprintf('Warning: Could not determine a TR for %s\n',niftiFile);
-    fprintf('Warning: Determine  TR with nii_tool \n');
-  h = nii_tool('hdr',niftiFile);
-  tr=h.pixdim(5); %We hope this is stable ...
-      fprintf('Warning: TR determined by nii_tool is %s sec\n',num2str(tr));
+    else
+        %    WE will try to bypass the vista nifti read error by using a different one.
+        %   Please download code from here:
+        %    http://www.mathworks.com/matlabcentral/fileexchange/42997-dicom-to-nifti-converter--nifti-tool-and-viewer
+        
+        fprintf('Warning: Could not determine a TR for %s\n',niftiFile);
+        fprintf('Warning: Determine  TR with nii_tool \n');
+        h = nii_tool('hdr',niftiFile);
+        if h.pixdim(5) >0
+            tr=h.pixdim(5); %We hope this is stable ...
+            fprintf('Warning: TR determined by nii_tool is %s sec\n',num2str(tr));
+        end
+    end
+end
 
-    
-end    
 if notDefined('tr')
 	fprintf('Warning: Could not determine a TR for %s\n',niftiFile);
     fprintf('\tpixdim field does not contain a 4th dimension for TR! Setting tr = nan \n');

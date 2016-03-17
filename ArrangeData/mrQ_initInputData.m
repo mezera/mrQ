@@ -100,7 +100,7 @@ nifti(cellfun(@isempty,nifti)) = [];
 
 % Rules: 
 %	- FA must be <=30
-%	- TE <= 3
+%	- TE <= 3.5 (originally it was 3, but there are SPGRs with higher TEs)
 % 	- TI == 0 
 %	- Data must be 4D of same size (multi-coil)  
 %	- Minimum of 2 unique flip angles with 1 <=10 and 1 >= 10. 
@@ -111,7 +111,7 @@ disp('Looking for nifti files with valid flip angles...');
 fa = {};
 for ii = 1:numel(nifti)
 	if isfield(nifti{ii},'fa') && ( isfield(nifti{ii},'rs') || isfield(nifti{ii},'r') )
-		if ( nifti{ii}.fa <= 30 ) && ( nifti{ii}.te <= 3 ) && ( nifti{ii}.ti == 0 )
+		if ( nifti{ii}.fa <= 30 ) && ( nifti{ii}.te <= 3.5 ) && ( nifti{ii}.ti == 0 )
 			fa{end+1} = ii;
 		end
 	end

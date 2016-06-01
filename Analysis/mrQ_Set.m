@@ -234,8 +234,8 @@ switch(param)
          mrQ.ErrorThresh=varargin;
     
     % threshold for spgr epi registration
-    case{'AntsThresh', 'antsthresh'}
-         mrQ.AntSQantTresh=varargin;    
+    case{'AntsThresh', 'antsthresh','QuantAntsThresh','quantantsthresh'}
+         mrQ.QuantAntsThresh=varargin;    
     otherwise
         error('Unknown mrQ parameter!');
 end

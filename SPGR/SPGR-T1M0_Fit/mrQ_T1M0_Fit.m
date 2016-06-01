@@ -1,7 +1,8 @@
 function mrQ=mrQ_T1M0_Fit(mrQ,B1File,MaskFile,outDir,dataDir,clobber)
 % mrQ=mrQ_T1M0_Fit(mrQ,B1File,MaskFile,outDir,dataDir,clobber)
 %
-% In this function, the T1-M0 fit is performed. The user is able to choose
+% In this function, the T1-M0 fit is performed. The user is able to
+% choosemr
 % from among three options: linear fit, least squares (LSQ) fit, or a
 % linear weighted fit. 
 %        1) The linear fit is most prone to bias, but it is also
@@ -263,8 +264,13 @@ end
 function [mask, mrQ]=CalculateFullMask(mrQ,t1,M0,outDir)
 %% one more mask anywhere we have signal
 
-HM = readFileNifti(mrQ.HeadMask);     HM=logical(HM.data);
-BM=  readFileNifti(mrQ.BrainMask); BM=logical(BM.data);
+if isfield(mrQ,'LinFit')
+    HM = readFileNifti(mrQ.LinFit.HeadMask); xform= HM.qto_xyz;    HM=logical(HM.data);
+    BM=  readFileNifti(mrQ.LinFit.BrainMask); BM=logical(BM.data);
+else
+    HM = readFileNifti(mrQ.HeadMask);     xform= HM.qto_xyz;  HM=logical(HM.data);
+    BM=  readFileNifti(mrQ.BrainMask); BM=logical(BM.data);
+end
 
 % M=mean(t1(BM));
 % S=std(t1(BM));
@@ -341,6 +347,6 @@ mask=logical(mask1+mask +HM+BM);
 
 % make a head mask that definitely includes the brain mask
 FullMaskFile= fullfile(outDir,'FullMask.nii.gz');
-dtiWriteNiftiWrapper(single(mask), mrQ.xform,FullMaskFile);
+dtiWriteNiftiWrapper(single(mask), xform,FullMaskFile);
 mrQ.FullMaskFile=FullMaskFile;
 

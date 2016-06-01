@@ -38,6 +38,10 @@ end
 
 if ( mrQ.SPGR_EPI_align_done==0)
     
+    if 
+    B1FitDir
+    
+    
     mrQ.spgr2epiAlignFile=fullfile(mrQ.spgr_initDir,'SEIRepiSPGRAlign_Struct.mat');
     %[mrQ.Ants_Info]=mrQ_NLANTS_warp_SPGR2EPI_RB(mrQ.SEIR_epi_T1file, mrQ.T1_LFit_HM, mrQ.SPGR_niiFile_FA, mrQ.spgr_initDir, mrQ.spgr2epiAlignFile, mrQ.AligndSPGR);
      [mrQ.Ants_Info]=mrQ_ANTS_warp_SPGR2EPI(mrQ.SEIR_epi_T1file,mrQ.SPGR_niiFile_FA,mrQ.spgr_initDir,mrQ.spgr2epiAlignFile,mrQ.AligndSPGR,mrQ.Ants_Info);
@@ -46,7 +50,7 @@ if ( mrQ.SPGR_EPI_align_done==0)
     save(mrQ.name,'mrQ');
     fprintf('\n Alignment of EPI to T1  - done!              \n');
 else
-    fprintf(['\n Using alignment of EPI to T1, calculated on '    mrQ.Ants_Info. spgr2epi_Align_date           '\n']);
+    fprintf(['\n Using alignment of EPI to T1, calculated on '    mrQ.Ants_Info.spgr2epi_Align_date           '\n']);
     
 end   
     

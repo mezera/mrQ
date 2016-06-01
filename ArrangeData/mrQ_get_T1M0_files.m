@@ -1,4 +1,4 @@
-function [T1file, M0file,BMfile]=mrQ_get_T1M0_files(mrQ,whT1,whM0,whBM)
+function [T1file, M0file,BMfile]=Strac_get_T1M0_files(Strac,whT1,whM0,whBM)
 % function [T1file, M0file,BMfile]=mrQ_get_T1M0_files(mrQ,whT1,whM0,whBM)
 %
 % Search for the T1, M0 and Brain Mask files. Can be one of three file
@@ -31,7 +31,8 @@ end
 
 if whT1
     T1file=[];
-    
+%%
+
     
 %% II. Looking for the T1 file  
 % Look for linear fit, weighted linear, non-linear
@@ -41,52 +42,61 @@ if whT1
 %% II-a. Is there a linear fit T1 file?
     %Find T1
     
-    if isfield(mrQ,'T1_LFit')
-        if  exist(mrQ.T1_LFit,'file')
-            T1file= mrQ.T1_LFit;
+    if isfield(Strac,'T1_LFit')
+        if  exist(Strac.T1_LFit,'file')
+            T1file= Strac.T1_LFit;
         end
     end
     
     %  the same but with larger mask
-    if isfield(mrQ,'T1_LFit_HM')
-        if  exist(mrQ.T1_LFit_HM,'file')
-            T1file= mrQ.T1_LFit_HM;
+    if isfield(Strac,'T1_LFit_HM')
+        if  exist(Strac.T1_LFit_HM,'file')
+            T1file= Strac.T1_LFit_HM;
         end
     end
     
     %  Maybe after B1 correction?
-    if isfield(mrQ,'T1_B1_LFit')
-        if exist(mrQ.T1_B1_LFit,'file') 
-            T1file= mrQ.T1_B1_LFit;
+    if isfield(Strac,'T1_B1_LFit')
+        if exist(Strac.T1_B1_LFit,'file') 
+            T1file= Strac.T1_B1_LFit;
         end
     end
     
 %% II-b. Is there a weighted linear T1 file?
-    if isfield(mrQ,'T1_B1_LWFit')
+    if isfield(Strac,'T1_B1_LWFit')
         
-        if exist(mrQ.T1_B1_LWFit,'file')
-            T1file= mrQ.T1_B1_LWFit;
+        if exist(Strac.T1_B1_LWFit,'file')
+            T1file= Strac.T1_B1_LWFit;
         end
     end
     
 %% II-c. Is there an non-linear T1 file?
-    if isfield(mrQ,'T1_B1_lsqFit')
+    if isfield(Strac,'T1_B1_lsqFit')
         
-        if  exist(mrQ.T1_B1_lsqFit,'file')
-            T1file= mrQ.T1_B1_lsqFit;
+        if  exist(Strac.T1_B1_lsqFit,'file')
+            T1file= Strac.T1_B1_lsqFit;
         end
     end
+    
+    
+   
+    
+    
+   
+   
+    
+    
     %% II-d. Maybe it is already in the outputDir?
-    if isfield(mrQ, 'maps')
-        if isfield(mrQ.maps,'T1path')
-            if exist(mrQ.maps.T1path,'file')
-                T1file= mrQ.maps.T1path;
+    if isfield(Strac, 'maps')
+        if isfield(Strac.maps,'T1path')
+            if exist(Strac.maps.T1path,'file')
+                T1file= Strac.maps.T1path;
             end
         end
     end
 %% II-e. Select manually
     if isempty(T1file)
-        T1file = mrvSelectFile('r','*.nii.gz','Select T1 fit file',mrQ.spgr_initDir);
+        T1file = mrvSelectFile('r','*.nii.gz','Select T1 fit file',Strac.spgr_initDir);
     end
     
 %% II-f. Still can't find it (error)
@@ -114,49 +124,49 @@ end
 if whM0
     
     M0file=[];
-    if isfield(mrQ,'M0_LFit')
-        if  exist(mrQ.M0_LFit,'file') 
-            M0file= mrQ.M0_LFit;
+    if isfield(Strac,'M0_LFit')
+        if  exist(Strac.M0_LFit,'file') 
+            M0file= Strac.M0_LFit;
         end
     end
     
     %  the same but with larger mask
-    if isfield(mrQ,'M0_LFit_HM')
-        if  exist(mrQ.M0_LFit_HM,'file') 
-            M0file= mrQ.M0_LFit_HM;
+    if isfield(Strac,'M0_LFit_HM')
+        if  exist(Strac.M0_LFit_HM,'file') 
+            M0file= Strac.M0_LFit_HM;
         end
     end
     
     
     %  Maybe after B1 correction?
-    if isfield(mrQ,'M0_B1_LFit')
-        if  exist(mrQ.M0_B1_LFit,'file') 
-            M0file= mrQ.M0_B1_LFit;
+    if isfield(Strac,'M0_B1_LFit')
+        if  exist(Strac.M0_B1_LFit,'file') 
+            M0file= Strac.M0_B1_LFit;
         end
     end
       
 %% III-b. Is there a weighted-linear M0 file?
     
-    if isfield(mrQ,'M0_B1_LWFit')
+    if isfield(Strac,'M0_B1_LWFit')
         
-        if exist(mrQ.M0_B1_LWFit,'file')
-            M0file= mrQ.M0_B1_LWFit;
+        if exist(Strac.M0_B1_LWFit,'file')
+            M0file= Strac.M0_B1_LWFit;
         end
     end
 %% III-c. Is there a non-linear M0 file?
     
-    if isfield(mrQ,'M0_B1_lsqFit')
+    if isfield(Strac,'M0_B1_lsqFit')
         
-        if  exist(mrQ.M0_B1_lsqFit,'file')
-            M0file= mrQ.M0_B1_lsqFit;
+        if  exist(Strac.M0_B1_lsqFit,'file')
+            M0file= Strac.M0_B1_lsqFit;
         end
     end
     
     % Are we using multi coils data. if yes this will be the M0
-     if isfield(mrQ,'M0combineFile')
+     if isfield(Strac,'M0combineFile')
         
-        if  exist(mrQ.M0combineFile,'file')
-            M0file= mrQ.M0combineFile;
+        if  exist(Strac.M0combineFile,'file')
+            M0file= Strac.M0combineFile;
         end
     end
 
@@ -165,7 +175,7 @@ if whM0
     % not looking for it there.
     
     if isempty(M0file)
-        M0file = mrvSelectFile('r','*.nii.gz','Select T1 fit file',mrQ.spgr_initDir);
+        M0file = mrvSelectFile('r','*.nii.gz','Select T1 fit file',Strac.spgr_initDir);
     end
     
 %% III-e. Lastly, still can't find it (error)
@@ -188,27 +198,27 @@ end
 if whBM
     BMfile=[];
     % let's find the most up-to-date / full mask.
-    if isfield(mrQ,'BrainMask')
+    if isfield(Strac,'BrainMask')
         
-        if  exist(mrQ.BrainMask,'file')
-            BMfile= mrQ.BrainMask;
+        if  exist(Strac.BrainMask,'file')
+            BMfile= Strac.BrainMask;
         end
     end
     
-    if isfield(mrQ,'HMfile')    
-        if  exist(mrQ.HMfile,'file')
-            BMfile= mrQ.HMfile;
+    if isfield(Strac,'HMfile')    
+        if  exist(Strac.HMfile,'file')
+            BMfile= Strac.HMfile;
         end
     end
     
-    if isfield(mrQ,'FullMaskFile')    
-        if  exist(mrQ.FullMaskFile,'file')
-            BMfile= mrQ.FullMaskFile;
+    if isfield(Strac,'FullMaskFile')    
+        if  exist(Strac.FullMaskFile,'file')
+            BMfile= Strac.FullMaskFile;
         end
     end
     
     if isempty(BMfile)
-        BMfile = mrvSelectFile('r','*.nii.gz','Select T1 fit file',mrQ.spgr_initDir);
+        BMfile = mrvSelectFile('r','*.nii.gz','Select T1 fit file',Strac.spgr_initDir);
     end
     
 %% IV-b. Can't find it (error)

@@ -101,6 +101,7 @@ end
 
 
 %%    name and saved raw spgr flipAngles images in epi space
+if ~notDefined('morefiles2_HR') 
 
 for d=1:length(morefiles2_HR) %loof over  flip Angles raw images
     file=dir(morefiles2_HR{d});
@@ -120,7 +121,7 @@ for d=1:length(morefiles2_HR) %loof over  flip Angles raw images
     
 end
 
-
+end
 
 
 

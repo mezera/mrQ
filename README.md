@@ -20,7 +20,7 @@ The software and the tissue parameters are described in the following article:
 http://www.nature.com/nm/journal/v19/n12/full/nm.3390.html?WT.ec_id=NM-201312
 
 and in the following conference presentation:
-> Mezer A, Rokem A, Berman S. Hastie T and Wandell BA "Evaluating quantitative proton-density-mapping methods" Human brian mapping 2016 
+> Mezer A, Rokem A, Berman S. Hastie T and Wandell BA "Evaluating quantitative proton-density-mapping methods" Human Brain Mapping 2016 
 
 > Mezer A, Rokem A, Hastie T and Wandell B. "Proton density mapping: Removing receive-inhomogeneity using multi-coil information and T1 regularization". ISMRM 23rd Annual Meeting & Exhibition. Toronto, Ontario, Canada. 2 June 2015. http://ismrm.org/15/program_files/TueTP03.htm  
 

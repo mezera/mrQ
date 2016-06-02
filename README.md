@@ -40,6 +40,8 @@ Version 1 (v.1) is the code that was used by Mezer et al. in their [Nature Medic
 ##### Version 2 #####
 Version 2 (v.2) was released in autumn 2015 and was developed by the [Mezer lab](http://elsc.huji.ac.il/mezer/home) of the Hebrew University of Jerusalem, Israel, in collaboration with the [VISTA lab](https://vistalab.stanford.edu/) of Stanford University, USA. 
 
+##### Version 2.1 #####
+Version 2 (v.2.1) was released in summer 2016 and was developed by the [Mezer lab](http://elsc.huji.ac.il/mezer/home) of the Hebrew University of Jerusalem, Israel, in collaboration with the [VISTA lab](https://vistalab.stanford.edu/) of Stanford University, USA. 
 
 To learn more about how to use mrQ please see the wiki:
 https://github.com/mezera/mrQ/wiki

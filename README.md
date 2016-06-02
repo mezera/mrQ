@@ -1,5 +1,8 @@
 # mrQ #
-**mrQ** is a software package designed to calculate MR parameters (T1 and PD) using spoiled gradient echo scans (SPGR, FLASH). Using T1 and PD maps, mrQ performs the evaluation of macromolecular tissue volume (MTV) and the apparent volume of the interacting water protons (VIP) as well as the water-surface interaction rate (SIR). This is **version 2** of the mrQ software package.
+**mrQ** is a software package designed to calculate MR parameters (T1 and PD) using spoiled gradient echo scans (SPGR, FLASH). Using T1 and PD maps, mrQ performs the evaluation of macromolecular tissue volume (MTV) and the apparent volume of the interacting water protons (VIP) as well as the water-surface interaction rate (SIR). This is **version 2.1** of the mrQ software package.
+
+To learn more about how to use mrQ please see the wiki:
+https://github.com/mezera/mrQ/wiki
 
 For more information, please contact: 
 
@@ -43,8 +46,7 @@ Version 2 (v.2) was released in autumn 2015 and was developed by the [Mezer lab]
 ##### Version 2.1 #####
 Version 2 (v.2.1) was released in summer 2016 and was developed by the [Mezer lab](http://elsc.huji.ac.il/mezer/home) of the Hebrew University of Jerusalem, Israel, in collaboration with the [VISTA lab](https://vistalab.stanford.edu/) of Stanford University, USA. 
 
-To learn more about how to use mrQ please see the wiki:
-https://github.com/mezera/mrQ/wiki
+
 
 
 The code in this repository was developed 

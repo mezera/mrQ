@@ -1,4 +1,4 @@
-function mrQ=mrQ_smooth_LR_B1(mrQ,smoothnessVal)
+function mrQ=mrQ_smooth_LR_B1(mrQ,outDir,smoothnessVal)
 % mrQ=mrQ_smooth_LR_B1(mrQ,smoothnessVal)
 %
 % This function smoothes the B1 fit in EPI space, before returning to SPGR
@@ -16,6 +16,7 @@ function mrQ=mrQ_smooth_LR_B1(mrQ,smoothnessVal)
 %
 % See also: mrQ_build_epi2SPGR_B1.m and gridfit.m.
 %
+% Edited by A.M 2016
 % (C) Mezer lab, the Hebrew University of Jerusalem, Israel
 %  2015
 %
@@ -245,7 +246,6 @@ Cal=median(B1(tissuemask)./B1Fit_S(tissuemask));
  B1Fit_S=B1Fit_S.*Cal;
 
 %% V. SAVE the resulting smooth B1 map
-outDir = mrQ.spgr_initDir; % check that this is right
 
 B1epiFileName=fullfile(outDir,['B1epi_map.nii.gz']);
 dtiWriteNiftiWrapper(single(B1Fit_S),xform,B1epiFileName);

@@ -1,4 +1,4 @@
-function mrQ=mrQ_build_LR_B1(mrQ)
+function B1files=mrQ_build_LR_B1(B1logname,outDir)
 % function mrQ=mrQ_build_LR_B1(mrQ)
 %
 %  In this function, the estimates of each single voxel are joined
@@ -12,20 +12,21 @@ function mrQ=mrQ_build_LR_B1(mrQ)
 %
 % See also: mrQ_B1FitMask, mrQ_PD_LRB1SPGR_GridParams
 %
+% Edited by A.M 2016
 % (C) Mezer lab, the Hebrew University of Jerusalem, Israel
 %   2015
 %
 %
 
 %% I. Load the fit parameters
-        load(mrQ.B1.logname)
-
+        load(B1logname)
+B1files.logname=B1logname;
     %% II. Find where the fitted values are in 3D space
 
         BM=readFileNifti(opt.tisuuemaskFile);
         xform=BM.qto_xyz;
         BM=logical(BM.data);
-        BM=logical(ones(size(BM)));
+        BM= true(size(BM));
 
      loc=find(BM);
 %% III. Loop over voxels, and load the fitted values
@@ -54,7 +55,7 @@ for ii=1:length(jobindexs);
 end
    
 %% IV. Save 3D results as NIfTI
-outDir = mrQ.spgr_initDir; %check that this is right
+%outDir = mrQ.spgr_initDir; %check that this is right
 
 % the B1 map
  B1epiFitFileName=fullfile(outDir,['B1_LR.nii.gz']);
@@ -72,11 +73,10 @@ B1NvoxFileName=fullfile(outDir,['B1_Nvox_LR.nii.gz']);
 dtiWriteNiftiWrapper(single(UseVoxNMap),xform,B1NvoxFileName);
 
 %  Record the path to the B1 fit
-mrQ.B1.epiFitFileName=B1epiFitFileName;
-mrQ.B1.resnormFileName=B1resnormFileName;
-mrQ.B1.NvoxFileName=B1NvoxFileName;
+B1files.epiFitFileName=B1epiFitFileName;
+B1files.resnormFileName=B1resnormFileName;
+B1files.NvoxFileName=B1NvoxFileName;
 
-      save(mrQ.name,'mrQ');
 
 %%
 % We will smoothe and interpolate/extrapolate the values to have solutions

@@ -1,6 +1,6 @@
-function [mrQ]= mrQ_fitSEIR_T1(SEIRdir,outDir,checkData,mrQ)
+function [SEIR]= mrQ_fitSEIR_T1(SEIRdir,outDir,checkData)
 % 
-%  [mrQ]=mrQ_fitSEIR_T1(SEIRdir,outDir,[checkData=1],mrQ)
+%  [SEIR]=mrQ_fitSEIR_T1_ver2(SEIRdir,outDir,[checkData=1])
 % 
 % Loads SEIR_Dat.mat file from the directory 'data' in the SEIRdir, and
 % performs T1 mapping. 
@@ -13,10 +13,10 @@ function [mrQ]= mrQ_fitSEIR_T1(SEIRdir,outDir,checkData,mrQ)
 %   checkData -   If you want to visually check the data, leave empty or
 %                 set to 1. To not check data, set to 0.
 %
-%   mrQ       -   Information structure
+
 % 
 % OUTPUTS:
-%     mrQ     -   Information structure, updated.
+%     SEIR     -   Information structure, updated.
 %
 %
 %   This function will save the fitted images in a new directory called
@@ -28,12 +28,15 @@ function [mrQ]= mrQ_fitSEIR_T1(SEIRdir,outDir,checkData,mrQ)
 % 
 % EXAMPLE USAGE:
 %   SEIRdir = '/biac2/wandell2/data/WMDevo/adult/109_AL/QuantitativeImaging/20110622_0582/SEIR_epi_1'
-%   mrQ_fitSEIR_T1(SEIRdir,[],[],mrQ);
+%   mrQ_fitSEIR_T1_ver2(SEIRdir,[],[]);
 %   
 % 
 % Written by J. Barral, M. Etezadi-Amoli, E. Gudmundson, and N. Stikov, 2009
 %  (c) Board of Trustees, Leland Stanford Junior University
-% 
+%  The function was edited by Aviv Mezer since 2011 this verstion is from
+%  2016
+% (C) Mezer lab, the Hebrew University of Jerusalem, Israel, Copyright 2016
+
 
 %% Check Inputs
 
@@ -102,9 +105,9 @@ resnormfile=[saveStr '_T1FitResid.nii.gz'];
 dtiWriteNiftiWrapper(single(ll_T1(:,:,:,1)), xform, T1file); %#ok<NODEF>
 dtiWriteNiftiWrapper(single(ll_T1(:,:,:,4)), xform, resnormfile);
 
-mrQ.SEIR_epi_T1file=T1file;
-mrQ.SEIR_epi_resnormfile=resnormfile;
-mrQ.SEIR_epi_fitFile=saveStr;
+SEIR.SEIR_epi_T1file=T1file;
+SEIR.SEIR_epi_resnormfile=resnormfile;
+SEIR.SEIR_epi_fitFile=saveStr;
 
 %% Make a brain mask for SEIR on the M0 image
 T1=ll_T1(:,:,:,1);
@@ -127,7 +130,7 @@ brainMask= brainMask & mask;
 brainMask(:,:,1)=0;brainMask(:,:,end)=0;
 BrainMaskfile=[saveStr '_BrainMask.nii.gz']; %save Brain mask SEIR
 dtiWriteNiftiWrapper(single(brainMask), xform, BrainMaskfile); 
-mrQ.SEIR_epi_M0file=M0file;
-mrQ.SEIR_epi_Maskfile=BrainMaskfile;
+SEIR.SEIR_epi_M0file=M0file;
+SEIR.SEIR_epi_Maskfile=BrainMaskfile;
 
 return

@@ -1,8 +1,8 @@
 function mrQ_run(dir,outDir,inputData_spgr,inputData_seir,B1file, varArgIn)
-% mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_seir,B1file)
-%  mrQ_run_Ver2(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_seir,B1file)
+% mrQ_run(dir,outDir,useSUNGRID,refFile,inputData_spgr,inputData_seir,B1file)
 %
-% This is an improved version of: mrQ_runNIMS(dir,Callproclus,refFile,outDir)
+%    example= mrQ_run_Ver2(dir,outdir,[],[],[],{'lsq',1})
+%
 %
 %    INPUT:
 %
@@ -33,7 +33,7 @@ function mrQ_run(dir,outDir,inputData_spgr,inputData_seir,B1file, varArgIn)
 %                          user would like to use sungris (1) or not (0).
 %                          the default is 0. One could also ask for both
 %                          option: {'ref', refFile,'sungrid',useSunGrid}
-%example= mrQ_run_Ver2(dir,outdir,[],[],[],{'lsq',1})
+%   example= mrQ_run_Ver2(dir,outdir,[],[],[],{'lsq',1})
 %   OUTPUT:
 %
 %       This function creates and saves the mrQ strucure to the subject's
@@ -50,8 +50,7 @@ function mrQ_run(dir,outDir,inputData_spgr,inputData_seir,B1file, varArgIn)
 %                   SIR maps.
 % 
 %
-% (C) Mezer lab, the Hebrew University of Jerusalem, Israel
-%  2015
+% (C) Mezer lab, the Hebrew University of Jerusalem, Israel, Copyright 2016
 %
 %
 
@@ -113,7 +112,7 @@ if     mrQ.SPGR_init_done==0
     
     % Keeps track of the variables we use.
     % For details, look inside the function.
-    [~, ~, ~,~,~, mrQ]=mrQ_initSPGR(mrQ.SPGR,mrQ.refIm,mrQ.mmPerVox,mrQ.interp,mrQ.skip,[],mrQ);
+    [mrQ.InitSPGR]=mrQ_initSPGR(mrQ.SPGR,mrQ.refIm,mrQ.mmPerVox,mrQ.interp,mrQ.skip,[],mrQ);
     mrQ.SPGR_init_done=1;
     
     save(mrQ.name,'mrQ');
@@ -133,7 +132,7 @@ end
 % clobber is implemented inside (we can add this to the inputs)
 if (mrQ.SPGR_LinearT1fit_done==0);
     
-    [mrQ]=mrQfit_T1M0_Lin(mrQ);
+    [mrQ.LinFit]=mrQfit_T1M0_Lin(mrQ,mrQ.InitSPGR.spgr_initDir);
     
     mrQ.SPGR_LinearT1fit_done=1;
     
@@ -197,6 +196,7 @@ end
 
 if ( mrQ.SPGR_T1fit_done==0)
     
+    mrQ=mrQ_Path_checks(mrQ);
     
     mrQ=mrQ_T1M0_Fit(mrQ);
     mrQ.SPGR_T1fit_done=true;
@@ -223,7 +223,7 @@ if ~isfield(mrQ,'synthesis')
 end
 if mrQ.synthesis==0
     
-    [mrQ.SegInfo.T1wSynthesis_MOT1,mrQ.SegInfo.T1wSynthesis_T1] =mrQ_T1wSynthesis1(mrQ,[],[],mrQ.HeadMask);
+    [mrQ.SegInfo.T1wSynthesis_MOT1,mrQ.SegInfo.T1wSynthesis_T1] =mrQ_T1wSynthesis1(mrQ,[],[],mrQ.LinFit.HeadMask);
     
     mrQ.synthesis=1;
     save(mrQ.name, 'mrQ')
@@ -306,6 +306,7 @@ if (mrQ.VIP_WF_done==0)
     % XIII. Create a series of synthetic T1w images
 
     [mrQ.T1w_file,mrQ.T1w_file1] =mrQ_T1wSynthesis1(mrQ);
+     save(mrQ.name,'mrQ');
     fprintf('\n Calculation synthetic T1w- done!              \n');
 
 else 

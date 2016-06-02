@@ -1,10 +1,18 @@
 function [MedSim, ImSim,Grad]=mrQ_QuantAnts(TargetIm,MovingIm,MovingScaleConstat)
+%[MedSim, ImSim,Grad]=mrQ_QuantAnts(TargetIm,MovingIm,MovingScaleConstat)
+%To check that two images agree the contrast gradient is calculated.
+
 %example:
 %TargetIm='/home/aviv.mezer/testAnts/033_SB/DifAlignTest/Align50/fitT1_GS/T1FitNLSPR_SEIR_Dat_T1.nii.gz';
 %MovingIm='/home/aviv.mezer/testAnts/033_SB/DifAlignTest/Align50/Mask/WarpT1_LFit_HM.nii.gz'
 %MovingScaleConstat=1000;
 %maskfile='/home/aviv.mezer/testAnts/033_SB/DifAlignTest/Align50/fitT1_GS/T1FitNLSPR_SEIR_Dat_BrainMask1.nii.gz';
-
+%
+%
+%
+% (C) Mezer lab, the Hebrew University of Jerusalem, Israel, Copyright 2016
+%
+%%
 if notDefined('MovingScaleConstat'); MovingScaleConstat=1;end
 
 Tim=readFileNifti(TargetIm);Tim=double(Tim.data);

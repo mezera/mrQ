@@ -1,4 +1,4 @@
-function [s,xform,mmPerVox,niiFiles,flipAngles,mrQ] = ...
+function [OutPuts] = ...
     mrQ_initSPGR(spgrDir,refImg,mmPerVox,interp,skip,clobber,mrQ)
 %
 % [s,xform,mmPerVox,niiFiles,flipAngles,mrQ] = ...
@@ -76,8 +76,11 @@ function [s,xform,mmPerVox,niiFiles,flipAngles,mrQ] = ...
 %       [s,xform,mmPerVox,niiFiles,flipAngles,mrQ] = ...
 %                          mrQ_initSPGR_ver2(spgrDir,refImg,mmPerVox,interp,skip,clobber,mrQ);
 %
-%
-% (C) Stanford University, VISTA Lab
+% Author: Aviv Mezer, 01.18.2011
+% rewrite by AM. June 16 2011
+% rewrite by AM. July 29 2011
+% rewrite by AM. May 29 2016
+% (C) Mezer lab, the Hebrew University of Jerusalem, Israel, Copyright 2016
 %
 
 %#ok<*NODEF>
@@ -100,9 +103,9 @@ end
 
 
 % Reference Image
-if notDefined('refImg') || ~exist(refImg,'file')
+if notDefined('refImg')  || isempty(refImg) || ~isempty(find(isnan(refImg))) %|| isnan(refImg)
     %   fprintf('\n  No reference image selected. ACPC alignemnt will be performed on raw data...\n')
-elseif exist(refImg,'file')
+elseif exist(refImg,'file')|| ~exist(refImg,'file')
     fprintf('Volumes will be aligned to: %s\n',refImg);
 end
 
@@ -123,7 +126,7 @@ if notDefined('clobber')
 end
 
 % Check if the ac-pc alignment should be done automatically or manually
-if exist('mrQ','var') && ~isempty(mrQ) && isfield(mrQ,'autoacpc')
+if exist('mrQ','var') && ~isempty(mrQ) && isfield(mrQ,'autoacpc') 
     autoAcpc = mrQ.autoacpc;
 else
     autoAcpc = 0;
@@ -214,27 +217,27 @@ if mrQ.check==1
         if strcmp('NO',an),
             error('The user stopped the process.');
         end
-        mrQ.SPGR_Scan_Skiped_Num=find(t1Inds==0);
+        OutPuts.SPGR_Scan_Skiped_Num=find(t1Inds==0);
     end
     
 end
 
 %for f = 1:numel(s(t1Inds)), flipAngles(f) = s(f).flipAngle; end
 niiFiles=niiFiles(t1Inds);
-mrQ.SPGR_niiFile=niiFiles;
+OutPuts.SPGR_niiFile=niiFiles;
 flipAngles=[s(t1Inds).flipAngle];
-mrQ.SPGR_niiFile_FA=flipAngles;
+OutPuts.SPGR_niiFile_FA=flipAngles;
 
 te = [s(t1Inds).TE];
 tr = [s(t1Inds).TR];
-mrQ.SPGR_niiFile_TR=tr;
-mrQ.SPGR_niiFile_TE=te;
+OutPuts.SPGR_niiFile_TR=tr;
+OutPuts.SPGR_niiFile_TE=te;
 
 
 % Set the resolution if it was not entered in
 if ~exist('mmPerVox','var') || isempty(mmPerVox),
     mmPerVox = s(min(find(t1Inds))).mmPerVox(1:3);   %#ok<MXFND>
-    mrQ.SPGR_init_mmPerVox=mmPerVox; 
+    OutPuts.SPGR_init_mmPerVox=mmPerVox; 
 end
 %end
 
@@ -245,10 +248,10 @@ outDir = spgrDir;
 % of the images and choose the ac-pc landmarks. We then use the resulting image
 % as a reference for alignment.
 
-if ~exist('refImg','var') || isempty(refImg)
+if ~exist('refImg','var') || isempty(refImg) || ~isempty(find(isnan(refImg)))
     
     for i=1:numel(s),
-        val(i) = 20-s(i).flipAngle; 
+        val(i) = 20-s(i).flipAngle;
     end
     
     
@@ -256,46 +259,58 @@ if ~exist('refImg','var') || isempty(refImg)
     % volume and use for ac-pc marking
     [~, sec]     = sort(abs(val));
     fileRaw      = fullfile(outDir,'t1w_raw.nii.gz');
-    t1w_acpcfile = fullfile(outDir,'t1w_acpc.nii.gz');
     dtiWriteNiftiWrapper(single(s(sec(1)).imData), s(sec(1)).imToScanXform, fileRaw);
     
-    % Decide whether to do manual or automatic alignment
-    if ~exist('autoAcpc','var') || isempty(autoAcpc) || autoAcpc == 0;
-        % Do the ac-pc alignment - prompt the user to make sure it's good.
-        an = 0;
-        while an ~= 1 || isempty(an)
-            mrAnatAverageAcpcNifti({fileRaw},t1w_acpcfile);
-            an = questdlg('Does the alignment look good?','ACPC ALIGNMENT','YES','NO','YES');
-            if strcmp('YES',an), an = 1; else an = 0; end
-        end
+    if   isnan(refImg)
+        % The refImg is  the raw image.
+        refImg = fileRaw;
+        %mrQ.SPGR_init_ref_acpc=refImg;
+        OutPuts.SPGR_init_ref=refImg;
+
+        % Setup the output directory for the aligned data and make it if ~exist
+        outDir = fullfile(spgrDir,['Align_'  num2str(mmPerVox(1)) '_' num2str(mmPerVox(2)) '_'  num2str(mmPerVox(3))]);
+        if(~exist(outDir,'dir')), mkdir(outDir); end
+
     else
-        % Automatically identify the AC and PC midsagittally by
-        % computing a spatial normalization
-        ni = readFileNifti(fileRaw);
-        ni = niftiApplyCannonicalXform(ni);
-        template =  fullfile(mrDiffusionDir, 'templates', 'MNI_T1.nii.gz');
-        sn = mrAnatComputeSpmSpatialNorm(ni.data, ni.qto_xyz, template);
-        c = mrAnatGetImageCoordsFromSn(sn, tal2mni([0,0,0; 0,-16,0; 0,-8,40])', true)';
-        mrAnatAverageAcpcNifti(ni, t1w_acpcfile, c, [], [], [], false);
+        t1w_acpcfile = fullfile(outDir,'t1w_acpc.nii.gz');
         
-       
+        % Decide whether to do manual or automatic alignment
+        if ~exist('autoAcpc','var') || isempty(autoAcpc) || autoAcpc == 0;
+            % Do the ac-pc alignment - prompt the user to make sure it's good.
+            an = 0;
+            while an ~= 1 || isempty(an)
+                mrAnatAverageAcpcNifti({fileRaw},t1w_acpcfile);
+                an = questdlg('Does the alignment look good?','ACPC ALIGNMENT','YES','NO','YES');
+                if strcmp('YES',an), an = 1; else an = 0; end
+            end
+        else
+            % Automatically identify the AC and PC midsagittally by
+            % computing a spatial normalization
+            ni = readFileNifti(fileRaw);
+            ni = niftiApplyCannonicalXform(ni);
+            template =  fullfile(mrDiffusionDir, 'templates', 'MNI_T1.nii.gz');
+            sn = mrAnatComputeSpmSpatialNorm(ni.data, ni.qto_xyz, template);
+            c = mrAnatGetImageCoordsFromSn(sn, tal2mni([0,0,0; 0,-16,0; 0,-8,40])', true)';
+            mrAnatAverageAcpcNifti(ni, t1w_acpcfile, c, [], [], [], false);
+            
+            
+            
+        end
+        close all
+        
+        % The refImg is now the ac-pc aligned image.
+        refImg = t1w_acpcfile;
+        OutPuts.SPGR_init_ref_acpc=refImg;
+        % Setup the output directory for the aligned data and make it if ~exist
+outDir = fullfile(spgrDir,['AC_PC_Align_'  num2str(mmPerVox(1)) '_' num2str(mmPerVox(2)) '_'  num2str(mmPerVox(3))]);
+if(~exist(outDir,'dir')), mkdir(outDir); end
+
     end
-    
-    close all
-    
-    % The refImg is now the ac-pc aligned image.
-    refImg = t1w_acpcfile;
-    mrQ.SPGR_init_ref_acpc=refImg;
-    
-    % [s,xform] = relaxAlignAll(s(find(t1Inds)),[],mmPerVox,false,interp); *** WHAT'S THIS ***
 end
 
 %% V. ALIGNMENT
 % Do the alignment of the SPGRs and save out the aligned data
 
-% Setup the output directory for the aligned data and make it if ~exist
-outDir = fullfile(spgrDir,['Align_'  num2str(mmPerVox(1)) '_' num2str(mmPerVox(2)) '_'  num2str(mmPerVox(3))]);
-if(~exist(outDir,'dir')), mkdir(outDir); end
 
 
 % Align all the series to this subject's reference volume
@@ -331,15 +346,15 @@ ref       = readFileNifti(refImg);
 outFile = fullfile(outDir,'dat_aligned.mat');
 save(outFile,'s', 'xform', 'mmPerVox');
 
- mrQ.spgr_initDir=outDir;
+ OutPuts.spgr_initDir=outDir;
 
- mrQ.xform=xform;
+ OutPuts.xform=xform;
 
-% save the aligned images in the mrQ struct
+% save the aligned images in the OutPuts struct
 for j=1:length(s)
     ref   = fullfile(outDir,['Align' num2str(flipAngles(j)) 'deg']);
     dtiWriteNiftiWrapper(single(s(j).imData), xform,ref);
-    mrQ.AligndSPGR{j}=ref;
+    OutPuts.AligndSPGR{j}=ref;
     
 end
 

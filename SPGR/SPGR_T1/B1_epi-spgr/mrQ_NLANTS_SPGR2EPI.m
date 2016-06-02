@@ -35,6 +35,9 @@ function [WARP_image,WarpFiles]= mrQ_NLANTS_SPGR2EPI(LowResIm,HighResIm,maskfile
 %
 % OUTPUTS:
 %
+%
+%
+% (C) Mezer lab, the Hebrew University of Jerusalem, Israel, Copyright 2015
 
 %
 

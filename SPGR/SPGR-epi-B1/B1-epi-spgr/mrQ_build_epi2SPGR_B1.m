@@ -1,4 +1,4 @@
-function mrQ=mrQ_build_epi2SPGR_B1(mrQ,B1FileName,smoothnessVal)
+function mrQ=mrQ_build_epi2SPGR_B1(mrQ,OutDir,TargetT1file,B1FileName,smoothnessVal)
 % function mrQ=mrQ_build_epi2SPGR_B1(mrQ,B1FileName,smoothnessVal)
 %
 % In this function, we will smoothe and interpolate/extrapolate the values
@@ -19,6 +19,7 @@ function mrQ=mrQ_build_epi2SPGR_B1(mrQ,B1FileName,smoothnessVal)
 %
 % SEE ALSO: mrQ_smooth_LR_B1.m
 %
+% Edited A.M 2016
 % (C) Mezer lab, the Hebrew University of Jerusalem, Israel
 %   2015
 %
@@ -26,8 +27,9 @@ function mrQ=mrQ_build_epi2SPGR_B1(mrQ,B1FileName,smoothnessVal)
 
 %% I. Load files and set parameters
 
+
 if ~isfield(mrQ.Ants_Info,'B1_epi_spgr')
-     mrQ.Ants_Info=mrQ_ANTS_warp_EPI2SPGR(mrQ.Ants_Info,mrQ.LinFit.T1_LFit_HM,mrQ.spgr_initDir,mrQ.B1.epiFileName);
+     mrQ.Ants_Info=mrQ_ANTS_warp_EPI2SPGR(mrQ.Ants_Info,TargetT1file,OutDir,mrQ.B1.epiFileName);
 end
 
 T1=readFileNifti(mrQ.Ants_Info.T1_epi_spgr);
@@ -187,10 +189,10 @@ B1Fit_S(isinf(B1Fit_S))=eps;
 
 
 %% IV. Save
-outDir = mrQ.spgr_initDir; 
+%outDir = mrQ.spgr_initDir; 
 
 if notDefined('B1FileName')
-        B1FileName=fullfile(outDir,'B1_Map.nii.gz');
+        B1FileName=fullfile(OutDir,'B1_Map.nii.gz');
 end
 
         dtiWriteNiftiWrapper(single(B1Fit_S),xform,B1FileName)

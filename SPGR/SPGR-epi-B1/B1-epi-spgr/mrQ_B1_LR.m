@@ -1,5 +1,5 @@
 function mrQ=mrQ_B1_LR(mrQ)
-%  function mrQ=mrQ_B1_LR(mrQ)
+%  function mrQ=mrQ_B1_LR_tmp(mrQ)
 %
 % This function controls the B1 fit.
 % The function has two parts: 
@@ -16,7 +16,7 @@ function mrQ=mrQ_B1_LR(mrQ)
 % The INPUT is a mrQ structure, and the OUTPUT is the updated mrQ
 % structure.
 %
-%
+% Edited by A.M 2016
 % (C) Mezer lab, the Hebrew University of Jerusalem, Israel
 % 2015
 %
@@ -26,9 +26,17 @@ if ~isfield(mrQ,'B1fit_done');
     mrQ.B1fit_done=0;
 end
 
+B1_epi_OutPutDir=mrQ.Ants_Info.SEIR_SPGR_Curent_AlignDirs{2};
+AlginNum=mrQ.Ants_Info.SEIR_SPGR_Curent_AlignNums(1);
+
 if ( mrQ.B1fit_done==0)
     
  %%   Register high-resolution EPI image to low-resolution aligned T1 image
+   
+    SPGR_niiFile_FA=eval(['mrQ.' mrQ.Ants_Info.SPGRFieldName '.SPGR_niiFile_FA']);
+    AligndSPGR=eval(['mrQ.' mrQ.Ants_Info.SPGRFieldName '.AligndSPGR']);
+    TRs=eval(['mrQ.' mrQ.Ants_Info.SPGRFieldName '.SPGR_niiFile_TR']);
+ 
 
 %mrQ_NLANTS_warp_SPGR2EPI_RB(AnalysisInfo,SET1file,t1fileHM,flipAngles,outDir,AlignFile)
 
@@ -38,13 +46,10 @@ end
 
 if ( mrQ.SPGR_EPI_align_done==0)
     
-    if 
-    B1FitDir
-    
-    
-    mrQ.spgr2epiAlignFile=fullfile(mrQ.spgr_initDir,'SEIRepiSPGRAlign_Struct.mat');
+ 
+    mrQ.spgr2epiAlignFile=fullfile(mrQ.Ants_Info.SEIR_SPGR_Curent_AlignDirs{2},'SEIRepiSPGRAlign_Struct.mat');
     %[mrQ.Ants_Info]=mrQ_NLANTS_warp_SPGR2EPI_RB(mrQ.SEIR_epi_T1file, mrQ.T1_LFit_HM, mrQ.SPGR_niiFile_FA, mrQ.spgr_initDir, mrQ.spgr2epiAlignFile, mrQ.AligndSPGR);
-     [mrQ.Ants_Info]=mrQ_ANTS_warp_SPGR2EPI(mrQ.SEIR_epi_T1file,mrQ.SPGR_niiFile_FA,mrQ.spgr_initDir,mrQ.spgr2epiAlignFile,mrQ.AligndSPGR,mrQ.Ants_Info);
+     [mrQ.Ants_Info]=mrQ_ANTS_warp_SPGR2EPI(mrQ.SEIRfits{AlginNum}.SEIR_epi_T1file,SPGR_niiFile_FA,B1_epi_OutPutDir,mrQ.spgr2epiAlignFile,AligndSPGR,mrQ.Ants_Info);
     mrQ.SPGR_EPI_align_done=1;
     
     save(mrQ.name,'mrQ');
@@ -58,11 +63,10 @@ end
 %% We build a mask for the voxel we'd like to fit in EPI space.
 
 % [mrQ.maskepi_File] = mrQ_B1FitMask(mrQ.Ants_Info.dirAnts,mrQ.spgr2epiAlignFile,mrQ.SEIR_epi_fitFile,mrQ.spgr_initDir);
-
-[mrQ.maskepi_File] = mrQ_B1FitMask(mrQ.spgr_initDir,mrQ.spgr2epiAlignFile,mrQ.SEIR_epi_fitFile,mrQ.spgr_initDir,mrQ.Ants_Info.WARP_SPGR_EPI);
-    
+[mrQ.maskepi_File] = mrQ_B1FitMask([],mrQ.spgr2epiAlignFile,mrQ.SEIRfits{AlginNum}.SEIR_epi_fitFile,B1_epi_OutPutDir,mrQ.Ants_Info.WARP_SPGR_EPI);
     %define the fit parameters
-    mrQ.B1.logname=mrQ_PD_LRB1SPGR_GridParams(mrQ);
+    
+    mrQ.B1.logname=mrQ_LB1SPGR_SEIR_Params(mrQ.name,mrQ.outDir,mrQ.sub,mrQ.spgr2epiAlignFile,mrQ.maskepi_File,TRs,SPGR_niiFile_FA);
     % save mrQ so the sungrid can load it fully characterized
     save(mrQ.name,'mrQ');
     % call to fit (with or without grid)    
@@ -86,15 +90,15 @@ end
     
     if (mrQ.B1Build_done==0 && mrQ.B1fit_done==1)
         fprintf('Build the B1 map from local fits    \n ');
-        
+
         % join the estimations
-        mrQ=mrQ_build_LR_B1(mrQ);
+        mrQ.B1=mrQ_build_LR_B1(mrQ.B1.logname,B1_epi_OutPutDir);
         
    % Smoothe the B1 fit, clear outliers, and extrapolate for voxels that 
    % have no fits.
-        mrQ=mrQ_smooth_LR_B1(mrQ);
+        mrQ=mrQ_smooth_LR_B1(mrQ,B1_epi_OutPutDir);
         
-        mrQ=mrQ_build_epi2SPGR_B1(mrQ);
+        mrQ=mrQ_build_epi2SPGR_B1(mrQ,mrQ.InitSPGR.spgr_initDir,mrQ.LinFit.T1_LFit_HM);
         mrQ.B1Build_done=1;
         save(mrQ.name,'mrQ');
         

@@ -43,7 +43,8 @@ function [AnalysisInfo, Res]=mrQ_ANTS_warp_SPGR2EPI(SET1file,flipAngles,outDir,A
 %
 % see also: mrQfit_T1M0_ver2
 %
-
+%
+% (C) Mezer lab, the Hebrew University of Jerusalem, Israel, Copyright 2016
 
 
  %% II. Run ANTs non-linear parameter to register SPGR to EPI

@@ -1,5 +1,5 @@
-function logname=mrQ_PD_LRB1SPGR_GridParams(mrQ,FilterSize,percent_coverage)
-%  logname=mrQ_PD_LRB1SPGR_GridParams(mrQ,FilterSize,percent_coverage)
+function logname=mrQ_LB1SPGR_SEIR_Params(mrQ_name,outDir,subName,AlignFile,tisuuemaskFile,TRs,FlipAngles,FilterSize,percent_coverage)
+%  logname=mrQ_LB1SPGR_SEIR_Params(mrQ_name,outDir,subName,AlignFile,tisuuemaskFile,,TRs,FlipAngles,FilterSize,percent_coverage)
 %
 % This function writes a file containing the parameters used in creating a
 % 3D grid for creating the B1 mask. It uses a local regression. The
@@ -21,7 +21,7 @@ function logname=mrQ_PD_LRB1SPGR_GridParams(mrQ,FilterSize,percent_coverage)
 %
 %
 % (C) Mezer lab, the Hebrew University of Jerusalem, Israel
-%   2015
+%   2016
 %
 %
 
@@ -29,18 +29,22 @@ function logname=mrQ_PD_LRB1SPGR_GridParams(mrQ,FilterSize,percent_coverage)
 
 %% I. Initiate "opt"
 % We build a structure, "opt", which will be used to fit B1.   
-opt.mrQfile=mrQ.name;
+opt.mrQfile=mrQ_name;%mrQ.name;
 
 %opt.AnalysisInfoFile=AnalysisInfo.name;
 
 
 %% II. Get names and files 
-outDir = mrQ.outDir;
-subName=mrQ.sub;
+%outDir = mrQ.outDir;
+%subName=mrQ.sub;
 
 %% III. LR size and minimum local coverage
 if notDefined('FilterSize')
     FilterSize =6;
+end
+
+if notDefined('subName')
+    [~, subName] =fileparts(tempname);
 end
 
 if notDefined('percent_coverage')
@@ -50,16 +54,16 @@ end
 % enter values into structure opt
 opt.percent_coverage=percent_coverage;
 opt.FilterSize=FilterSize;
-opt.AlignFile=mrQ.spgr2epiAlignFile;
+opt.AlignFile=AlignFile;%mrQ.spgr2epiAlignFile;
 
- opt.tisuuemaskFile=mrQ.maskepi_File;
- BM=readFileNifti(mrQ.maskepi_File);opt.pixdim=BM.pixdim;
- BM=logical(ones(size(BM.data)));
+ opt.tisuuemaskFile=tisuuemaskFile;%mrQ.maskepi_File;
+ BM=readFileNifti(tisuuemaskFile);opt.pixdim=BM.pixdim;
+ BM= true(size(BM.data));
 
 % Use the mask where we would like to have a B1 mask
 opt.N_Vox2Fit=length(find(BM));
-opt.TR=mrQ.SPGR_niiFile_TR;
-opt.FlipAngle=mrQ.SPGR_niiFile_FA;
+opt.TR=TRs,%mrQ.SPGR_niiFile_TR;
+opt.FlipAngle=FlipAngles;%mrQ.SPGR_niiFile_FA;
 
 
 %% III-a. Information for SunGrid

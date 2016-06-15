@@ -156,11 +156,29 @@ M0file   = fullfile(outDir,['M0_LFit.nii.gz']);
         
         % Find the voxels that are more than 2 stdev below the
         % mean brain signal. First we will chose the image with max signal.
-        for ii=1:length(s) 
-           M(ii)= mean(s(ii).imData(brainMask));
+        % this approch not working allways so we add some checks.
+       
+        Zrange=median(z)-3:median(z)+3;
+        NBM=length(find(brainMask(:,:,Zrange))); %number of voxel in the center of the brain mask
+        NB1=length(find(B1(:,:,Zrange))); %number of voxel in the image in the same slices
+        for ii=1:length(s)
+            M(ii)= mean(s(ii).imData(brainMask));
         end
+        
+        
+        
         jj=find(M==max(M)); % max mean signal.
         cutV=mean(s(jj).imData(brainMask)) -2*std(s(jj).imData(brainMask));
+        
+        if cutV<0 || cutV<nanmedian(s(jj).imData(~brainMask)) 
+            % if our cut value (cutV) for no head voxels is negative or bellow the
+            % median non brain values it is probably wrong.
+                warning('   Selecting a threshold for head-mask is challenging, we will try a different strategy. Please,be aware, inspection the head-mask-output is advised.');
+
+            cutV=nanmedian(s(jj).imData(~brainMask))*2; % we can try an alternative: the double of the non brain values
+%            An alternative solution is to use a different jj value. We
+%            didn't implament that. it can be done later or manually.
+        end
         %noise extraction - we will need to generalize this somehow especially
         
         % selecting the relevant slices (this is not beautiful)
@@ -176,6 +194,13 @@ M0file   = fullfile(outDir,['M0_LFit.nii.gz']);
         for i=1:size(HM,3)
             HM(:,:,i)=imfill(HM(:,:,i),'holes');
         end;
+        
+        NHM=length(find(HM(:,:,Zrange))); %number of voxel in the center of the head mask
+
+        if NHM/NB1>0.9 || NBM/NHM<0.6 || NBM/NHM>1 % let's check that the head mask is reasnable. biger than the brain mask ans smaller than the image size.
+            warning(' The head-mask seem wrong. Please check! Please consider to use the brain-mask as the head-mask or edit the head-mask manually. This may introduce error in PD fitting.')
+        end
+        
         %%
         HMtmp=HM;
 

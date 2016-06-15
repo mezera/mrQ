@@ -269,7 +269,6 @@ if ~exist('refImg','var') || isempty(refImg) || ~isempty(find(isnan(refImg)))
 
         % Setup the output directory for the aligned data and make it if ~exist
         outDir = fullfile(spgrDir,['Align_'  num2str(mmPerVox(1)) '_' num2str(mmPerVox(2)) '_'  num2str(mmPerVox(3))]);
-        if(~exist(outDir,'dir')), mkdir(outDir); end
 
     else
         t1w_acpcfile = fullfile(outDir,'t1w_acpc.nii.gz');
@@ -303,10 +302,13 @@ if ~exist('refImg','var') || isempty(refImg) || ~isempty(find(isnan(refImg)))
         OutPuts.SPGR_init_ref_acpc=refImg;
         % Setup the output directory for the aligned data and make it if ~exist
 outDir = fullfile(spgrDir,['AC_PC_Align_'  num2str(mmPerVox(1)) '_' num2str(mmPerVox(2)) '_'  num2str(mmPerVox(3))]);
-if(~exist(outDir,'dir')), mkdir(outDir); end
 
     end
+else
+    outDir = fullfile(spgrDir,['RefIm_Align_'  num2str(mmPerVox(1)) '_' num2str(mmPerVox(2)) '_'  num2str(mmPerVox(3))]);
+
 end
+if(~exist(outDir,'dir')), mkdir(outDir); end
 
 %% V. ALIGNMENT
 % Do the alignment of the SPGRs and save out the aligned data

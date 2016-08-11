@@ -71,6 +71,10 @@ WarpZ=squeeze(WarpAnts(:,:,:,1,3));
 
 else  % it seems there is a difference in ANTs version outputs?
      [a,b]=fileparts(WarpAnts);[~,b]=fileparts(b);
+     WarpX=fullfile(a,[b 'xvec.nii.gz']);
+     if ~exist(WarpX,'file')
+         b=[b,'Warp'];
+     end
   WarpX=fullfile(a,[b 'xvec.nii.gz']);WarpX=readFileNifti(WarpX);WarpX=WarpX.data;
   WarpY=fullfile(a,[b 'yvec.nii.gz']);WarpY=readFileNifti(WarpY);WarpY=WarpY.data;
   WarpZ=fullfile(a,[b 'zvec.nii.gz']);WarpZ=readFileNifti(WarpZ);WarpZ=WarpZ.data;

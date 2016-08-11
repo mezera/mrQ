@@ -26,8 +26,8 @@ if ~isfield(mrQ,'B1fit_done');
     mrQ.B1fit_done=0;
 end
 
-B1_epi_OutPutDir=mrQ.Ants_Info.SEIR_SPGR_Curent_AlignDirs{2};
-AlginNum=mrQ.Ants_Info.SEIR_SPGR_Curent_AlignNums(1);
+B1_epi_OutPutDir=mrQ.Ants_Info.SEIR_SPGR_Curent_AlignDirs{2}; % the directory cotaining all images in the SPGR space 
+AlignNum=mrQ.Ants_Info.SEIR_SPGR_Curent_AlignNums(1); % The index for the folder containing the best SEIR T1 fit for the registration. 
 
 if ( mrQ.B1fit_done==0)
     
@@ -49,7 +49,7 @@ if ( mrQ.SPGR_EPI_align_done==0)
  
     mrQ.spgr2epiAlignFile=fullfile(mrQ.Ants_Info.SEIR_SPGR_Curent_AlignDirs{2},'SEIRepiSPGRAlign_Struct.mat');
     %[mrQ.Ants_Info]=mrQ_NLANTS_warp_SPGR2EPI_RB(mrQ.SEIR_epi_T1file, mrQ.T1_LFit_HM, mrQ.SPGR_niiFile_FA, mrQ.spgr_initDir, mrQ.spgr2epiAlignFile, mrQ.AligndSPGR);
-     [mrQ.Ants_Info]=mrQ_ANTS_warp_SPGR2EPI(mrQ.SEIRfits{AlginNum}.SEIR_epi_T1file,SPGR_niiFile_FA,B1_epi_OutPutDir,mrQ.spgr2epiAlignFile,AligndSPGR,mrQ.Ants_Info);
+     [mrQ.Ants_Info]=mrQ_ANTS_warp_SPGR2EPI(mrQ.SEIRfits{AlignNum}.SEIR_epi_T1file,SPGR_niiFile_FA,B1_epi_OutPutDir,mrQ.spgr2epiAlignFile,AligndSPGR,mrQ.Ants_Info);
     mrQ.SPGR_EPI_align_done=1;
     
     save(mrQ.name,'mrQ');
@@ -63,7 +63,7 @@ end
 %% We build a mask for the voxel we'd like to fit in EPI space.
 
 % [mrQ.maskepi_File] = mrQ_B1FitMask(mrQ.Ants_Info.dirAnts,mrQ.spgr2epiAlignFile,mrQ.SEIR_epi_fitFile,mrQ.spgr_initDir);
-[mrQ.maskepi_File] = mrQ_B1FitMask([],mrQ.spgr2epiAlignFile,mrQ.SEIRfits{AlginNum}.SEIR_epi_fitFile,B1_epi_OutPutDir,mrQ.Ants_Info.WARP_SPGR_EPI);
+[mrQ.maskepi_File] = mrQ_B1FitMask([],mrQ.spgr2epiAlignFile,mrQ.SEIRfits{AlignNum}.SEIR_epi_fitFile,B1_epi_OutPutDir,mrQ.Ants_Info.WARP_SPGR_EPI);
     %define the fit parameters
     
     mrQ.B1.logname=mrQ_LB1SPGR_SEIR_Params(mrQ.name,mrQ.outDir,mrQ.sub,mrQ.spgr2epiAlignFile,mrQ.maskepi_File,TRs,SPGR_niiFile_FA);
@@ -162,5 +162,5 @@ end
 % 
 % 
 % % Smooth the SEIR B1 map by local and then fill the gap by global
-% % regretions and then register back the smoothed B1 to the SPGR space using ANTS
+% % regressions and then register back the smoothed B1 to the SPGR space using ANTS
 % [B1,AnalysisInfo]=mrQ_smmothL_B1(B1epifile,AlignFile,outDir,B1file,xform,[],AnalysisInfo,t1fileHM,SET1Fitfile,B1epiResidfile);

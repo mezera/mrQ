@@ -7,11 +7,11 @@ function mrQ_run(dir,outDir,inputData_spgr,inputData_seir,B1file, varArgIn)
 %    INPUT:
 %
 %                dir:   Directory where the nifti from NIMS are located.
-%             outDir:   Directory to which the output will be saved. 
+%             outDir:   Directory to which the output will be saved.
 %                           (default: pwd/mrQ)
 %     inputData_spgr:   The SPGR data
 %     inputData_seir:   The SEIR data
-%             B1file:   If empty (default), the function will calculate a 
+%             B1file:   If empty (default), the function will calculate a
 %                          B1 file from the data SEIR and SPGR data.
 %                          Alternatively, the B1 inhomogeneity map can be
 %                          provided as a NIfTI. The file has to be
@@ -19,7 +19,7 @@ function mrQ_run(dir,outDir,inputData_spgr,inputData_seir,B1file, varArgIn)
 %                          if no reference file is provided, AC-PC
 %                          alignment will be defined below inside the
 %                          function mrQ_initSPGR_ver2.m.
-%           varargin:   every parameter that you would like to be 
+%           varargin:   every parameter that you would like to be
 %                          different from default can be given here. This
 %                          input will be expected to come as a cell array
 %                          and in pairs, according to the options given in
@@ -39,16 +39,16 @@ function mrQ_run(dir,outDir,inputData_spgr,inputData_seir,B1file, varArgIn)
 %       This function creates and saves the mrQ strucure to the subject's
 %       directory. New directories will be created, including directories
 %       for data and quantitative fits. Images will be registered to each
-%       other. 
-%            *  SEIR-EPI T1 will be computed (low resolution). 
-%            *  SPGR T1, M0, B1 maps, and a synthetic T1-weighted image 
+%       other.
+%            *  SEIR-EPI T1 will be computed (low resolution).
+%            *  SPGR T1, M0, B1 maps, and a synthetic T1-weighted image
 %                   will be computed.
-%            *  T1-weighted and quantitative T1 images will be combined to 
+%            *  T1-weighted and quantitative T1 images will be combined to
 %                   segment the brain tissue.
 %`           *  PD and coil gain will be fitted from the M0 image.
-%            *  Biophysical models will be applied to calculate VIP and 
+%            *  Biophysical models will be applied to calculate VIP and
 %                   SIR maps.
-% 
+%
 %
 % (C) Mezer lab, the Hebrew University of Jerusalem, Israel, Copyright 2016
 %
@@ -56,9 +56,9 @@ function mrQ_run(dir,outDir,inputData_spgr,inputData_seir,B1file, varArgIn)
 
 
 %% I. Create the initial structure
- 
-if notDefined('outDir') 
-     outDir = fullfile(dir,'mrQ');
+
+if notDefined('outDir')
+    outDir = fullfile(dir,'mrQ');
 end
 
 % Creates the name of the output directory
@@ -82,19 +82,19 @@ if ~notDefined('varArgIn')
     end
 end
 
-%% II. Arrange the data
+%% II. Arrange the SPGR
 % A specific arrange function for nimsfs, nifti, or using input for user
 
-if ~isfield(mrQ,'Arrange_Date');
+if ~isfield(mrQ,'ArrangeSPGR_Date');
     
-    if (~notDefined('inputData_spgr') &&  ~notDefined('inputData_seir'))
-        mrQ = mrQ_arrangeData_nimsfs(mrQ,inputData_spgr,inputData_seir);
+    if ~notDefined('inputData_spgr')
+        mrQ = mrQ_arrangeSPGR_nimsfs(mrQ,inputData_spgr);
     else
-        mrQ = mrQ_arrangeData_nimsfs(mrQ);
+        mrQ = mrQ_arrangeSPGR_nimsfs(mrQ);
         
     end
 else
-    fprintf('Data was already arranged on %s \n',mrQ.Arrange_Date)
+    fprintf('Data was already arranged on %s \n',mrQ.ArrangeSPGR_Date)
 end
 
 
@@ -145,8 +145,16 @@ else
 end
 
 %% III. Perform SEIR fit
+if ~notDefined('B1file')
+    if exist(B1file,'file')
+        mrQ.B1FileName=B1file;
+        fprintf('Using the B1 map:  %s \n',B1file);
+    else
+        error('Can not find the B1 map:  %s \n',B1file);
+    end
+end
 
-if notDefined('B1file')
+if notDefined('B1file') && ~isfield(mrQ,'B1FileName')
     % Checks if B1 was defined by the user.
     % If not, we will use the SEIR data to map it.
     
@@ -154,17 +162,36 @@ if notDefined('B1file')
     else
         mrQ.SEIR_done=0;
     end
-    
+    %%
+    %
+    %%
     if (mrQ.SEIR_done==0);
+        
+        % ARRANGE SEIR data
+        if ~isfield(mrQ,'ArrangeSEIR_Date');
+            
+            if ~notDefined('inputData_seir')
+                mrQ = mrQ_arrangeSEIR_nimsfs(mrQ,inputData_seir);
+            else
+                mrQ = mrQ_arrangeSEIR_nimsfs(mrQ); 
+            end
+        else
+            fprintf('Data was already arranged on %s \n',mrQ.ArrangeSEIR_Date)
+        end
+        
+        %% fitiing SEIR T1 map and register to SPGE
+        
+        
+        
         mrQ=mrQ_SEIR(mrQ);
         
     else
-        fprintf('\n Loading previously fitted SEIR data \n');        
+        fprintf('\n Loading previously fitted SEIR data \n');
     end
-end
-%% VII. Build B1
-
-if notDefined('B1file')
+    
+    
+    %% VII. Fit & Build B1
+    
     % Checks if B1 was defined by the user.
     
     if ~isfield(mrQ,'B1Build_done');
@@ -211,9 +238,9 @@ else
 end
 
 %%  Segmentation needed for PD fit
-% Prefer to PD fit 
-% 1. Get a segmentation (need freesurfer output) 
-% 2. Get CSF 
+% Prefer to PD fit
+% 1. Get a segmentation (need freesurfer output)
+% 2. Get CSF
 % 3. Make a M0 file for the coils
 
 %% IX. Create the synthetic T1-weighted images and save them to disk
@@ -257,7 +284,7 @@ if mrQ.segmentation==0;
         %      use an uploaded freesurfer nii.gz
     elseif   isfield(mrQ,'freesurfer');
         [mrQ.SegInfo]=mrQ_CSF(mrQ.spgr_initDir,mrQ.freesurfer,[],mrQ.AnalysisInfo);
-        mrQ.segmentation=1;       
+        mrQ.segmentation=1;
     end
     
     save(mrQ.name,'mrQ');
@@ -275,7 +302,7 @@ if ~isfield(mrQ,'PDdone')
 end
 if mrQ.PDdone==0
     
-   mrQ=mrQ_M0_ToPD(mrQ);
+    mrQ=mrQ_M0_ToPD(mrQ);
     mrQ.PDdone=1;
     save(mrQ.name, 'mrQ')
     fprintf('\n Calculation of PD from M0  - done!              \n');
@@ -284,7 +311,7 @@ else
 end
 
 
-%% XII. Calculate VIP, TV,  SIR and synthetic T1w 
+%% XII. Calculate VIP, TV,  SIR and synthetic T1w
 
 if ~isfield(mrQ,'VIP_WF_done')
     mrQ.VIP_WF_done=0;
@@ -296,7 +323,7 @@ if (mrQ.VIP_WF_done==0)
     [mrQ] = mrQ_WF(mrQ);
     
     
-    [mrQ.AnalysisInfo, mrQ] = mrQ_VIP(mrQ);
+    [mrQ] = mrQ_VIP(mrQ);
     
     mrQ.VIP_WF_done=1;
     save(mrQ.name,'mrQ');
@@ -304,13 +331,13 @@ if (mrQ.VIP_WF_done==0)
     fprintf('\n Calculation of VIP, MTV and SIR  - done!              \n');
     %
     % XIII. Create a series of synthetic T1w images
-
+    
     [mrQ.T1w_file,mrQ.T1w_file1] =mrQ_T1wSynthesis1(mrQ);
-     save(mrQ.name,'mrQ');
+    save(mrQ.name,'mrQ');
     fprintf('\n Calculation synthetic T1w- done!              \n');
-
-else 
-     fprintf('\n Using previously calculated VIP, MTV, SIR and synthetic T1w             \n');
+    
+else
+    fprintf('\n Using previously calculated VIP, MTV, SIR and synthetic T1w             \n');
 end
 
 

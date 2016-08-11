@@ -111,13 +111,18 @@ mrQ.maps.SIRpath=fullfile(mapDir,'SIR_map.nii.gz');
 mrQ.maps.VIPpath=fullfile(mapDir,'VIP_map.nii.gz');
 
 %% II-a. Copy SEIR images to a subdirectory within 'Brain Maps'
-
-SEIRT1Dir=fullfile(mapDir,'SEIR');
-mkdir(SEIRT1Dir)
-T1SEIRfile=mrQ.SEIR_epi_T1file;
-% cmd =(['! cp ' mrQ.T1file ' '  SEIRT1Dir '/.']) ;
-cmd =(['! cp ' T1SEIRfile ' '  SEIRT1Dir '/.']) ;
-eval(cmd);
+if isfield(mrQ,'SEIR_done')
+     % Checks if B1 was defined by the user.
+     
+    SEIRT1Dir=fullfile(mapDir,'SEIR');
+    mkdir(SEIRT1Dir)
+    T1SEIRfile=mrQ.SEIR_epi_T1file;
+    % cmd =(['! cp ' mrQ.T1file ' '  SEIRT1Dir '/.']) ;
+    cmd =(['! cp ' T1SEIRfile ' '  SEIRT1Dir '/.']) ;
+    eval(cmd);
+    
+end
+    
 
 %% III. Organize the bias maps in a directory named 'BiasMaps'
 

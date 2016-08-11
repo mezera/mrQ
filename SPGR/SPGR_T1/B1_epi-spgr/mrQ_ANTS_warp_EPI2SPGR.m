@@ -132,6 +132,6 @@ AnalysisInfo.T1_epi_spgr=fullfile(outDir,'Warp_T1_EPI2SPGR.nii.gz');
   % Reset the ld_path (unnecessary, see explanation at top of function)
 % setenv('LD_LIBRARY_PATH', orig_path)
 
-%% V. Save the updated AnalysisInfo file
-infofile=fullfile(outDir,'AnalysisInfo.mat');
-save(infofile,'AnalysisInfo');
+% %% V. Save the updated AnalysisInfo file
+% infofile=fullfile(outDir,'AnalysisInfo.mat');
+% save(infofile,'AnalysisInfo');

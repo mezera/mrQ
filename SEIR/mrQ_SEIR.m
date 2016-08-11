@@ -16,8 +16,7 @@ function mrQ=mrQ_SEIR(mrQ)
 
 
 mrQ=mrQ_Call_AntsAlign_forSEIR_SPGR(mrQ);
-if mrQ.Ants_Info.QuantAntsScore > mrQ.QuantAntsThresh;
-   
+if mrQ.Ants_Info.QuantAntsScore > mrQ.QuantAntsThresh;   
     error('we can not trust the EPI-SPGR registration \nPlease manually check the registration between \n %s and \n %s \n If it is ok, manually change mrQ.SEIR_done to be =1.', mrQ.SEIR_epi_T1file,mrQ.Ants_Info.T1_spgr_epi)
 end
 

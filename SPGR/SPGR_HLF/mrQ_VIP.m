@@ -1,4 +1,4 @@
-function [AnalysisInfo,mrQ]=mrQ_VIP(mrQ,outDir,WFfile,T1file,mField,T1freeval,Fullerton)
+function [mrQ]=mrQ_VIP(mrQ,outDir,WFfile,T1file,mField,T1freeval,Fullerton)
 %
 % [AnalysisInfo]= mrQ_VIP(mrQ,outDir,WFfile,T1file,mField,T1freeval,Fullerton)
 %
@@ -140,8 +140,8 @@ WF  = readFileNifti(WFfile);
 WF  = double(WF.data);
 WF(WF>1)=1;
 
-infofile = fullfile(outDir,'AnalysisInfo.mat');
-load(infofile);
+
+% load(infofile);
 
 % Set field strength
 if (~exist('mField','var')|| isempty(mField))
@@ -149,13 +149,13 @@ if (~exist('mField','var')|| isempty(mField))
 end
 
 % Save files used and params for future reference
-AnalysisInfo.T1forVIP  = T1file;
-AnalysisInfo.WFforVIP  = WFfile;
-AnalysisInfo.T1freeval = T1freeval;
-AnalysisInfo.VIPdate   = date;
-AnalysisInfo.fieldStrength_forVIP = mField;
-
-save(infofile,'AnalysisInfo');
+mrQ.AnalysisInfo.T1forVIP  = T1file;
+mrQ.AnalysisInfo.WFforVIP  = WFfile;
+mrQ.AnalysisInfo.T1freeval = T1freeval;
+mrQ.AnalysisInfo.VIPdate   = date;
+mrQ.AnalysisInfo.fieldStrength_forVIP = mField;
+% infofile = fullfile(outDir,'AnalysisInfo.mat');
+% save(infofile,'AnalysisInfo');
 
 
 %% III. SWITCH on magnet field strength and set the larmour frequency (L)

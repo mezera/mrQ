@@ -1,17 +1,17 @@
 function mrQ=mrQ_Call_AntsAlign_forSEIR_SPGR(mrQ)
 % mrQ=mrQ_Call_AntsAlign_forSEIR_SPGR(mrQ)
 %
-% This function will try to register the SPGR T1 to a fitted T1 SEIR using ANTS.
-% We will make sure that the registration is good by the gradient between
-% the two images.
-% in cases the registration is off up to a threshold (mrQ.QuantAntsThresh).
-% Note that this threshold might be different between scanner and dipend on image %quality and epi artifacts.  WE find 0.65 to be good on  GE Discovery MR750 and 0.8 for Siemens Skyra
-% we will try different starting point.
-% To do so we will register the SEIr image each time to a different
-% inversion time image.
-% Additionally, we will try to register the SPGR to an ACPC space or to native space.
-% Last we will crop the SPGR image and remove dark area that can effect the
-% registration.
+% This function will try to register the SPGR T1 to a fitted T1 SEIR using
+% ANTS. We will make sure that the registration is good by the gradient
+% between the two images. in cases the registration is off up to a
+% threshold (mrQ.QuantAntsThresh). Note that this threshold might be
+% different between scanners and depends on image quality and epi
+% artifacts.  We find 0.65 to be good on GE Discovery MR750 and 0.8 for
+% Siemens Skyra we will try different starting point. To do so we will
+% register the SEIR image each time to a different inversion time image.
+% Additionally, we will try to register the SPGR to an ACPC space or to
+% native space. Last we will crop the SPGR image and remove dark area that
+% can effect the registration.
 %
 % (C) Mezer lab, the Hebrew University of Jerusalem, Israel, Copyright 2016
 
@@ -29,7 +29,7 @@ for jj=1:3
         SPGRFieldName='InitSPGR';
     elseif jj==2
         
-        if isnan(mrQ.refIm) % if so we are allready in native space. no need
+        if isnan(mrQ.refIm) % if so we are already in native space. no need
         else
             [mrQ.InitSPGR_NtSp]=mrQ_initSPGR(mrQ.SPGR,nan,mrQ.mmPerVox,mrQ.interp,mrQ.skip,[],mrQ);
             spgr_initDir=mrQ.InitSPGR_NtSp.spgr_initDir;
@@ -94,8 +94,8 @@ for jj=1:3
             mrQ.SEIRfits{ii}.SEIR_fit_dir=SEIR_fit_dir;
             
             mrQ.SEIRfitDone(ii)=1;
-                    mrQ.Ants_Info=Ants_Info;
-
+            mrQ.Ants_Info=Ants_Info;
+            
             save(mrQ.name,'mrQ');
             
             
@@ -137,47 +137,37 @@ for jj=1:3
         if min(Ants_Info.QuantAnts2High(:)) > Ants_Info.QuantAntsScore
             
             
-            
             Ants_Info.WARP_SPGR_EPI = WARP_SPGR_EPI;
-            
             Ants_Info.T1_spgr_epi=T1_spgr_epi;
             
             % Saving the epi alignment parameters
-            
-            
-            
             Ants_Info.SEIR_SPGR_Curent_AlignNums=[ii,jj];
             Ants_Info.SEIR_SPGR_Curent_AlignDirs={SEIR_fit_dir, spgr_initDir};
             Ants_Info.SPGRFieldName=SPGRFieldName;
+            
+            %saving the SEIR files
+            mrQ.SEIR_epi_T1file = mrQ.SEIRfits{ii}.SEIR_epi_T1file; 
+            mrQ.SEIR_epi_resnormfile = mrQ.SEIRfits{ii}.SEIR_epi_resnormfile;
+            mrQ.SEIR_epi_fitFile = mrQ.SEIRfits{ii}.SEIR_epi_fitFile;
+            mrQ.SEIR_epi_M0file = mrQ.SEIRfits{ii}.SEIR_epi_M0file;
+            mrQ.SEIR_epi_Maskfile =mrQ.SEIRfits{ii}.SEIR_epi_Maskfile;
         end
         
         
         if Ants_Info.QuantAntsScore< mrQ.QuantAntsThresh;
-                        Ants_Info.QuantAnts2High(ii,jj)=0;
-
-            %saving the correct SEIR files
+            Ants_Info.QuantAnts2High(ii,jj)=0;
             
-            mrQ.SEIR_epi_T1file = mrQ.SEIRfits{ii}.SEIR_epi_T1file;
-            
-            mrQ.SEIR_epi_resnormfile = mrQ.SEIRfits{ii}.SEIR_epi_resnormfile;
-            
-            mrQ.SEIR_epi_fitFile = mrQ.SEIRfits{ii}.SEIR_epi_fitFile;
-            
-            mrQ.SEIR_epi_M0file = mrQ.SEIRfits{ii}.SEIR_epi_M0file;
-            
-            mrQ.SEIR_epi_Maskfile =mrQ.SEIRfits{ii}.SEIR_epi_Maskfile;
-            
-            % deleting temp folders
+            % % deleting temp folders
             %         cmd = ['rm -Rf ', AntsTmpPath];
             %         system(cmd);
-            %        we can cosider removing all the extra epi fits;
+            % %       we can cosider removing all the extra epi fits;
             %         cmd = ['rm -Rf ', SEIRFitTmpPath];
             %         system(cmd);
             %
-                    mrQ.Ants_Info=Ants_Info;
-
-                        save(mrQ.name,'mrQ');
-
+            mrQ.Ants_Info=Ants_Info;
+            
+            save(mrQ.name,'mrQ');
+            
             break
         else
             % if the registration quality did not pass the threshold, we will
@@ -188,14 +178,14 @@ for jj=1:3
             %         Ants_Info.T1_spgr_epi = best_T1_spgr_epi;
             Ants_Info.QuantAnts2High(ii,jj)=Ants_Info.QuantAntsScore;
             %  mrQ.SEIR_epi_AlignImToHigh{ii}=SEIR_epi_AlignIm;
-                    mrQ.Ants_Info=Ants_Info;
-
+            mrQ.Ants_Info=Ants_Info;
+            
             save(mrQ.name,'mrQ');
         end
     end
     
-    if Ants_Info.QuantAntsScore< mrQ.QuantAntsThresh;        break; end
-    
-    
+    if Ants_Info.QuantAntsScore< mrQ.QuantAntsThresh;  
+        break; 
+    end    
     
 end

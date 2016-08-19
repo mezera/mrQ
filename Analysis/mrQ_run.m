@@ -318,7 +318,7 @@ end
 if (mrQ.VIP_WF_done==0)
     fprintf('\n Calculate VIP, TV and SIR form T1 and WF maps               \n');
     
-    [mrQ] = mrQ_WF(mrQ,[],[],[],[],[],[],[3 4]); 
+    [mrQ] = mrQ_WF(mrQ); 
     
     
     [mrQ] = mrQ_VIP(mrQ);

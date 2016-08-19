@@ -182,7 +182,7 @@ for jj=1:3
             
             save(mrQ.name,'mrQ');
             
-            display(sprintf('The registration between thr SPGR and EPI is not good enough \nWe will refit T1 and then try again.'));
+            display('The registration between thr SPGR and EPI is not good enough, \n We will refit T1 and then try again.')
         end
     end
     

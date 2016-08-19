@@ -151,58 +151,63 @@ seg(CSF)=CSFclass; % any region that is mostly water.
 segfile = fullfile(outDir,'T1w_tissue.nii.gz');
 dtiWriteNiftiWrapper(single(seg), xform, segfile)
 
-% Clip mask size
-if notDefined('boxsize')
-    boxsize(1)=30;
-    boxsize(2)=40;
-    boxsize(3)=20;
-end
-sz=size(CSF); szH=round(sz./2);
-XX=boxsize(1)./round(mmPerVox(1));
-YY=boxsize(2)./round(mmPerVox(2));
-ZZ=boxsize(3)./round(mmPerVox(3));
-
-CSF(szH(1)+XX:end,:,:)=0;
-CSF(1:szH(1)-XX,:,:)=0;
-
-CSF(:,1:szH(2)-YY,:)=0;
-CSF(:,szH(2)+YY:end,:,:)=0;
-
-CSF(:,:,1:szH(3)-ZZ)=0;
-CSF(:,:,szH(3)+ZZ:end)=0;
-
-%% IV. Smoothe in space
-[CSF1] = ordfilt3D(CSF,6);
-CSF1=CSF &  CSF1;
-
-CSF2= CSF1 & R1<0.25 & R1>0.2 & M0<prctile(M0(BM),99);
-
-if notDefined('csffile')
-    csffile = fullfile(outDir, 'csf_seg_T1.nii.gz');
-end
-
-dtiWriteNiftiWrapper(single(CSF2), xform, csffile);
-
-%% V. Some issues
-
-if length(find(CSF2))<200
-           fprintf(['\n Warning: We could find only ' num2str(length(find(CSF1))) ' csf voxels. This makes the CSF WF estimation very noisy. Consider editing csf_seg_T1.nii.gz file, see below \n']);
-end
-
-% Larger ventricles region. 
-% This mask is good for cases when CSF ventricles are hard to identify. 
-% It may reduce the accuracy. 
-CSF= CSF & R1<0.25 & R1>0.2 & M0<prctile(M0(BM),99);
-
-%
-
-csffile1 = fullfile(outDir, 'csf_seg_T1_large.nii.gz');
-dtiWriteNiftiWrapper(single(CSF), xform, csffile1);
-
-
-%% VI. Save
-mrQ.csf_large=csffile1;
-mrQ.csf=csffile;
+%% IV save
 mrQ.T1w_tissue=segfile;
+
+%% 
+% % % % % %% the CSF finding will be performed lated, in mrQ_WF
+% % % % % % Clip mask size
+% % % % % if notDefined('boxsize')
+% % % % %     boxsize(1)=30;
+% % % % %     boxsize(2)=40;
+% % % % %     boxsize(3)=20;
+% % % % % end
+% % % % % sz=size(CSF); szH=round(sz./2);
+% % % % % XX=boxsize(1)./round(mmPerVox(1));
+% % % % % YY=boxsize(2)./round(mmPerVox(2));
+% % % % % ZZ=boxsize(3)./round(mmPerVox(3));
+% % % % % 
+% % % % % CSF(szH(1)+XX:end,:,:)=0;
+% % % % % CSF(1:szH(1)-XX,:,:)=0;
+% % % % % 
+% % % % % CSF(:,1:szH(2)-YY,:)=0;
+% % % % % CSF(:,szH(2)+YY:end,:,:)=0;
+% % % % % 
+% % % % % CSF(:,:,1:szH(3)-ZZ)=0;
+% % % % % CSF(:,:,szH(3)+ZZ:end)=0;
+% % % % % 
+% % % % % %% IV. Smoothe in space
+% % % % % [CSF1] = ordfilt3D(CSF,6);
+% % % % % CSF1=CSF &  CSF1;
+% % % % % 
+% % % % % CSF2= CSF1 & R1<0.25 & R1>0.2 & M0<prctile(M0(BM),99);
+% % % % % 
+% % % % % if notDefined('csffile')
+% % % % %     csffile = fullfile(outDir, 'csf_seg_T1.nii.gz');
+% % % % % end
+% % % % % 
+% % % % % dtiWriteNiftiWrapper(single(CSF2), xform, csffile);
+% % % % % 
+% % % % % %% V. Some issues
+% % % % % 
+% % % % % if length(find(CSF2))<200
+% % % % %            fprintf(['\n Warning: We could find only ' num2str(length(find(CSF1))) ' csf voxels. This makes the CSF WF estimation very noisy. Consider editing csf_seg_T1.nii.gz file, see below \n']);
+% % % % % end
+% % % % % 
+% % % % % % Larger ventricles region. 
+% % % % % % This mask is good for cases when CSF ventricles are hard to identify. 
+% % % % % % It may reduce the accuracy. 
+% % % % % CSF= CSF & R1<0.25 & R1>0.2 & M0<prctile(M0(BM),99);
+% % % % % 
+% % % % % %
+% % % % % 
+% % % % % csffile1 = fullfile(outDir, 'csf_seg_T1_large.nii.gz');
+% % % % % dtiWriteNiftiWrapper(single(CSF), xform, csffile1);
+% % % % % 
+% % % % % 
+%% VI. Save
+% % % mrQ.csf_large=csffile1;
+% % % mrQ.csf=csffile;
+
 
 

@@ -1,4 +1,4 @@
-function [mrQ,WFfile,CalibrationVal] = mrQ_WF(mrQ,dataDir,T1file,PDfile,Gainfile,B1file,CSFmaskFile, T1minmax,saveoutput)
+function [mrQ,WFfile,CalibrationVal] = mrQ_WF(mrQ,dataDir,T1file,PDfile,Gainfile,B1file,saveoutput)
 % [mrQ,WFfile,CalibrationVal] = mrQ_WF(mrQ,dataDir,T1file,PDfile,Gainfile,B1file);
 % 
 % This function calculates the constant deviation of the PD. Since some
@@ -13,29 +13,19 @@ function [mrQ,WFfile,CalibrationVal] = mrQ_WF(mrQ,dataDir,T1file,PDfile,Gainfile
 % 
 
 %  ~INPUT~
-%            mrQ:       The mrQ structure
-%        dataDir:       Where the structure with the raw data is located.
+%            mrQ:     The mrQ structure
+%        dataDir:     Where the structure with the raw data is located.
 %                            (Default is mrQ.spgr_initDir) 
-%         T1file:       The path to the T1 map. This is used to create the 
-%                             CSF ROI. (Default is using mrQ_get_T1M0_files) 
-%         PDfile:       The path to the PD map.  (Default is opt.PDfile) 
-%       Gainfile:       The path to a Gain map. This is used for the PD
+%         T1file:     The path to the T1 map. This is used to create the 
+%                            CSF ROI. (Default is using mrQ_get_T1M0_files) 
+%         PDfile:     The path to the PD map.  (Default is opt.PDfile) 
+%       Gainfile:     The path to a Gain map. This is used for the PD
 %                           calculation. The gain is defined differently,
 %                           depending on the M0 calculation (if it's a 
 %                           multi-coil fit, then we take a different map) 
-%         B1file:       The path to a B1 map. This will be used to correct
-%                           the FA value. (Default is mrQ.B1FileName)
-%    CSFmaskFile:       Path to a file with a mask of CSF values in the
-%                           ventricles. This will be used to scale the
-%                           WF assuming WF in those voxels should be 1. 
-%       T1minmax:       A vector with 2 values: The values in which we expect 
-%                           the T1 values in the ventricles to be. The default
-%                           is acording to theoretical values of water in 3T 
-%                           in room temperature. This should only be changed 
-%                           if there is a known bias in the T1 values you are
-%                           collecting. In which case, choose values in a
-%                           not too large spectrum. 
-%        saveoutput     true(defult) to save output
+%         B1file:     The path to a B1 map. This will be used to correct
+%                     the FA value. (Default is mrQ.B1FileName)
+%        saveoutput   true(defult) to save output
 %
 %
 %  ~OUTPUT~
@@ -54,7 +44,6 @@ end
 
 if notDefined('dataDir');
     dataDir = mrQ.spgr_initDir;
-    
 end
 
 if notDefined('T1file')
@@ -80,26 +69,10 @@ end
  if notDefined('Gainfile')
         load(mrQ.opt_logname);
         Gainfile=opt.Gainfile;
- end
+end
 Gain=readFileNifti(Gainfile); Gain=Gain.data;
 
-if notDefined('CSFmaskFile')
-    CSFmask=readFileNifti(mrQ.T1w_tissue);
-    CSFmask=logical(CSFmask.data==4);
-else
-     CSFmask=readFileNifti(CSFmaskFile);
-     CSFmask=logical(CSFmask.data);
-end
 
-if notDefined('T1minmax')
-   T1min = 4.2;
-   T1max = 4.7;
-   Ttheor = 4300; 
-else
-    T1min = T1minmax(1);
-    T1max = T1minmax(2);
-    Ttheor = mean(T1minmax)*1000;
-end
 % currently, flipangle is chosen based on signal within CSF. 
 %  if instead it would be decided based on signal with WM, that we would
 %  need a brainmask: 
@@ -144,7 +117,7 @@ WFmask(:,:,szH(3)+ZZ:end)=0;
 
 % find areas within the ventricles area with high value of T1 (4.2-4.7)
 %WFmask1=WFmask;
-WFmask= WFmask & T1<=T1max & T1>=T1min;
+WFmask= WFmask & T1<=4.7 & T1>=4.2;
 
 
 %% IV. data for WF:
@@ -202,10 +175,7 @@ fa=s(SelectedFA).flipAngle;
 
 WFmask=WFmask & PD<prctile(PD(WFmask),99) & PD>prctile(PD(WFmask),1) & datForPD< prctile(datForPD(WFmask),99) &  datForPD>prctile(datForPD(WFmask),1);
 
-VoxNum = length(find(WFmask));
-if VoxNum <= 200 
-    warning('We could find only %d CSF voxels.  This makes the CSF WF estimation very noisy. You might want to consider changing the CSF mask',VoxNum)
-end
+
 %% VII. calculate PD
 % calculate  PD within the selected ROI and flip angle(s) (using the SPGR
 % equation, T1, and gain 
@@ -221,7 +191,7 @@ end
 fa = (fa.*B1)./180.*pi;
 
 % calculate PD assuming we're in CSF (so T1 is 4300ms)
-PDcsf=datForPD./(Gain.* ( (1-exp(-TR./Ttheor)).*sin(fa)./(1-exp(-TR./Ttheor).*cos(fa))));
+PDcsf=datForPD./(Gain.* ( (1-exp(-TR./4300)).*sin(fa)./(1-exp(-TR./4300).*cos(fa))));
  
 %% VIII. scale this roi to have pd of 1. --> this is our global scale
 
@@ -236,17 +206,10 @@ WF=PD.*CalibrationVal(1);
 WFfile=fullfile(dataDir,'WF_map.nii.gz');
 dtiWriteNiftiWrapper(WF,xform,WFfile);
 
-csffile1 = fullfile(dataDir, 'csf_seg_T1.nii.gz');
-dtiWriteNiftiWrapper(single(WFmask), xform, csffile1);
-
 mrQ.WFfile=WFfile;
 mrQ.ScalePD_2_WF=CalibrationVal;
-mrQ.csf_mask=csffile1;
-save(mrQ.name,'mrQ'); 
- 
- 
+
+ save(mrQ.name,'mrQ'); 
 else
     WFfile=[];
 end
-
-

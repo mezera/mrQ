@@ -93,8 +93,11 @@ end
 
 cmWarp=['xterm -e WarpImageMultiTransform  3 ' T1file  ' ' out1 ' -R ' refFile ' ' out 'Warp.nii.gz ' out 'Affine.txt ' interpMethod];
 % Run the command in unix and get back status and results:
-[~, ~] = system(cmWarp);
-
+[status, ~] = system(cmWarp);
+  if status ~= 0 
+      cmWarp=['WarpImageMultiTransform  3 ' T1file  ' ' out1 ' -R ' refFile ' ' out 'Warp.nii.gz ' out 'Affine.txt ' interpMethod]; 
+      [~, ~] = system(cmWarp,'-echo');
+  end
 % Start returning the aligned files
 alignedMaps{1} = out1;
 

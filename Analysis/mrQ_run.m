@@ -154,7 +154,7 @@ if ~notDefined('B1file')
     end
 end
 
-if notDefined('B1file') && ~isfield(mrQ,'B1FileName')
+if  ~isfield(mrQ,'B1FileName')
     % Checks if B1 was defined by the user.
     % If not, we will use the SEIR data to map it.
     
@@ -211,8 +211,6 @@ if notDefined('B1file') && ~isfield(mrQ,'B1FileName')
         fprintf(['Using existing B1 map file '   mrQ.B1FileName        '  \n']);
         
     end
-else
-    mrQ.B1FileName=B1file;
 end
 
 %% VIII. T1M0 fit with B1
@@ -320,7 +318,7 @@ end
 if (mrQ.VIP_WF_done==0)
     fprintf('\n Calculate VIP, TV and SIR form T1 and WF maps               \n');
     
-    [mrQ] = mrQ_WF(mrQ);
+    [mrQ] = mrQ_WF(mrQ,[],[],[],[],[],[],[3 4]); 
     
     
     [mrQ] = mrQ_VIP(mrQ);

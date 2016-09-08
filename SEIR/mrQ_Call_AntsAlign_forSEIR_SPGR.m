@@ -115,16 +115,16 @@ for jj=1:3
         AntsPath = fullfile(SEIR_fit_dir,['ANTS_' num2str(jj)]);
         if ~exist(AntsPath,'dir'), mkdir(AntsPath); end
         
-        if isfield(mrQ,'antsmet')
-            %             if mrQ.antsmet=='1'
-            %                 % fitting based on the brain only- no head
-            %                 [WARP_SPGR_EPI,  T1_spgr_epi]= mrQ_NLANTS_SPGR2EPI(mrQ.SEIR{ii}.SEIR_epi_T1file,mrQ.T1_LFit,mrQ.SEIR_epi_Maskfile,AntsPath,{mrQ.T1_LFit_HM});
-            %             elseif mrQ.antsmet=='2'
-            %                 % fitting without a mask on the epi
-            %                 [WARP_SPGR_EPI,  T1_spgr_epi]= mrQ_NLANTS_SPGR2EPI(mrQ.SEIR{ii}.SEIR_epi_T1file,mrQ.T1_LFit_HM,[],AntsPath,{mrQ.T1_LFit_HM});
-            %             end
+        if isfield(mrQ,'ants_bm')
+                        if mrQ.ants_bm==1
+                            % Register based on brain only- skull stripped
+                            [WARP_SPGR_EPI,  T1_spgr_epi]= mrQ_NLANTS_SPGR2EPI(mrQ.SEIRfits{ii}.SEIR_epi_T1file,SPGR_T1_file,mrQ.SEIRfits{ii}.SEIR_epi_Maskfile,AntsPath,{SPGR_T1_file});
+                        elseif mrQ.ants_bm==0
+                            % Register without EPI mask - with skull
+                            [WARP_SPGR_EPI,  T1_spgr_epi]= mrQ_NLANTS_SPGR2EPI(mrQ.SEIRfits{ii}.SEIR_epi_T1file,SPGR_T1_file,[],AntsPath,{SPGR_T1_file});
+                        end
         else
-            
+           
             [WARP_SPGR_EPI,  T1_spgr_epi]= mrQ_NLANTS_SPGR2EPI(mrQ.SEIRfits{ii}.SEIR_epi_T1file,SPGR_T1_file,mrQ.SEIRfits{ii}.SEIR_epi_Maskfile,AntsPath,{SPGR_T1_file});
         end
         

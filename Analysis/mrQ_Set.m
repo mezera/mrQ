@@ -235,11 +235,12 @@ switch(param)
     
     % threshold for spgr epi registration
     case{'AntsThresh', 'antsthresh','QuantAntsThresh','quantantsthresh'}
-         mrQ.QuantAntsThresh=varargin;    
+         mrQ.QuantAntsThresh=varargin;   
+      case{'ants_bm','ANTS_bm','ANTS_brainmask'}
+          mrQ.ants_bm=varargin;
     otherwise
         error('Unknown mrQ parameter!');
 end
-
 
 %save mrQ
 if notDefined('saveflag')

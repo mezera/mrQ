@@ -16,16 +16,11 @@ function mrQ=mrQ_SEIR(mrQ)
 
 
 mrQ=mrQ_Call_AntsAlign_forSEIR_SPGR(mrQ);
-% % % % % if ANTS was unsuccessfull in registring SPGR and EPI, TRY fsl
-% % % % if mrQ.Ants_Info.QuantAntsScore > mrQ.QuantAntsThresh;   
-% % % %     mrQ=mrQ_Call_FSLAlign_forSEIR_SPGR(mrQ);
-% % % % end
-% IF FSL was also unsuccessfull, break and look at the data
 if mrQ.Ants_Info.QuantAntsScore > mrQ.QuantAntsThresh;   
-    error('we can not trust the EPI-SPGR registration \nPlease manually check the registration between \n %s and \n %s \n If it is ok, manually change mrQ.SEIR_done to be =1, save mrQ, and rerun.', mrQ.SEIR_epi_T1file,mrQ.Ants_Info.T1_spgr_epi)
+    error('we can not trust the EPI-SPGR registration \nPlease manually check the registration between \n %s and \n %s \n If it is ok, manually change mrQ.SEIR_done to be =1.', mrQ.SEIR_epi_T1file,mrQ.Ants_Info.T1_spgr_epi)
 end
 
-%% 
+
 mrQ.SEIR_done=1;
 
 % mrQ.SPGR_EPI_align_done=1;

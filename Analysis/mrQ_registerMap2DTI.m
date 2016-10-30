@@ -1,4 +1,4 @@
-function alignedMaps = mrQ_registerMap2DTI(B0file,T1file,otherMaps,outDir, interpMethod, resampleFlag)
+function alignedMaps = mrQ_registerMap2DTI(B0file,T1file,otherMaps,outDir, interpMethod, resampleFlag,recalc)
 %
 %
 % alignedMaps = mrQ_registerMap2DTI(B0file,T1file,otherMaps,outDir, interpMethod)
@@ -26,6 +26,9 @@ if notDefined('resampleFlag')
     % by default, no resampling to the reference map is done (T1 will stay
     % in its originla resolution)
     resampleFlag = 0;
+end
+if notDefined('recalc')
+    recalc=1;
 end
 
 % In case of no resampling, the transformed maps will have the same
@@ -68,6 +71,7 @@ out=fullfile(outDir,'map2B0');
 % make a trasformation from T1file (moving image) to Bofile (fixed image)
 cmANTS=['xterm -e ANTS 3 -m CC[' B0file ',' T1file ',1,2] -o ' out '.nii.gz --rigid-affine true'];
 
+if recalc
 % Run the command in unix and get back status and results:
 [status, ~] = system(cmANTS);
 
@@ -76,6 +80,7 @@ if status ~= 0
     cmANTS=['ANTS 3 -m CC[' B0file ',' T1file ',1,2] -o ' out '.nii.gz --rigid-affine true'];
     % Run the command in unix and get back status and results:
     [~, ~] = system(cmANTS,'-echo');
+end
 end
 
 

@@ -149,7 +149,7 @@ CSF=logical(R1); CSF= CSF&  R1<CSFVal & BM;
 seg(CSF)=CSFclass; % any region that is mostly water.
 
 segfile = fullfile(outDir,'T1w_tissue.nii.gz');
-dtiWriteNiftiWrapper(single(seg), xform, segfile)
+dtiWriteNiftiWrapper(single(seg), xform, segfile);
 
 %% IV save
 mrQ.T1w_tissue=segfile;

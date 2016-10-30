@@ -195,7 +195,7 @@ if notDefined('B1FileName')
         B1FileName=fullfile(OutDir,'B1_Map.nii.gz');
 end
 
-        dtiWriteNiftiWrapper(single(B1Fit_S),xform,B1FileName)
+        dtiWriteNiftiWrapper(single(B1Fit_S),xform,B1FileName);
         
         mrQ.B1FileName=B1FileName;
       save(mrQ.name,'mrQ');

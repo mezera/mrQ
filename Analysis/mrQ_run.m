@@ -173,7 +173,7 @@ if  ~isfield(mrQ,'B1FileName')
             if ~notDefined('inputData_seir')
                 mrQ = mrQ_arrangeSEIR_nimsfs(mrQ,inputData_seir);
             else
-                mrQ = mrQ_arrangeSEIR_nimsfs(mrQ); 
+                mrQ = mrQ_arrangeSEIR_nimsfs(mrQ);
             end
         else
             fprintf('Data was already arranged on %s \n',mrQ.ArrangeSEIR_Date)
@@ -318,7 +318,7 @@ end
 if (mrQ.VIP_WF_done==0)
     fprintf('\n Calculate VIP, TV and SIR form T1 and WF maps               \n');
     
-    [mrQ] = mrQ_WF(mrQ); 
+    [mrQ] = mrQ_WF(mrQ);
     
     
     [mrQ] = mrQ_VIP(mrQ);
@@ -342,12 +342,19 @@ end
 
 
 %% XIV. Organize the OutPut directory
-mrQ=mrQ_arrangeOutPutDir(mrQ);
+if ~isfield(mrQ,'AnalysisDone')
+    mrQ.AnalysisDone=0;
+end
+
+if (mrQ.AnalysisDone==0)
+    mrQ=mrQ_arrangeOutPutDir(mrQ);
+    mrQ.AnalysisDone=1;
+    mrQ.AnalysisDoneDate=date;
+end
+
+mrQ_plotSummary(mrQ)
 mrQ_deleteIDfile(mrQ);% delete the temporary ID file stored in mrQ/sge_subjects
 
-%done
-mrQ.AnalysisDone=1;
-mrQ.AnalysisDoneDate=date;
 %save
 save(mrQ.name,'mrQ');
 fprintf('\n done !!! \n')

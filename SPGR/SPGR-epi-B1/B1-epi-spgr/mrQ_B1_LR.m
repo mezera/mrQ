@@ -104,7 +104,28 @@ end
         
     end
             
- 
+%% correct B1 by a scalar
+%  This part was found to be helpful in our data
+%  We noticed that even after the B1  correction, the peaks of T1 in WM are
+%  not aligned. In the ext section we atttempt to realign them.
+%  It might require further improvement.
+
+%     linearly fit T1 to align the peaks of the SPGR with that of the SEIR
+if ~isfield(mrQ,'B1correct_done');
+    mrQ.B1correct_done=0;
+end
+if  mrQ.B1correct_done==0;
+    
+    mrQ=mrQ_T1_LinFit(mrQ,mrQ.B1.unCorrected);
+    
+    % correct the B1
+    mrQ=mrQ_correctB1(mrQ);
+    mrQ.B1correct_done=1;
+    save(mrQ.name,'mrQ');
+end
+  
+mrQ.B1_done=1; 
+save(mrQ.name,'mrQ'); 
     %% non-linear fit of  B1
     
 %     %%% FIT B1 by lsq fit compare T1 SEIR(Res{1}.im) to the multi flip

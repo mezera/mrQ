@@ -192,13 +192,12 @@ B1Fit_S(isinf(B1Fit_S))=eps;
 %outDir = mrQ.spgr_initDir; 
 
 if notDefined('B1FileName')
-        B1FileName=fullfile(OutDir,'B1_Map.nii.gz');
+    B1FileName=fullfile(OutDir,'B1_Map_unCorrected.nii.gz');
 end
 
-        dtiWriteNiftiWrapper(single(B1Fit_S),xform,B1FileName);
-        
-        mrQ.B1FileName=B1FileName;
-      save(mrQ.name,'mrQ');
-      
-  fprintf(['Done fitting B1 map. B1 file is saved: '   mrQ.B1FileName        '  \n']);
+dtiWriteNiftiWrapper(single(B1Fit_S),xform,B1FileName);
+
+mrQ.B1.unCorrected=B1FileName;
+save(mrQ.name,'mrQ');
+
 

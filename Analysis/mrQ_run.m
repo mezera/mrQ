@@ -194,16 +194,16 @@ if  ~isfield(mrQ,'B1FileName')
     
     % Checks if B1 was defined by the user.
     
-    if ~isfield(mrQ,'B1Build_done');
-        mrQ.B1Build_done=0;
+    if ~isfield(mrQ,'B1_done');
+        mrQ.B1_done=0;
     end
     
-    if ( mrQ.B1Build_done==0)
+    if ( mrQ.B1_done==0)
         
         
         mrQ=mrQ_B1_LR(mrQ);
         
-        mrQ.B1Build_done=1;
+        mrQ.B1_done=1;
         save(mrQ.name,'mrQ');
         fprintf('\n Building B1 - done!       \n');
         

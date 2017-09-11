@@ -133,4 +133,13 @@ dtiWriteNiftiWrapper(single(brainMask), xform, BrainMaskfile);
 SEIR.SEIR_epi_M0file=M0file;
 SEIR.SEIR_epi_Maskfile=BrainMaskfile;
 
+
+T1_BMfile=[saveStr '_T1_BM.nii.gz'];
+T1_BM = ll_T1(:,:,:,1); 
+T1_BM(~brainMask)=0;
+dtiWriteNiftiWrapper(single(T1_BM), xform, T1_BMfile);
+
+
+SEIR.SEIR_epi_T1bmfile=T1_BMfile;
+
 return

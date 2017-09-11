@@ -96,10 +96,11 @@ else
 end
 
 
-cmWarp=['xterm -e WarpImageMultiTransform  3 ' T1file  ' ' out1 ' -R ' refFile ' ' out 'Warp.nii.gz ' out 'Affine.txt ' interpMethod];
+ cmWarp=['xterm -e WarpImageMultiTransform  3 ' T1file  ' ' out1 ' -R ' refFile ' ' out 'Warp.nii.gz ' out 'Affine.txt ' interpMethod];
 % Run the command in unix and get back status and results:
-[status, ~] = system(cmWarp);
-  if status ~= 0 
+ [status, ~] = system(cmWarp);
+
+ if status ~= 0 
       cmWarp=['WarpImageMultiTransform  3 ' T1file  ' ' out1 ' -R ' refFile ' ' out 'Warp.nii.gz ' out 'Affine.txt ' interpMethod]; 
       [~, ~] = system(cmWarp,'-echo');
   end

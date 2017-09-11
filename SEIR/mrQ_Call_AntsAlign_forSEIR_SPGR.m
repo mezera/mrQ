@@ -28,7 +28,7 @@ for jj=1:3
     if jj==1
         %         in the first round of trials we are trying to realign the SEIR
         %         images in different orders and refit T1.
-        SPGR_T1_file=mrQ.LinFit.T1_LFit_HM;
+        %         SPGR_T1_file=mrQ.LinFit.T1_LFit_HM;
         spgr_initDir=mrQ.InitSPGR.spgr_initDir;
         SPGRFieldName='InitSPGR';
         useBM=mrQ.ants_bm;
@@ -39,7 +39,7 @@ for jj=1:3
         %         register with/without a bm - the opposite of what was done until
         %         now.
         
-        SPGR_T1_file=mrQ.LinFit.T1_LFit_HM;
+        %         SPGR_T1_file=mrQ.LinFit.T1_LFit_HM;
         spgr_initDir=mrQ.InitSPGR.spgr_initDir;
         SPGRFieldName='InitSPGR';
         useBM=~(mrQ.ants_bm);
@@ -79,12 +79,12 @@ for jj=1:3
         % Keeps track of the variables we use.
         % For details, see inside the function.
         
-    if jj==1 & ii>1
-               display(sprintf(['The SPGR - EPI registration is not good enough \nWe will ',msg,' and then try again.']));
-    elseif jj>1 & ii>1
-          display(sprintf(['The SPGR - EPI registration is not good enough \nWe will try with another pair of maps.']));
-    end
-    
+        if jj==1 & ii>1
+            display(sprintf(['The SPGR - EPI registration is not good enough \nWe will ',msg,' and then try again.']));
+        elseif jj>1 & ii>1
+            display(sprintf(['The SPGR - EPI registration is not good enough \nWe will try with another pair of maps.']));
+        end
+        
         Dir_SEIR_Align2Im = fullfile(mrQ.outDir, ['SEIR_Align2Im_' num2str(ii)]);
         
         SEIR_fit_dir = fullfile(Dir_SEIR_Align2Im, 'fitT1_GS');
@@ -118,19 +118,22 @@ for jj=1:3
         if ~exist(AntsPath,'dir'), mkdir(AntsPath); end
         
         
-        if useBM==1
-            % Register based on brain only- skull stripped
-            [WARP_SPGR_EPI,  T1_spgr_epi]= mrQ_NLANTS_SPGR2EPI(mrQ.SEIRfits{ii}.SEIR_epi_T1file,SPGR_T1_file,mrQ.SEIRfits{ii}.SEIR_epi_Maskfile,AntsPath,{SPGR_T1_file});
-        elseif useBM==0
-            % Register without EPI mask - with skull
-            [WARP_SPGR_EPI,  T1_spgr_epi]= mrQ_NLANTS_SPGR2EPI(mrQ.SEIRfits{ii}.SEIR_epi_T1file,SPGR_T1_file,[],AntsPath,{SPGR_T1_file});
+        if useBM==1     % Register based on brain only- skull stripped
+            SPGR_T1_file=mrQ.LinFit.T1_LFit;
+            SEIR_T1file=mrQ.SEIRfits{ii}.SEIR_epi_T1bmfile;
+            %  [WARP_SPGR_EPI,  T1_spgr_epi]= mrQ_NLANTS_SPGR2EPI(mrQ.SEIRfits{ii}.SEIR_epi_T1file,SPGR_T1_file,mrQ.SEIRfits{ii}.SEIR_epi_Maskfile,AntsPath,{SPGR_T1_file});
+        elseif useBM==0   % Register without EPI mask - with skull
+            SPGR_T1_file=mrQ.LinFit.T1_LFit_HM;
+            SEIR_T1file = mrQ.SEIRfits{ii}.SEIR_epi_T1file;
+            % [WARP_SPGR_EPI,  T1_spgr_epi]= mrQ_NLANTS_SPGR2EPI(mrQ.SEIRfits{ii}.SEIR_epi_T1file,SPGR_T1_file,[],AntsPath,{SPGR_T1_file});
         end
-        
-        
+        [WARP_SPGR_EPI,  T1_spgr_epi]= mrQ_NLANTS_SPGR2EPI(SEIR_T1file,SPGR_T1_file,[],AntsPath,{SPGR_T1_file});
+                    
         MovingScaleConstat=1000;% to compare SPGR T1 in sec to SEIR T1 in ms.
         % check the registration:
         T1_spgr_epi = T1_spgr_epi{1};
-        [Ants_Info.QuantAntsScore]=mrQ_QuantAnts(mrQ.SEIRfits{ii}.SEIR_epi_T1file,T1_spgr_epi,MovingScaleConstat);
+        [Ants_Info.QuantAntsScore]=mrQ_QuantAnts(SEIR_T1file,T1_spgr_epi,MovingScaleConstat);
+%         [Ants_Info.QuantAntsScore]=mrQ_QuantAnts(mrQ.SEIRfits{ii}.SEIR_epi_T1file,T1_spgr_epi,MovingScaleConstat);
         
         % We will keep the files only if the are the current best Ants registration
         if min(Ants_Info.QuantAnts2High(:)) > Ants_Info.QuantAntsScore
@@ -150,7 +153,7 @@ for jj=1:3
             mrQ.SEIR_epi_fitFile = mrQ.SEIRfits{ii}.SEIR_epi_fitFile;
             mrQ.SEIR_epi_M0file = mrQ.SEIRfits{ii}.SEIR_epi_M0file;
             mrQ.SEIR_epi_Maskfile =mrQ.SEIRfits{ii}.SEIR_epi_Maskfile;
-           
+            
             Ants_Info.Use_BrainMask = useBM;
         end
         

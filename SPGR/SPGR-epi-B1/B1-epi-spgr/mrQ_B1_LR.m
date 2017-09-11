@@ -98,7 +98,7 @@ end
    % have no fits.
         mrQ=mrQ_smooth_LR_B1(mrQ,B1_epi_OutPutDir);
         
-        mrQ=mrQ_build_epi2SPGR_B1(mrQ,mrQ.InitSPGR.spgr_initDir,mrQ.LinFit.T1_LFit_HM);
+        mrQ=mrQ_build_epi2SPGR_B1(mrQ,mrQ.Ants_Info.SEIR_SPGR_Curent_AlignDirs{2},mrQ.LinFit.T1_LFit_HM);
         mrQ.B1Build_done=1;
         save(mrQ.name,'mrQ');
         

@@ -21,8 +21,10 @@ mrQ=mrQ_Call_AntsAlign_forSEIR_SPGR(mrQ);
 % % % %     mrQ=mrQ_Call_FSLAlign_forSEIR_SPGR(mrQ);
 % % % % end
 % IF FSL was also unsuccessfull, break and look at the data
-if mrQ.Ants_Info.QuantAntsScore > mrQ.QuantAntsThresh;   
+if mrQ.Ants_Info.QuantAntsScore > mrQ.QuantAntsThresh  && mrQ.testR1_BM==1  
     error('we can not trust the EPI-SPGR registration \nPlease manually check the registration between \n %s and \n %s \n If it is ok, manually change mrQ.SEIR_done to be =1, save mrQ, and rerun.', mrQ.SEIR_epi_T1file,mrQ.Ants_Info.T1_spgr_epi)
+elseif mrQ.Ants_Info.QuantAntsScore > mrQ.QuantAntsThresh  && mrQ.testR1_BM==0
+    error('we can not trust the EPI-SPGR registration \nPlease manually check the registration between \n %s and \n %s \n If it is ok, manually change mrQ.SEIR_done to be =1, save mrQ, and rerun. \n \n You can also test if the skull strip generated from R1: \n %s \n is better compred to the skull strip used in this run: \n %s \n If it is better, change mrQ.testR1_BM to be =1, save mrQ, and rerun', mrQ.SEIR_epi_T1file,mrQ.Ants_Info.T1_spgr_epi,mrQ.SEIR_epi_T1bmfile_fromR1,mrQ.SEIR_epi_T1bmfile)
 end
 
 %% 

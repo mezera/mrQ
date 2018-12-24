@@ -43,7 +43,7 @@ errMap=(resnormMap./UseVoxNMap);
 tissuemask=resnormMap>0;
 % don't use the misfit location
 tissuemask=tissuemask & errMap< prctile(errMap(tissuemask),95);
-
+%tissuemask=tissuemask & errMap<0.15;
 %% II. Fit local regressions
 % We will smoothe the B1 map by using local regressions.
 

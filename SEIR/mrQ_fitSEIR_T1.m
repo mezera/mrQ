@@ -119,18 +119,32 @@ M0file=[saveStr '_M0.nii.gz']; %save M0 SEIR
 dtiWriteNiftiWrapper(single(M0), xform, M0file); 
 
 mmPerVox=[abs(xform(1,1)) abs(xform(2,2)) abs(xform(3,3))];
-[brainMask,checkSlices] = mrAnatExtractBrain(M0, mmPerVox, 0.5); %scale strip FSL BET
-
+[brainMaskMO,checkSlices] = mrAnatExtractBrain(M0, mmPerVox, 0.5); %scale strip FSL BET
+% But now, prepare a temporary R1 map, which could be better for bet brain mask calculation
+R1 = 1./(T1/1000);
+R1(R1>2) = 0;
+R1file = [saveStr '_R1.nii.gz']; %save Brain mask SEIR
+dtiWriteNiftiWrapper(R1,xform,R1file);
+[brainMaskR1,checkSlices] = mrAnatExtractBrain(R1file, mmPerVox, 0.5); %scale strip FSL BET
 
 out = fullfile(tempdir,'bet_tmp');
 delete([out,'.img']) % remove tmp BET file
 delete([out,'.hdr']) % remove tmp BET file
 
-brainMask= brainMask & mask;
-brainMask(:,:,1)=0;brainMask(:,:,end)=0;
-BrainMaskfile=[saveStr '_BrainMask.nii.gz']; %save Brain mask SEIR
-dtiWriteNiftiWrapper(single(brainMask), xform, BrainMaskfile); 
+
+brainMaskR1= brainMaskR1 & mask;
+brainMaskR1(:,:,1)=0;brainMaskR1(:,:,end)=0;
+BrainMaskfile=[saveStr '_BrainMask_fromR1.nii.gz']; %save Brain mask SEIR from R1
+dtiWriteNiftiWrapper(single(brainMaskR1), xform, BrainMaskfile); 
 SEIR.SEIR_epi_M0file=M0file;
+SEIR.SEIR_epi_Maskfile2=BrainMaskfile;
+
+
+brainMask= brainMaskMO & mask;
+brainMask(:,:,1)=0;brainMask(:,:,end)=0;
+BrainMaskfile=[saveStr '_BrainMask_fromMO.nii.gz']; %save Brain mask SEIR from MO
+dtiWriteNiftiWrapper(single(brainMask), xform, BrainMaskfile); 
+SEIR.SEIR_epi_R1file=R1file;
 SEIR.SEIR_epi_Maskfile=BrainMaskfile;
 
 
@@ -139,7 +153,12 @@ T1_BM = ll_T1(:,:,:,1);
 T1_BM(~brainMask)=0;
 dtiWriteNiftiWrapper(single(T1_BM), xform, T1_BMfile);
 
-
 SEIR.SEIR_epi_T1bmfile=T1_BMfile;
 
+T1_BMfile2=[saveStr '_T1_BM_fromR1.nii.gz'];
+T1_BM2 = ll_T1(:,:,:,1); 
+T1_BM2(~brainMaskR1)=0;
+dtiWriteNiftiWrapper(single(T1_BM2), xform, T1_BMfile2);
+
+SEIR.SEIR_epi_T1bmfile_fromR1=T1_BMfile2;
 return

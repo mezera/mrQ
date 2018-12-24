@@ -206,7 +206,9 @@ switch(param)
         mrQ.SunGrid=varargin;
     case {'useabs', 'magnitude' 'abs'}
         mrQ.useAbs=varargin;
-     
+    case {'testR1_BM','testr1_bm'}  % use R1 to creaste a BM for SEIR (might improve registration in some subjects)  
+        mrQ.testR1_BM=varargin; 
+        
         %Check: Has mrQ recorded it as done?
     case {'seir_done' }
         mrQ.SEIR_done=varargin;
@@ -236,7 +238,7 @@ switch(param)
     % threshold for spgr epi registration
     case{'AntsThresh', 'antsthresh','QuantAntsThresh','quantantsthresh'}
          mrQ.QuantAntsThresh=varargin;   
-      case{'ants_bm','ANTS_bm','ANTS_brainmask'}
+    case{'ants_bm','ANTS_bm','ANTS_brainmask'}
           mrQ.ants_bm=varargin;
     otherwise
         error('Unknown mrQ parameter!');

@@ -168,7 +168,7 @@ if  ~isfield(mrQ,'B1FileName')
     if (mrQ.SEIR_done==0);
         
         % ARRANGE SEIR data
-        if ~isfield(mrQ,'ArrangeSEIR_Date');
+        if ~isfield(mrQ,'ArrangeSEIR_Date')
             
             if ~notDefined('inputData_seir')
                 mrQ = mrQ_arrangeSEIR_nimsfs(mrQ,inputData_seir);
@@ -330,7 +330,7 @@ if (mrQ.VIP_WF_done==0)
     %
     % XIII. Create a series of synthetic T1w images
     
-    [mrQ.T1w_file,mrQ.T1w_file1] =mrQ_T1wSynthesis1(mrQ);
+    [mrQ.T1w_file,mrQ.T1w_file1,mrQ.T1w_file2,mrQ.T1w_file3] =mrQ_T1wSynthesis2(mrQ);
     save(mrQ.name,'mrQ');
     fprintf('\n Calculation synthetic T1w- done!              \n');
     

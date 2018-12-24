@@ -15,7 +15,7 @@ h = figure;set(h, 'Visible', 'off');
 if isfield(mrQ.maps, 'T1path')
     if exist(mrQ.maps.T1path,'file')
         tmp=readFileNifti(mrQ.maps.T1path);
-        subplot(5,2,1)
+        subplot(3,2,1)
         imagesc(tmp.data(:,:,round(end/2)))
         colormap('gray'),        colorbar,
         caxis([0.5,2.5]),         title('T1')
@@ -27,7 +27,7 @@ end
 if isfield(mrQ, 'T1w_files')
     if exist([mrQ.T1w_files,'/T1w.nii.gz'],'file')
         tmp=readFileNifti([mrQ.T1w_files,'/T1w.nii.gz']);
-        subplot(5,2,2)
+        subplot(3,2,2)
         imagesc(tmp.data(:,:,round(end/2)))
         colormap('gray'),        colorbar
         caxis([0,0.2]),         title('T1w')
@@ -39,7 +39,7 @@ end
 if isfield(mrQ.maps, 'WFpath')
     if exist(mrQ.maps.WFpath,'file')
         tmp=readFileNifti(mrQ.maps.WFpath);
-        subplot(5,2,3)
+        subplot(3,2,3)
         imagesc(tmp.data(:,:,round(end/2)))
         colormap('gray'),        colorbar
         caxis([0.3,1]),         title('WF')
@@ -51,7 +51,7 @@ end
 if isfield(mrQ.maps, 'TVpath')
     if exist(mrQ.maps.TVpath,'file')
         tmp=readFileNifti(mrQ.maps.TVpath);
-        subplot(5,2,4)
+        subplot(3,2,4)
         imagesc(tmp.data(:,:,round(end/2)))
         colormap('gray'),        colorbar
         caxis([0,0.5]),         title('MTV')
@@ -63,7 +63,7 @@ end
 if isfield(mrQ.maps, 'VIPpath')
     if exist(mrQ.maps.VIPpath,'file')
         tmp=readFileNifti(mrQ.maps.VIPpath);
-        subplot(5,2,5)
+        subplot(3,2,5)
         imagesc(tmp.data(:,:,round(end/2)))
         colormap('gray'),       colorbar
         caxis([0,0.5]),        title('VIP')
@@ -74,7 +74,7 @@ end
 if isfield(mrQ.maps, 'SIRpath')
     if exist(mrQ.maps.SIRpath,'file')
         tmp=readFileNifti(mrQ.maps.SIRpath);
-        subplot(5,2,6)
+        subplot(3,2,6)
         imagesc(tmp.data(:,:,round(end/2)))
         colormap('gray'),        colorbar
         caxis([0.2,0.6]),         title('SIR')
@@ -82,16 +82,31 @@ if isfield(mrQ.maps, 'SIRpath')
     end
 end
 
+%% make sure it spans the entire "height" of the screen
+scrSize=get(0,'ScreenSize');
+scrSize(3) = scrSize(3)/2;
+set(gcf,'position',scrSize)
 
+imageName1=fullfile(mrQ.OutPutNiiDir,'summary.fig');
+imageName2=fullfile(mrQ.OutPutNiiDir,'summary.jpg');
+
+saveas(h,imageName1);
+saveas(h,imageName2);
+pause(2)
+close(h)
+
+%% open another figure
+
+h = figure;set(h, 'Visible', 'off');
 %% go over bias maps
 
 biadDir=fullfile(mrQ.OutPutNiiDir,'BiasMap');
 
 % % % % B1
-if isfield(mrQ, 'B1FileName');
+if isfield(mrQ, 'B1FileName')
     if exist(mrQ.B1FileName,'file')
         tmp=readFileNifti(mrQ.B1FileName);
-        subplot(5,2,7)
+        subplot(3,2,1)
         imagesc(tmp.data(:,:,round(end/2)))
         colormap('gray'),        colorbar
         title('B1')
@@ -103,7 +118,7 @@ end
 Gpath=fullfile(biadDir,'Gains.nii.gz');
 if exist(Gpath,'file')
     tmp=readFileNifti(Gpath);
-    subplot(5,2,8)
+    subplot(3,2,2)
     imagesc(tmp.data(:,:,round(end/2)))
     colormap('gray'),        colorbar
     title('Gains')
@@ -117,12 +132,39 @@ end
 if isfield(mrQ, 'T1w_tissue');
     if exist(mrQ.T1w_tissue,'file')
         tmp=readFileNifti(mrQ.T1w_tissue);
-        subplot(5,2,9)
+        subplot(3,2,3)
         imagesc(tmp.data(:,:,round(end/2)))
         colormap('gray'),    colorbar,   title('tissue segmentation')
         set(gca,'xTick',[],'yTick',[])
     end
 end
+
+%% get T1_SEIR with MO BM file
+
+% % % % Segmentation file
+if isfield(mrQ,'SEIR_epi_T1bmfile');
+    if exist(mrQ.SEIR_epi_T1bmfile,'file')
+        tmp=readFileNifti(mrQ.SEIR_epi_T1bmfile);
+        subplot(3,2,4)
+        imagesc(tmp.data(:,:,round(end/2)))
+        colormap('gray'),    colorbar,   title('T1_SEIR with BM_MO','Interpreter', 'none')
+        set(gca,'xTick',[],'yTick',[])
+    end
+end
+
+%% get T1_SEIR with R1 BM file
+
+% % % % Segmentation file
+if isfield(mrQ, 'SEIR_epi_T1bmfile_fromR1')
+    if exist(mrQ.SEIR_epi_T1bmfile_fromR1,'file')
+        tmp=readFileNifti(mrQ.SEIR_epi_T1bmfile_fromR1);
+        subplot(3,2,5)
+        imagesc(tmp.data(:,:,round(end/2)))
+        colormap('gray'),    colorbar,   title(sprintf('T1_SEIR with BM from R1 \n(If better than BM_MO rerun with testR1__BM flag)'),'Interpreter', 'none')
+        set(gca,'xTick',[],'yTick',[])
+    end
+end
+
 %% plot overlay of SEIR and SPGRr
 
 if isfield(mrQ,'SEIR_epi_T1file')  & isfield(mrQ,'Ants_Info')
@@ -135,7 +177,7 @@ if isfield(mrQ,'SEIR_epi_T1file')  & isfield(mrQ,'Ants_Info')
         tmp=tmp.data(:,:,round(end/2));overIm=double(overIm.data(:,:,round(end/2)));
         overIm = overIm./max(overIm(:))*256;        tmp = tmp./max(tmp(:))*256;
         
-        subplot(5,2,10)
+        subplot(3,2,6)
         imagesc((tmp-overIm)./(tmp+overIm))
         colormap('gray'),    colorbar, caxis([-1 1])
         title(sprintf('SEIR-SPGR \n(should have minimal structure)'))
@@ -175,8 +217,8 @@ scrSize=get(0,'ScreenSize');
 scrSize(3) = scrSize(3)/2;
 set(gcf,'position',scrSize)
 
-imageName1=fullfile(mrQ.OutPutNiiDir,'summary.fig');
-imageName2=fullfile(mrQ.OutPutNiiDir,'summary.jpg');
+imageName1=fullfile(mrQ.OutPutNiiDir,'summary_BiasMaps.fig');
+imageName2=fullfile(mrQ.OutPutNiiDir,'summary_BiasMaps.jpg');
 
 saveas(h,imageName1);
 saveas(h,imageName2);

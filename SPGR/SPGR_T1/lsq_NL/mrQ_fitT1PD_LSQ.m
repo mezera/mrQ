@@ -290,9 +290,11 @@ else  % NO SGE
         %             end
         %         end
     end
-
+    
+    doParal = usejava('jvm');
+    
     % Parallel Processing
-    if has_PCTbox == 0 %no PCTbox, and thus no parfor
+    if has_PCTbox == 0 || doParal==0  %no PCTbox, and thus no parfor
         if ~isempty(MissingFileNumber)
             for kk=1:length(MissingFileNumber)
                 jobindex=MissingFileNumber(kk);

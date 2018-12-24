@@ -295,8 +295,9 @@ else
   % Parallel Processing
   % Using parallel processing can reduce the runtime of the LW fit,
   % from ~60 minutes to ~20 minutes
-  
-  if has_PCTbox == 0 %no PCTbox, and thus no parfor
+    doParal = usejava('jvm');
+
+  if has_PCTbox == 0 || doParal==0 %no PCTbox, and thus no parfor
       if ~isempty(MissingFileNumber)
           for kk=1:length(MissingFileNumber) %regular for-loop
               jobindex=MissingFileNumber(kk);

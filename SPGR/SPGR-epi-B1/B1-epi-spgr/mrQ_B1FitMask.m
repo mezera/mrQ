@@ -32,9 +32,16 @@ brainMask=Res{1}.im>0; %This contains the locations where we have SEIR T1 values
 % too high too low T1 & too high too low T1 disagreement between SPGR T1
 % (without B1) and SEIR.  Also area were we are not in GM or WM according to
 % the T1 values. 
-brainMask=brainMask & (Res{1}.im./(Res{2}.im*1000))<  1.5 & Res{1}.im<2500 & Res{1}.im>350 ;
-brainMask=brainMask & (Res{1}.im./(Res{2}.im*1000))>  0.5;
+%% A.M and S.F check the effect of more premisive B1 mask
+%OLD version
+ brainMask=brainMask & (Res{1}.im./(Res{2}.im*1000))<  1.5 & Res{1}.im<2500 & Res{1}.im>350 ;
+ brainMask=brainMask & (Res{1}.im./(Res{2}.im*1000))>  0.5;
+% New
+%brainMask=Res{2}.im>0 & Res{1}.im>0;
 
+%BM_path=fullfile(fileparts(SET1Fitfile),'T1FitNLSPR_SEIR_Dat_BrainMask.nii.gz');
+%BM_SEIR=readFileNifti(BM_path);
+%brainMask=BM_SEIR.data>0 & Res{2}.im>0 & Res{1}.im>0;
 %% II. Load the SEIR fitting matrix and mask according to the fit, residuals and outliers
 
 load (SET1Fitfile);
@@ -46,9 +53,9 @@ clear ll_T1
 % The mask needs to be without outliers in SEIR fit.
 
 % Here we remove the voxels with big residuals in the SEIR fit
-brainMask=~isinf(SEIRResid) & SEIRResid>0 & brainMask;
-brainMask_copy=brainMask;
-brainMask=brainMask & SEIRResid<prctile(SEIRResid(brainMask),95) ;
+ brainMask=~isinf(SEIRResid) & SEIRResid>0 & brainMask;
+ brainMask_copy=brainMask;
+ brainMask=brainMask & SEIRResid<prctile(SEIRResid(brainMask),95) ;
 
 %% III. Mask by registration quality and warp values
 % We also don't trust voxels that were strongly warped when we
@@ -85,8 +92,10 @@ end
 % Accept only between 5th and 95th percentiles for tissue parameters
 % a_fitparam and b_fitparam, and accept only between 2nd and 98th
 % percentiles for warp in x, y and z orientations
-brainMask=brainMask   & b_fitparam>prctile(b_fitparam(brainMask_copy),5) &a_fitparam<prctile(a_fitparam(brainMask_copy),95)& a_fitparam>prctile(a_fitparam(brainMask_copy),5) &b_fitparam<prctile(b_fitparam(brainMask_copy),95) & ...
+
+ brainMask=brainMask   & b_fitparam>prctile(b_fitparam(brainMask_copy),5) &a_fitparam<prctile(a_fitparam(brainMask_copy),95)& a_fitparam>prctile(a_fitparam(brainMask_copy),5) &b_fitparam<prctile(b_fitparam(brainMask_copy),95) & ...
     WarpZ< prctile(WarpZ(brainMask_copy),98) & WarpZ> prctile(WarpZ(brainMask_copy),2) & WarpY< prctile(WarpY(brainMask_copy),98) & WarpY> prctile(WarpY(brainMask_copy),2)  & WarpX< prctile(WarpX(brainMask_copy),98) & WarpX> prctile(WarpX(brainMask_copy),2)  ;
+
 
 %% V. SAVE
 if notDefined('outDir')

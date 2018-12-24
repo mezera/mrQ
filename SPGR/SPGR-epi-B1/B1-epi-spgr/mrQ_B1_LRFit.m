@@ -44,17 +44,22 @@ nIteration=ed-st+1;
 % initialize the saved parameters
 exitflag=zeros(nIteration,1);
 resnorm=zeros(nIteration,1);
+resnorm_noTresh=zeros(nIteration,1);
+
 UseVoxN=zeros(nIteration,1);
 skip=zeros(nIteration,1);
 Iter=0;
 B1=zeros(nIteration,1);
-
+B1_noTresh=zeros(nIteration,1);
 options = optimset('Display','off',...
     'MaxFunEvals',Inf,...
     'MaxIter',Inf,...
     'TolFun', 1e-6,...
     'TolX', 1e-10,...
-    'Algorithm','levenberg-marquardt');
+    'Algorithm','trust-region-reflective'...
+);
+%    'Algorithm','levenberg-marquardt'
+
 % make mask
 BM=readFileNifti(opt.tisuuemaskFile);
 BM=logical(BM.data);
@@ -98,22 +103,27 @@ for ii= st:ed,
         [B1(Iter) ,resnorm(Iter),~,exitflag(Iter)] = ...
             lsqnonlin(@(par) errB1_LR(par, flipAngles,tr,double(S),double(t1(:)),...
             double(f1),  BM1(:), ratios),...
-            1,[],[],options);
-        
+            1,0.3,1.7,options);
+        B1_noTresh(Iter)=B1(Iter);
+        resnorm_noTresh(Iter)=resnorm(Iter);
         % Something wrong with the flip angle, I believe.
         % Check the ANat call and file orders!!!
+        if  B1(Iter)==0.3 || B1(Iter)==0.7
+            B1(Iter)=0;
+            resnorm(Iter)=0;
+        end
         
     end
     
     
-end;
+end
 toc
  %% III. Cross-Validation Fit
  % We can save some of the ratio and cross-validate the poly degree or box size.
        
 name=[ opt.name '_' num2str(st) '_' num2str(ed)];
 
-save(name,'B1','resnorm','exitflag','st','ed','skip','UseVoxN' )
+save(name,'B1','B1_noTresh','resnorm','resnorm_noTresh','exitflag','st','ed','skip','UseVoxN' )
 
 end
 

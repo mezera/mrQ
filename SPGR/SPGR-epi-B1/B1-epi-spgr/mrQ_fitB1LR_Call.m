@@ -152,7 +152,9 @@ else %if there is no grid
 
     
     % Parallel Processing
-    if has_PCTbox == 0 %no PCTbox, and thus no parfor
+     doParal = usejava('jvm');
+
+    if has_PCTbox == 0  || doParal==0 %no PCTbox, and thus no parfor
         opt.jumpindex=jumpindex;
         save(opt.logname,'opt');
         

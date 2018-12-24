@@ -201,10 +201,13 @@ clear tmpVol;
 data = tmpData; %#ok<NASGU>
 clear tmpData;
 
+doParal = usejava('jvm')
+
 startTime = cputime;
 fprintf('Processing %d voxels.\n', nVoxAll);
+if doParal==1
 h = waitbar(0, sprintf('Processing %d voxels', nVoxAll));
-
+end
 for ii=1:nSteps
     curInd = (ii-1)*numVoxelsPerUpdate+1;
     endInd = min(curInd+numVoxelsPerUpdate,nVoxAll);
@@ -216,13 +219,18 @@ for ii=1:nSteps
         eval(storeStr); % Store the data
         
     end
-    
-    waitbar(ii/nSteps, h, sprintf('Processing %d voxels, %g percent done...\n',nVoxAll,round(endInd/nVoxAll*100)));
+    if doParal==1 
+        waitbar(ii/nSteps, h, sprintf('Processing %d voxels, %g percent done...\n',nVoxAll,round(endInd/nVoxAll*100)));
+    end
 end
 
 % Clean up
 eval(clearStr)
+
+
+if doParal==1
 close(h);
+end
 timeTaken = round(cputime - startTime);
 fprintf('Processed %d voxels in %g seconds.\n',nVoxAll, timeTaken);
 

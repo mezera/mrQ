@@ -195,13 +195,46 @@ mkdir(T1wDir);
 cmd =(['! mv ' mrQ.T1w_file ' ' T1wDir '/.']) ;
 eval(cmd);
 
+
+
 cmd =(['! ln -s  '  T1wDir '/T1w.nii.gz ' mrQ.spgr_initDir '/.']) ;
 eval(cmd);
 
-cmd =(['! mv ' mrQ.T1w_file1 ' ' T1wDir  '/.']) ;
+T1SynDir=fullfile(mrQ.OutPutNiiDir,'SyntheticT1w');
+
+% If we redo it and maps directory already exists,
+%   we will save the old one before we make a new one.
+if (exist(T1SynDir,'dir'))
+    ex=0; num=0;
+    while ex==0
+        num=num+1;
+        T1wDirOld=fullfile(mrQ.OutPutNiiDir,['SyntheticT1wDirOld_' num2str(num)] );
+        if (~exist(T1wDirOld,'dir'))
+            eval(['! mv ' T1SynDir  ' ' BiasDirOld]);
+            ex=1;
+        end
+    end
+end
+
+mkdir(T1SynDir);
+
+cmd =(['! mv ' mrQ.T1w_file1 ' ' T1SynDir  '/.']) ;
 eval(cmd);
 
-cmd =(['! ln -s  '  T1wDir '/T1w1.nii.gz ' mrQ.spgr_initDir '/.']) ;
+cmd =(['! ln -s  '  T1SynDir '/T1w1.nii.gz ' mrQ.spgr_initDir '/.']) ;
+eval(cmd);
+
+
+cmd =(['! mv ' mrQ.T1w_file2 ' ' T1SynDir  '/.']) ;
+eval(cmd);
+
+cmd =(['! ln -s  '  T1SynDir '/T1w2.nii.gz ' mrQ.spgr_initDir '/.']) ;
+eval(cmd);
+
+cmd =(['! mv ' mrQ.T1w_file3 ' ' T1SynDir  '/.']) ;
+eval(cmd);
+
+cmd =(['! ln -s  '  T1SynDir '/T1w3.nii.gz ' mrQ.spgr_initDir '/.']) ;
 eval(cmd);
 
 mrQ.T1w_files=T1wDir;

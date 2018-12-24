@@ -1,4 +1,4 @@
-function [T1file, M0file,BMfile]=Strac_get_T1M0_files(Strac,whT1,whM0,whBM)
+function [T1file, M0file,BMfile]=get_T1M0_files(Strac,whT1,whM0,whBM)
 % function [T1file, M0file,BMfile]=mrQ_get_T1M0_files(mrQ,whT1,whM0,whBM)
 %
 % Search for the T1, M0 and Brain Mask files. Can be one of three file
@@ -31,15 +31,15 @@ end
 
 if whT1
     T1file=[];
-%%
-
+    %%
     
-%% II. Looking for the T1 file  
-% Look for linear fit, weighted linear, non-linear
-% Then, check manually
-% If all this fails, present error message.
-
-%% II-a. Is there a linear fit T1 file?
+    
+    %% II. Looking for the T1 file
+    % Look for linear fit, weighted linear, non-linear
+    % Then, check manually
+    % If all this fails, present error message.
+    
+    %% II-a. Is there a linear fit T1 file?
     %Find T1
     
     if isfield(Strac,'T1_LFit')
@@ -57,12 +57,12 @@ if whT1
     
     %  Maybe after B1 correction?
     if isfield(Strac,'T1_B1_LFit')
-        if exist(Strac.T1_B1_LFit,'file') 
+        if exist(Strac.T1_B1_LFit,'file')
             T1file= Strac.T1_B1_LFit;
         end
     end
     
-%% II-b. Is there a weighted linear T1 file?
+    %% II-b. Is there a weighted linear T1 file?
     if isfield(Strac,'T1_B1_LWFit')
         
         if exist(Strac.T1_B1_LWFit,'file')
@@ -70,7 +70,7 @@ if whT1
         end
     end
     
-%% II-c. Is there an non-linear T1 file?
+    %% II-c. Is there an non-linear T1 file?
     if isfield(Strac,'T1_B1_lsqFit')
         
         if  exist(Strac.T1_B1_lsqFit,'file')
@@ -79,11 +79,11 @@ if whT1
     end
     
     
-   
     
     
-   
-   
+    
+    
+    
     
     
     %% II-d. Maybe it is already in the outputDir?
@@ -94,12 +94,12 @@ if whT1
             end
         end
     end
-%% II-e. Select manually
+    %% II-e. Select manually
     if isempty(T1file)
         T1file = mrvSelectFile('r','*.nii.gz','Select T1 fit file',Strac.spgr_initDir);
     end
     
-%% II-f. Still can't find it (error)
+    %% II-f. Still can't find it (error)
     
     if isempty(T1file)
         error('Cannot find the T1file')
@@ -114,7 +114,7 @@ end
 %%%
 %
 
-%% III. Looking for the M0 file  
+%% III. Looking for the M0 file
 % Look for linear fit, weighted linear, non-linear
 % Then, check in the outputDir
 % If all this fails, present error message.
@@ -125,14 +125,14 @@ if whM0
     
     M0file=[];
     if isfield(Strac,'M0_LFit')
-        if  exist(Strac.M0_LFit,'file') 
+        if  exist(Strac.M0_LFit,'file')
             M0file= Strac.M0_LFit;
         end
     end
     
     %  the same but with larger mask
     if isfield(Strac,'M0_LFit_HM')
-        if  exist(Strac.M0_LFit_HM,'file') 
+        if  exist(Strac.M0_LFit_HM,'file')
             M0file= Strac.M0_LFit_HM;
         end
     end
@@ -140,12 +140,12 @@ if whM0
     
     %  Maybe after B1 correction?
     if isfield(Strac,'M0_B1_LFit')
-        if  exist(Strac.M0_B1_LFit,'file') 
+        if  exist(Strac.M0_B1_LFit,'file')
             M0file= Strac.M0_B1_LFit;
         end
     end
-      
-%% III-b. Is there a weighted-linear M0 file?
+    
+    %% III-b. Is there a weighted-linear M0 file?
     
     if isfield(Strac,'M0_B1_LWFit')
         
@@ -153,7 +153,7 @@ if whM0
             M0file= Strac.M0_B1_LWFit;
         end
     end
-%% III-c. Is there a non-linear M0 file?
+    %% III-c. Is there a non-linear M0 file?
     
     if isfield(Strac,'M0_B1_lsqFit')
         
@@ -163,14 +163,14 @@ if whM0
     end
     
     % Are we using multi coils data. if yes this will be the M0
-     if isfield(Strac,'M0combineFile')
+    if isfield(Strac,'M0combineFile')
         
         if  exist(Strac.M0combineFile,'file')
             M0file= Strac.M0combineFile;
         end
     end
-
-%   
+    
+    %
     % Note that we are not moving the M0 image to the output Dir, so we are
     % not looking for it there.
     
@@ -178,7 +178,7 @@ if whM0
         M0file = mrvSelectFile('r','*.nii.gz','Select T1 fit file',Strac.spgr_initDir);
     end
     
-%% III-e. Lastly, still can't find it (error)
+    %% III-e. Lastly, still can't find it (error)
     
     if isempty(M0file)
         error('Cannot find the M0file')
@@ -205,23 +205,23 @@ if whBM
         end
     end
     
-    if isfield(Strac,'HMfile')    
+    if isfield(Strac,'HMfile')
         if  exist(Strac.HMfile,'file')
             BMfile= Strac.HMfile;
         end
     end
     
-    if isfield(Strac,'FullMaskFile')    
+    if isfield(Strac,'FullMaskFile')
         if  exist(Strac.FullMaskFile,'file')
             BMfile= Strac.FullMaskFile;
         end
     end
-    
+        
     if isempty(BMfile)
         BMfile = mrvSelectFile('r','*.nii.gz','Select T1 fit file',Strac.spgr_initDir);
     end
     
-%% IV-b. Can't find it (error)
+    %% IV-b. Can't find it (error)
     
     if isempty(BMfile)
         error('Can not find the brain mask file')

@@ -327,10 +327,13 @@ if(~exist(outDir,'dir')), mkdir(outDir); end
 %
 
 % if  ~isfield(mrQ,'SPGR_raw_strac')
+if isnan(mrQ.refIm) % if we are not using a refence file we don't need to send it into SPM
+[s,xform] = relaxAlignAll(s(find(t1Inds)),[],mmPerVox,true,interp); %#ok<FNDSB>
+else
 
-%spm
 ref       = readFileNifti(refImg);
 [s,xform] = relaxAlignAll(s(find(t1Inds)),ref,mmPerVox,true,interp); %#ok<FNDSB>
+end
 
 %else
 %         Dpath=fullfile(mrQ.SPGR,'data');

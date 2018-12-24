@@ -183,12 +183,16 @@ M0file   = fullfile(outDir,['M0_LFit.nii.gz']);
         
         % selecting the relevant slices (this is not beautiful)
         HM=B1;
+        %%
         HM(s(jj).imData<cutV)=0;
-        HM(:,:,1:min(z)+3)=0;
-        HM(:,:,max(z)+3:end)=0;
+        %AM SF test the effect of comment the below two lines
+
+        %HM(:,:,1:min(z)+3)=0;
+        %HM(:,:,max(z)+3:end)=0;
+        %%
         for dd=1:length(s)
             HM(isnan(s(dd).imData))=0;
-        end;
+        end
         
         % filling the holes in the mask
         for i=1:size(HM,3)

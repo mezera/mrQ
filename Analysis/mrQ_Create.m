@@ -63,12 +63,12 @@ if setDefault
     
   
     %% SEIR
+
     % SEIR alignment and fit.
     mrQ.MakeNewSEIRDir=true;
         mrQ.alignFlag=true;
 
     mrQ.SEIR_done=false;
-    
   %  mrQ.complexFlag=false;
     % For complex data that we do not use, for now.
     
@@ -92,7 +92,7 @@ if setDefault
     
     % This is to align the SEIR data.
     % We like that, unless the sample is: 
-    %    a phantom, dead, or maybe complex (zero)
+    %    a phantom, post-mortem, or maybe complex (zero)
     mrQ.interp=[];
     mrQ.mmPerVox =[];
     

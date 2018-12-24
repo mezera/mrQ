@@ -187,9 +187,10 @@ else
     MyVer_year= sscanf(MyVer_ed,'%*[^0123456789]%d'); % identify release year
     MyVer_AorB= sscanf(MyVer_ed,'%*[^ab]%c'); % identify version a or b
     
-    
+    doParal = usejava('jvm');
+
     % Parallel Processing
-    if has_PCTbox == 0 %no PCTbox, and thus no parfor
+    if has_PCTbox == 0  || doParal==0 %no PCTbox, and thus no parfor
         jumpindex=   length(opt.wh);
         opt.jumpindex=jumpindex;
         

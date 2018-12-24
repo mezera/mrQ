@@ -160,7 +160,7 @@ if isfield(mrQ, 'SEIR_epi_T1bmfile_fromR1')
         tmp=readFileNifti(mrQ.SEIR_epi_T1bmfile_fromR1);
         subplot(3,2,5)
         imagesc(tmp.data(:,:,round(end/2)))
-        colormap('gray'),    colorbar,   title(sprintf('T1_SEIR with BM from R1 \n(If better than BM_MO rerun with testR1__BM flag)'),'Interpreter', 'none')
+        colormap('gray'),    colorbar,   title(sprintf('T1_SEIR with BM from R1 \n(If better than BM_MO rerun\n with testR1__BM flag)'),'Interpreter', 'none')
         set(gca,'xTick',[],'yTick',[])
     end
 end

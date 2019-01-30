@@ -187,8 +187,8 @@ M0file   = fullfile(outDir,['M0_LFit.nii.gz']);
         HM(s(jj).imData<cutV)=0;
         %AM SF test the effect of comment the below two lines
 
-        %HM(:,:,1:min(z)+3)=0;
-        %HM(:,:,max(z)+3:end)=0;
+       % HM(:,:,1:min(z)+3)=0;
+       % HM(:,:,max(z)+3:end)=0;
         %%
         for dd=1:length(s)
             HM(isnan(s(dd).imData))=0;

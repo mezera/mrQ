@@ -39,7 +39,7 @@ brainMask=Res{1}.im>0; %This contains the locations where we have SEIR T1 values
 % New
 %brainMask=Res{2}.im>0 & Res{1}.im>0;
 
-%BM_path=fullfile(fileparts(SET1Fitfile),'T1FitNLSPR_SEIR_Dat_BrainMask.nii.gz');
+%BM_path=fullfile(fileparts(SET1Fitfile),'T1FitNLSPR_SEIR_Dat_BrainMask_fromR1.nii.gz');
 %BM_SEIR=readFileNifti(BM_path);
 %brainMask=BM_SEIR.data>0 & Res{2}.im>0 & Res{1}.im>0;
 %% II. Load the SEIR fitting matrix and mask according to the fit, residuals and outliers

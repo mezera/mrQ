@@ -54,7 +54,6 @@ function mrQ_run(dir,outDir,inputData_spgr,inputData_seir,B1file, varArgIn)
 %
 %
 
-
 %% I. Create the initial structure
 
 if notDefined('outDir')

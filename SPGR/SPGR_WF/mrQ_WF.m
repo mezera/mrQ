@@ -100,6 +100,8 @@ else
     T1max = T1minmax(2);
     Ttheor = mean(T1minmax)*1000;
 end
+
+
 % currently, flipangle is chosen based on signal within CSF. 
 %  if instead it would be decided based on signal with WM, that we would
 %  need a brainmask: 
@@ -121,6 +123,7 @@ load(outFile);
 %% III. find area of high T1=[4 - 5]  around the vetricles
 
 WFmask=ones(size(T1));
+
 
 % clip around the ventricals:
 if notDefined('boxsize')

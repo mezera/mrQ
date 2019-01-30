@@ -108,7 +108,7 @@ for ii= st:ed,
         resnorm_noTresh(Iter)=resnorm(Iter);
         % Something wrong with the flip angle, I believe.
         % Check the ANat call and file orders!!!
-        if  B1(Iter)==0.3 || B1(Iter)==0.7
+        if  B1(Iter)==0.3 || B1(Iter)==1.7
             B1(Iter)=0;
             resnorm(Iter)=0;
         end

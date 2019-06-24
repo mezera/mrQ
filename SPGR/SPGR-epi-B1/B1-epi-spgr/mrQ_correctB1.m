@@ -31,12 +31,14 @@ end
     % load the gold standard SEIR
     seirT1=readFileNifti(T1_GS);
     seirBM=readFileNifti(BM_GS);
-    seirBM=logical(seirBM.data) & seirT1.data<1000 & seirT1.data>700;
+       seirBM=logical(seirBM.data) & seirT1.data<1000 & seirT1.data>700;
+%      seirBM=logical(seirBM.data) & seirT1.data<1500 & seirT1.data>700;
     
     % load the "apparent" T1 - SPGR
     spgrT1=readFileNifti(T1app);
     spgrBM=readFileNifti(BMapp);
     spgrBM=logical(spgrBM.data) & spgrT1.data<1 & spgrT1.data>0.7;
+  %  spgrBM=logical(spgrBM.data) & spgrT1.data<1.5 & spgrT1.data>0.7;
     
     % find the maxima around the WM values
     [seir_Dens, seir_Vals] = ksdensity(seirT1.data(seirBM));

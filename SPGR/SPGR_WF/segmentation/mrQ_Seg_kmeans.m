@@ -36,8 +36,8 @@ if notDefined('CSFVal')
     %anything above that will be considered to be water for segmentation (the same tissue)
 end
 
-if~exist('outDir')
-outDir = mrQ.spgr_initDir;
+if notDefined('outDir')
+    outDir = mrQ.spgr_initDir;
 end
 
 if notDefined('BMfile')

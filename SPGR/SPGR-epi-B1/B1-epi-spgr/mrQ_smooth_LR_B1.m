@@ -161,7 +161,7 @@ for  jj=1:size(B1Fit_S,1)
     
     %check that there is data in the slice
     wh=find(tmp>0);
-    if (length(find(tmp>0))/length(tmp(:))>0.3 && length(find(tmp>0))/length(tmp(:))<1  && length(wh)>1000);
+    if (length(find(tmp>0))/length(tmp(:))>0.2 && length(find(tmp>0))/length(tmp(:))<1  && length(wh)>1000);
         
         %find location of data
         [x,y] = ind2sub(size(tmp),wh);
@@ -204,7 +204,7 @@ for  jj=1:size(B1Fit_S,2)
     
     %check that there is data in the slice
     wh=find(tmp>0);
-    if (length(find(tmp>0))/length(tmp(:))>0.3 && length(find(tmp>0))/length(tmp(:))<1  && length(wh)>1000);
+    if (length(find(tmp>0))/length(tmp(:))>0.2 && length(find(tmp>0))/length(tmp(:))<1  && length(wh)>1000);
         
         %find location of data
         [x,y] = ind2sub(size(tmp),wh);

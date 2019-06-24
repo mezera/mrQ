@@ -129,9 +129,12 @@ WFmask=ones(size(T1));
 if notDefined('boxsize')
     boxsize(1)=30;
     boxsize(2)=40;
-    boxsize(3)=20;
+    boxsize(3)=20; 
 end
 sz=size(WFmask); szH=round(sz./2);
+
+szH(3) = szH(3)+20;% T1min = 3.9;
+
 XX=boxsize(1)./round(mmPerVox(1));
 YY=boxsize(2)./round(mmPerVox(2));
 ZZ=boxsize(3)./round(mmPerVox(3));
@@ -184,6 +187,7 @@ end
 % end
 % 
 % FAloc=find(WMdata==max(WMdata));
+
 
 
 

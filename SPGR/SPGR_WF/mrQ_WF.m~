@@ -87,14 +87,13 @@ Gain=readFileNifti(Gainfile); Gain=Gain.data;
    % CSFmask=readFileNifti(mrQ.T1w_tissue);
    % CSFmask=logical(CSFmask.data==4);   
 % else
-
-if isfield(mrQ,'CSFmaskFile')
-    if exist(mrQ.CSFmaskFile,'file')
-        fprintf('Using the CSF mask:  %s \n',mrQ.CSFmaskFile);
-        CSFmask=readFileNifti(mrQ.CSFmaskFile);
+if ~notDefined('CSFmaskFile')
+    if exist(CSFmaskFile,'file')
+        fprintf('Using the CSF mask:  %s \n',CSFmaskFile);
+        CSFmask=readFileNifti(CSFmaskFile);
         CSFmask=logical(CSFmask.data);
     else
-        error('Can not find the CSF mask:  %s \n',mrQ.CSFmaskFile);
+        error('Can not find the CSF mask:  %s \n',CSFmaskFile);
     end
 end
 
@@ -129,7 +128,7 @@ load(outFile);
 
 %% III. find area of high T1=[4 - 5]  around the vetricles
 
-if ~exist('CSFmask')
+if notDefined('CSFmaskFile')
     WFmask=ones(size(T1));
     
     % find the middle of the brain:
@@ -170,12 +169,11 @@ if ~exist('CSFmask')
     WFmask= WFmask & T1<=T1max & T1>=T1min;
 else
     WFmask=CSFmask;
-    
-    % check that the T1 values inside the mask are within [T1min,T1max]:
     outliervoxels=find(T1(WFmask)<=T1min | T1(WFmask)>=T1max);
     
     if length(outliervoxels)/length(WFmask(:))>0.05
-       warning('More than 5%% of the voxels in the CSF mask: \n  %s \n  have T1 values outside [T1min,T1max]. Check if you trust this mask.' ,CSFmaskFile)
+         fprintf('Using the CSF mask:  %s \n',CSFmaskFile);
+       warning('More than 5%% of the voxels in the CSF mask:  %s \n' ,CSFmaskFile, '%s have T1 values outside [T1min,T1max] ')
     end
 end
 

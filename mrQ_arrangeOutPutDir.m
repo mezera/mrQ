@@ -111,7 +111,7 @@ mrQ.maps.SIRpath=fullfile(mapDir,'SIR_map.nii.gz');
 mrQ.maps.VIPpath=fullfile(mapDir,'VIP_map.nii.gz');
 
 %% II-a. Copy SEIR images to a subdirectory within 'Brain Maps'
-if isfield(mrQ,'SEIR_done')
+if mrQ.SEIR_done==1
      % Checks if B1 was defined by the user.
      
     SEIRT1Dir=fullfile(mapDir,'SEIR');

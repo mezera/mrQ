@@ -260,11 +260,11 @@ end
 
 %% X. Segmentation and CSF
 
-if ~isfield(mrQ,'segmentation');
+if ~isfield(mrQ,'segmentation')
     mrQ.segmentation=0;
 end
 
-if mrQ.segmentation==0;
+if mrQ.segmentation==0
     
     %     default- FSL segmentation
     if (mrQ.runfreesurfer==0 && ~isfield(mrQ,'freesurfer'))

@@ -96,7 +96,7 @@ for  jj=1:size(PD,3)
     
     %Check that there is data in the slice
     wh=find(tmp>0);
-    if    (length(find(tmp>0))/length(find(tmpBM>0))>0.5  && length(wh)>800)
+    if    (length(find(tmp>0))/length(find(tmpBM>0))>0.5  && length(wh)>800)%  (length(find(tmp>0))/length(find(tmpBM>0))>0.5  && length(wh)>800)
         
         %Find location of data
         [x,y] = ind2sub(size(tmp),wh);
@@ -141,7 +141,7 @@ for  jj=1:size(PD,2)
     
     %Check that there is data in the slice
     wh=find(tmp>0);
-    if   (length(find(tmp>0))/length(find(tmpBM>0))>0.5  && length(wh)>800);
+    if   (length(find(tmp>0))/length(find(tmpBM>0))>0.5  && length(wh)>800);% (length(find(tmp>0))/length(find(tmpBM>0))>0.5  && length(wh)>800);
         
         %Find location of data
         [x,y] = ind2sub(size(tmp),wh);
@@ -185,7 +185,7 @@ for  jj=1:size(PD,1)
     
     %Check that there is data in the slice
     wh=find(tmp>0);
-    if   (length(find(tmp>0))/length(find(tmpBM>0))>0.5  && length(wh)>800);
+    if   (length(find(tmp>0))/length(find(tmpBM>0))>0.5  && length(wh)>800);%(length(find(tmp>0))/length(find(tmpBM>0))>0.2  && length(wh)>800);
         
         %Find location of data
         [x,y] = ind2sub(size(tmp),wh);

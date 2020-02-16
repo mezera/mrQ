@@ -18,8 +18,10 @@ if notDefined('B1File')
         B1File=mrQ.B1FileName;
     end   
 end
-if isfield(mrQ,'HeadMask')
-    MaskFile=mrQ.HeadMask;
+if isfield(mrQ,'LinFit')
+    if isfield(mrQ.LinFit,'HeadMask')
+    MaskFile=mrQ.LinFit.HeadMask;
+    end
 end
 
 

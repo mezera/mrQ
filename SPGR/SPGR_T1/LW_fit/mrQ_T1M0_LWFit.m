@@ -115,7 +115,7 @@ logname = [outDir '/fitT1LW.mat'];
 opt.logname=logname;
 
 % Save an information file we can load afterwards, if needed.
-save(opt.logname,'opt');
+save(opt.logname,'opt','-v7.3');
 %added this save of mrQ
 mrQ.LWoptname=logname;
 save(mrQ.name,'mrQ');

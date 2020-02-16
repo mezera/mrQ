@@ -135,8 +135,12 @@ else
     
     % Let's calculate a new mask 
     
-    
-    [HeadMask, mrQ]=CalculateFullMask(mrQ,T1L,M0L,outDir); %see below for function
+    if  exist(MaskFile,'file') 
+        HeadMask=readFileNifti(MaskFile);
+        HeadMask=logical(HeadMask.data);
+    else
+        [HeadMask, mrQ]=CalculateFullMask(mrQ,T1L,M0L,outDir); %see below for function
+    end
     % Zero-out the values that fall outside of the brain mask
     T1L(~HeadMask) = 0;
     M0L(~HeadMask) = 0;    
@@ -259,15 +263,17 @@ end
      %%%%%
       %%%
        %
-       
+end      
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
 function [mask, mrQ]=CalculateFullMask(mrQ,t1,M0,outDir)
 %% one more mask anywhere we have signal
 
 if isfield(mrQ,'LinFit')
+    HM_path=mrQ.LinFit.HeadMask;
     HM = readFileNifti(mrQ.LinFit.HeadMask); xform= HM.qto_xyz;    HM=logical(HM.data);
     BM=  readFileNifti(mrQ.LinFit.BrainMask); BM=logical(BM.data);
 else
+    HM_path=mrQ.HeadMask;
     HM = readFileNifti(mrQ.HeadMask);     xform= HM.qto_xyz;  HM=logical(HM.data);
     BM=  readFileNifti(mrQ.BrainMask); BM=logical(BM.data);
 end
@@ -341,12 +347,21 @@ mask=M0>prctile(M0(BM),0.1) & M0<up;
 [mask] = ordfilt3D(mask,6);
 for i=1:size(mask,3)
     mask1(:,:,i)=imfill(mask(:,:,i),'holes');
-end;
-
-mask=logical(mask1+mask +HM+BM);
+end
 
 % make a head mask that definitely includes the brain mask
+mask=logical(mask1+mask +HM+BM);
+
 FullMaskFile= fullfile(outDir,'FullMask.nii.gz');
 dtiWriteNiftiWrapper(single(mask), xform,FullMaskFile);
-mrQ.FullMaskFile=FullMaskFile;
 
+% If SNR is bad use the head mask instead of the full mask:
+if isfield(mrQ,'SNR')
+    if strcmp(mrQ.SNR,'low') 
+        FullMaskFile=HM_path;
+        mask=HM;
+        warning(['Low SNR - using the head mask instead of the full mask']);
+    end
+end    
+mrQ.FullMaskFile=FullMaskFile;
+end

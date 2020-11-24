@@ -79,7 +79,7 @@ loc=find(SigMask);
 
 %%  II. Go over box by box
 tic    ;
-for ii= st:ed,
+for ii= st:ed
     %run over the box you'd like to fit
     
     % clear parameters
@@ -90,7 +90,7 @@ for ii= st:ed,
     else
         skip(Iter)=1;
     end
-    
+  
     
     if  skip(Iter)==1
         %         disp(['skipping box bad data'])

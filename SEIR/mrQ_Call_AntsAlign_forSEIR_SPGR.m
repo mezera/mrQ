@@ -191,7 +191,7 @@ for jj=iter_start:iter_num
             SEIR_T1file = mrQ.SEIRfits{ii}.SEIR_epi_T1file;
         end    % [WARP_SPGR_EPI,  T1_spgr_epi]= mrQ_NLANTS_SPGR2EPI(mrQ.SEIRfits{ii}.SEIR_epi_T1file,SPGR_T1_file,[],AntsPath,{SPGR_T1_file});
         
-        if tryR1mask==1    % Register based on brain only- skull stripped
+        if tryR1mask==1    % Register based on brain only- skull stripped using R1
             SEIR_T1file=mrQ.SEIRfits{ii}.SEIR_epi_T1bmfile_fromR1;
             SPGR_T1_file=mrQ.LinFit.T1_LFit;
         end
@@ -228,6 +228,10 @@ for jj=iter_start:iter_num
             mrQ.SEIR_epi_fitFile = mrQ.SEIRfits{ii}.SEIR_epi_fitFile;
             mrQ.SEIR_epi_M0file = mrQ.SEIRfits{ii}.SEIR_epi_M0file;
             mrQ.SEIR_epi_Maskfile =mrQ.SEIRfits{ii}.SEIR_epi_Maskfile;
+            if tryR1mask==1
+                mrQ.SEIR_epi_Maskfile=mrQ.SEIRfits{ii}.SEIR_epi_T1bmfile_fromR1;
+            end
+
             mrQ.SEIR_epi_T1bmfile_fromR1=mrQ.SEIRfits{ii}.SEIR_epi_T1bmfile_fromR1;
             mrQ.SEIR_epi_T1bmfile=mrQ.SEIRfits{ii}.SEIR_epi_T1bmfile;
             Ants_Info.Use_BrainMask = useBM;

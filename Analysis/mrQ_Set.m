@@ -208,8 +208,6 @@ switch(param)
         mrQ.useAbs=varargin;
     case {'testR1_BM','testr1_bm'}  % use R1 to creaste a BM for SEIR (might improve registration in some subjects)
         mrQ.testR1_BM=varargin;
-        
-        %Check: Has mrQ recorded it as done?
     case {'seir_done' }
         mrQ.SEIR_done=varargin;
     case {'spgr_init_done' }
@@ -228,8 +226,6 @@ switch(param)
         mrQ.segmentation=varargin;
     case{ 'csfmaskfile','CSFmaskFile','CSFmask' }
         mrQ.CSFmaskFile=varargin;
-        
-        % are there thresholding parameters for the PD build?
     case{'RepErrThreshold'}
         mrQ.RepErrThreshold=varargin;
     case{'PrcCutOff'}
@@ -243,6 +239,14 @@ switch(param)
         mrQ.QuantAntsThresh=varargin;
     case{'ants_bm','ANTS_bm','ANTS_brainmask'}
         mrQ.ants_bm=varargin;
+    case{'smoothB1flag','smoothb1flag'}
+        mrQ.smoothB1flag=varargin;
+    case{'ShiftB1','shiftb1'}
+        mrQ.ShiftB1=varargin;
+    case{'addTumorEPI','addtumorepi'}
+        mrQ.addTumorEPI=varargin;
+    case{'B1_interp_all','b1_interp_all'} % B1 interpolation on the entire brain
+        mrQ.B1_interp_all=varargin;
     otherwise
         error('Unknown mrQ parameter!');
 end

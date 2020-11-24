@@ -95,15 +95,19 @@ w1 = localregression3d(x,y,z,B1(find(tissuemask)),(x0),(y0),(z0),[],[],filter1,[
 %Save the result
 B1Fit(find(tissuemask1))=w1;
 
+
 %% III. Extrapolate by smooth surfaces
 
 if notDefined('smoothnessVal')
     smoothnessVal=5; % this is a value for gridfit; see inside.
 end
 
-
 B1Fit_S=B1Fit;
 
+%%  If there is a problem of noisy voxels (S.F):
+% % bring SEIR mask:
+% BM_seir=readFileNifti(mrQ.SEIR_epi_Maskfile);
+% BM_seir=BM_seir.data;
 %% IIIa. Loop over Z slices
 
 [XI YI]=meshgrid(1:size(B1Fit,1),1:size(B1Fit,2));
@@ -114,6 +118,11 @@ for  jj=1:size(B1Fit,3)
     
     %check that there is data in the slice
     wh=find(tmp>0);
+    
+    % If there is a problem of noisy voxels (S.F):
+    % tmpBM=BM_seir(:,:,jj);
+    %  if (length(find(tmp>0))/length(find(tmpBM>0))>0.7 && length(find(tmp>0))>1000); 
+ 
     if (length(find(tmp>0))/length(tmp(:))>0.2 && length(find(tmp>0))>1000);
             %          This if makes aure we only extrapolate on data
             %          that's large enough within the scan. but it's not

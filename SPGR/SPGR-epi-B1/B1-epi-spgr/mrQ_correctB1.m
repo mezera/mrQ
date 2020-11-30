@@ -67,6 +67,9 @@ end
     % find the ratio between the two peaks
     sc = mxT1_spgr/mxT1_seir;
     
+    mrQ.B1shiftpeaks=[mxT1_spgr mxT1_seir];
+    save(mrQ.name,'mrQ')
+
     if (sc<0.9 || sc>1.1)  && mrQ.ShiftB1==0
         errormassage=['There is a very big shift between the white matter peak in T1-spgr and the white matter peak in T1-seir.\n' ...
             'there might be a problem with the way we find these peaks.\n' ...

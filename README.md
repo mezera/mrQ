@@ -9,6 +9,7 @@ For more information, please contact:
 >Aviv Mezer: aviv.mezer(AT)elsc.huji.ac.il
 >
 >Shir Filo: shir.filo(AT)mail.huji.ac.il
+>
 >Shai Berman: shai.berman(AT)mail.huji.ac.il  
 >
 

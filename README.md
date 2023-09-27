@@ -8,9 +8,9 @@ For more information, please contact:
 
 >Aviv Mezer: aviv.mezer(AT)elsc.huji.ac.il
 >
+>Shir Filo: shir.filo(AT)mail.huji.ac.il
 >Shai Berman: shai.berman(AT)mail.huji.ac.il  
 >
->Jonathan Bain: jonathan.bain(AT)mail.huji.ac.il
 
 For updates, discussions, troubleshooting and more, visit our interactive forum at: 
 > https://groups.google.com/forum/#!forum/mrq-forum
